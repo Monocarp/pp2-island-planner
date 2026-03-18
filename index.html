@@ -74,7 +74,6 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
 .tool-btn.terrain-river { border-left: 4px solid #3498db; }
 .tool-btn.terrain-grass { border-left: 4px solid #27ae60; }
 .tool-btn.terrain-forest { border-left: 4px solid #1e8449; }
-.tool-btn.terrain-mountain { border-left: 4px solid #7f8c8d; }
 .tool-btn.terrain-coastal { border-left: 4px solid #5dade2; }
 
 /* ===== BUILDING LIST ===== */
@@ -370,7 +369,6 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
         <button class="tool-btn terrain-river" data-tool="terrain" data-terrain="river">River</button>
         <button class="tool-btn terrain-coastal" data-tool="terrain" data-terrain="coastal">Coastal</button>
         <button class="tool-btn terrain-forest" data-tool="terrain" data-terrain="forest">Forest</button>
-        <button class="tool-btn terrain-mountain" data-tool="terrain" data-terrain="mountain">Mountain</button>
       </div>
       <h3>Deposits &amp; Tiles</h3>
       <div class="tool-group" id="deposit-tools">
@@ -531,8 +529,6 @@ function canPlaceOnTerrain(buildingId, terrain) {
   if (locReq && locReq.type === 'straight_river') return terrain === 'river';
   // In-water buildings go on water/coastal
   if (locReq && locReq.type === 'in_water_coastal') return terrain === 'water' || terrain === 'coastal';
-  // Cannot-on-mountain buildings
-  if (locReq && locReq.type === 'not_mountain' && terrain === 'mountain') return false;
   // Default: only placeable terrain (excludes water and river)
   return PLACEABLE_TERRAIN.has(terrain);
 }
@@ -543,7 +539,6 @@ function canPlaceOnTerrain(buildingId, terrain) {
 //   straight_river  - building cell itself must be river terrain (water-wheel)
 //   river_adjacent  - at least one adjacent cell (4-dir) must be river terrain
 //   in_water_coastal - building must be placed on water, adjacent to non-water land
-//   not_mountain    - building cannot be placed on mountain terrain
 const LOCATION_REQUIREMENTS = {
   // === Ocean adjacency (trade/harbor buildings) ===
   HarborTavern:            { type: 'ocean_adjacent', label: 'Must be next to ocean' },
@@ -577,8 +572,7 @@ const LOCATION_REQUIREMENTS = {
   SalmonFishermansHut:     { type: 'in_water_coastal', label: 'Must be in water next to beach' },
 
   // === Cannot be on mountain ===
-  Stonecutter:             { type: 'not_mountain', label: 'Cannot be on a mountain' },
-  MarbleQuarry:            { type: 'not_mountain', label: 'Cannot be on a mountain' },
+  // (mountain terrain removed; cliff is now a deposit on grass)
 };
 
 // Helper: get terrain at a position, treating out-of-bounds as ocean water
@@ -669,12 +663,6 @@ function checkLocationRequirement(buildingId, x, y) {
       });
       return hasLand ? { ok: true } : { ok: false, reason: req.label + ' (no adjacent land)' };
     }
-    case 'not_mountain': {
-      if (cell.terrain === 'mountain') {
-        return { ok: false, reason: req.label };
-      }
-      return { ok: true };
-    }
     default:
       return { ok: true };
   }
@@ -687,7 +675,6 @@ const TERRAIN_COLORS = {
   river:    '#2e86c1',
   coastal:  '#4db8c9',
   forest:   '#1e5631',
-  mountain: '#6c6c6c',
   empty:    '#0d1117',
 };
 
@@ -1817,9 +1804,6 @@ function matchesTileResource(cell, resId) {
   };
   if (terrainMap[resId] && cell.terrain === terrainMap[resId]) return true;
   if (cell.deposit === resId) return true;
-  // Some deposits match partial names
-  if (resId === 'cliff' && cell.terrain === 'mountain') return true;
-  if (resId === 'cliff_tropical' && cell.terrain === 'mountain') return true;
   return false;
 }
 

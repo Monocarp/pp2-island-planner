@@ -521,9 +521,9 @@ function getBuildingData(id) {
 
 // ===== TERRAIN PLACEMENT RULES =====
 // Which terrains a building can be placed on.
-// By default, buildings can only go on grass, forest, coastal.
+// By default, buildings can only go on grass or forest.
 // Special cases are handled via LOCATION_REQUIREMENTS.
-const PLACEABLE_TERRAIN = new Set(['grass', 'forest', 'coastal', 'mountain']);
+const PLACEABLE_TERRAIN = new Set(['grass', 'forest']);
 
 function canPlaceOnTerrain(buildingId, terrain) {
   const locReq = LOCATION_REQUIREMENTS[buildingId];

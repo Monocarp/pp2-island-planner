@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PP2 Island Planner</title>
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+button { cursor: pointer; font-family: inherit; }
+input, select { font-family: inherit; }
+
+/* ===== LAYOUT ===== */
+#app {
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+}
+header {
+  grid-column: 1 / -1;
+  background: #16213e;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 2px solid #0f3460;
+}
+header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
+
+/* ===== LEFT PANEL ===== */
+#left-panel {
+  background: #16213e;
+  border-right: 2px solid #0f3460;
+  overflow-y: auto;
+  padding: 10px;
+}
+.panel-section {
+  margin-bottom: 12px;
+}
+.panel-section h3 {
+  font-size: 0.85rem;
+  color: #e94560;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ===== TOOL BUTTONS ===== */
+.tool-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.tool-btn {
+  padding: 5px 10px;
+  border: 2px solid #0f3460;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  font-size: 0.75rem;
+  transition: all 0.15s;
+}
+.tool-btn:hover { border-color: #e94560; }
+.tool-btn.active { border-color: #e94560; background: #e94560; color: #fff; }
+.tool-btn.terrain-water { border-left: 4px solid #2980b9; }
+.tool-btn.terrain-river { border-left: 4px solid #3498db; }
+.tool-btn.terrain-grass { border-left: 4px solid #27ae60; }
+.tool-btn.terrain-forest { border-left: 4px solid #1e8449; }
+.tool-btn.terrain-mountain { border-left: 4px solid #7f8c8d; }
+.tool-btn.terrain-coastal { border-left: 4px solid #5dade2; }
+
+/* ===== BUILDING LIST ===== */
+.building-filter {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+}
+.tier-group { margin-bottom: 6px; }
+.tier-header {
+  font-size: 0.75rem;
+  color: #c0c0c0;
+  padding: 3px 6px;
+  background: #0f3460;
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+}
+.tier-header:hover { background: #1a4080; }
+.tier-buildings { display: none; padding: 3px 0; }
+.tier-buildings.open { display: block; }
+.building-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  color: #e0e0e0;
+  font-size: 0.75rem;
+  transition: all 0.15s;
+}
+.building-btn:hover { background: #1a1a2e; border-color: #0f3460; }
+.building-btn.active { background: #e94560; color: #fff; }
+.building-btn.locked { opacity: 0.35; }
+
+/* ===== CANVAS AREA ===== */
+#canvas-area {
+  position: relative;
+  overflow: hidden;
+  background: #0d1117;
+}
+#grid-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  image-rendering: pixelated;
+}
+
+/* ===== RIGHT PANEL ===== */
+#right-panel {
+  background: #16213e;
+  border-left: 2px solid #0f3460;
+  overflow-y: auto;
+  padding: 10px;
+}
+.info-box {
+  background: #1a1a2e;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 8px;
+  font-size: 0.8rem;
+}
+.info-box h4 { color: #e94560; margin-bottom: 4px; font-size: 0.85rem; }
+.info-row { display: flex; justify-content: space-between; padding: 2px 0; }
+.info-label { color: #a0a0a0; }
+.info-value { color: #e0e0e0; font-weight: 600; }
+.error-text { color: #e74c3c; }
+.warning-text { color: #f39c12; }
+.ok-text { color: #2ecc71; }
+
+/* ===== HEADER CONTROLS ===== */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.header-controls label { font-size: 0.8rem; color: #a0a0a0; }
+.header-controls input, .header-controls select {
+  padding: 3px 6px;
+  border: 1px solid #0f3460;
+  border-radius: 3px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  font-size: 0.8rem;
+  width: 50px;
+}
+.header-controls select { width: auto; }
+.header-btn {
+  padding: 5px 12px;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  background: #0f3460;
+  color: #e0e0e0;
+  font-size: 0.8rem;
+}
+.header-btn:hover { background: #1a4080; }
+.header-btn.danger { border-color: #e74c3c; background: #c0392b; }
+.header-btn.danger:hover { background: #e74c3c; }
+
+/* ===== ISLAND SETUP MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal {
+  background: #16213e;
+  border: 2px solid #0f3460;
+  border-radius: 8px;
+  padding: 24px;
+  min-width: 350px;
+  max-width: 500px;
+}
+.modal h2 { color: #e94560; margin-bottom: 16px; }
+.modal label { display: block; margin-bottom: 4px; font-size: 0.85rem; color: #a0a0a0; }
+.modal input, .modal select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+.modal .header-btn { padding: 8px 20px; font-size: 0.9rem; }
+
+/* ===== CONTEXT MENU ===== */
+.context-menu {
+  position: fixed;
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  padding: 4px 0;
+  min-width: 160px;
+  z-index: 200;
+  display: none;
+}
+.context-menu-item {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: #e0e0e0;
+}
+.context-menu-item:hover { background: #0f3460; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #1a1a2e; }
+::-webkit-scrollbar-thumb { background: #0f3460; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #1a4080; }
+
+/* ===== TOOLTIP ===== */
+.tooltip {
+  position: fixed;
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  z-index: 300;
+  pointer-events: none;
+  display: none;
+  max-width: 250px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>PP2 Island Planner</h1>
+    <div class="header-controls" id="header-controls">
+      <button class="header-btn" id="btn-new-island">New Island</button>
+      <button class="header-btn" id="btn-save">Save</button>
+      <button class="header-btn" id="btn-load">Load</button>
+      <span style="color:#666">|</span>
+      <label>Zoom:</label>
+      <input type="range" id="zoom-slider" min="10" max="60" value="30" style="width:100px">
+      <span id="zoom-label" style="font-size:0.8rem;min-width:35px">30px</span>
+      <span style="color:#666">|</span>
+      <button class="header-btn" id="btn-undo">Undo</button>
+      <button class="header-btn" id="btn-redo">Redo</button>
+    </div>
+  </header>
+
+  <div id="left-panel">
+    <!-- TERRAIN TOOLS -->
+    <div class="panel-section">
+      <h3>Terrain</h3>
+      <div class="tool-group" id="terrain-tools">
+        <button class="tool-btn terrain-grass" data-tool="terrain" data-terrain="grass">Grass</button>
+        <button class="tool-btn terrain-water" data-tool="terrain" data-terrain="water">Water</button>
+        <button class="tool-btn terrain-river" data-tool="terrain" data-terrain="river">River</button>
+        <button class="tool-btn terrain-coastal" data-tool="terrain" data-terrain="coastal">Coastal</button>
+        <button class="tool-btn terrain-forest" data-tool="terrain" data-terrain="forest">Forest</button>
+        <button class="tool-btn terrain-mountain" data-tool="terrain" data-terrain="mountain">Mountain</button>
+      </div>
+      <h3>Deposits &amp; Tiles</h3>
+      <div class="tool-group" id="deposit-tools">
+        <!-- Generated dynamically -->
+      </div>
+      <h3>Actions</h3>
+      <div class="tool-group">
+        <button class="tool-btn" data-tool="eraser">Eraser</button>
+        <button class="tool-btn" data-tool="select">Select</button>
+      </div>
+    </div>
+
+    <!-- BUILDING PALETTE -->
+    <div class="panel-section">
+      <h3>Buildings</h3>
+      <input type="text" class="building-filter" id="building-filter" placeholder="Filter buildings...">
+      <div id="building-list">
+        <!-- Generated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <div id="canvas-area">
+    <canvas id="grid-canvas"></canvas>
+  </div>
+
+  <div id="right-panel">
+    <div class="info-box" id="cell-info">
+      <h4>Cell Info</h4>
+      <p style="color:#666;font-size:0.8rem;">Hover over a cell</p>
+    </div>
+    <div class="info-box" id="building-info" style="display:none">
+      <h4>Selected Building</h4>
+    </div>
+    <div class="info-box" id="island-stats">
+      <h4>Island Stats</h4>
+      <div id="stats-content">No island loaded</div>
+    </div>
+    <div class="info-box" id="validation-panel">
+      <h4>Issues</h4>
+      <div id="validation-content" style="color:#666;font-size:0.8rem;">No issues</div>
+    </div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+<div class="context-menu" id="context-menu"></div>
+
+<!-- Load game data -->
+<script src="data.js"></script>
+<script>
+// ============================================================
+//  PP2 ISLAND PLANNER - MAIN APPLICATION
+// ============================================================
+
+// ===== FOOTPRINT DEFINITIONS =====
+const FOOTPRINTS = {};
+
+function makeSquare(size) {
+  const cells = [];
+  const half = Math.floor(size / 2);
+  for (let dy = -half; dy <= half; dy++)
+    for (let dx = -half; dx <= half; dx++)
+      cells.push([dx, dy]);
+  return cells;
+}
+
+function makeDiamond(rowWidths) {
+  const cells = [];
+  const halfH = Math.floor(rowWidths.length / 2);
+  for (let i = 0; i < rowWidths.length; i++) {
+    const dy = i - halfH;
+    const w = rowWidths[i];
+    const halfW = Math.floor(w / 2);
+    for (let dx = -halfW; dx <= halfW; dx++)
+      cells.push([dx, dy]);
+  }
+  return cells;
+}
+
+function makePlus() {
+  // 3 tall center column + 1 left/right at middle
+  return [[0,-1],[0,0],[0,1],[-1,0],[1,0]];
+}
+
+// 1x1
+['CopperMine','Forest','Garrison','Garrison2','Garrison3',
+ 'HopField','LinseedField','PioneersHut','Portal',
+ 'StrawberryField','WheatField'].forEach(id => FOOTPRINTS[id] = [[0,0]]);
+
+// 3x3
+['Arboretum','CattleRanch','CiderMaker','FishermansHut',
+ 'LinseedFarm','Lumberjack','PigRanch','Warehouse1','WheatFarm'].forEach(id => FOOTPRINTS[id] = makeSquare(3));
+
+// 5x5
+['AshHouse','Bakery','BoilerMaker','BoilingHouse','Bowyer','Brewery',
+ 'CloakTailoring','CopperArmory','CopperAxesmith','CopperSmelter',
+ 'FlourMill','FlourWindmill','Furriery','HopFarm','LimeKiln',
+ 'LinenWeaver','Longbowyer','Malthouse','Medicus','MortarBatchWorks',
+ 'RenderingWorks','Ropery','Sailmaker','SaltWorks','SausageMaker',
+ 'SawMill','SawWorks','SoapMaker','StrawberryFarm','Tannery',
+ 'TextileFactory','Weaver'].forEach(id => FOOTPRINTS[id] = makeSquare(5));
+
+// 9x9
+FOOTPRINTS['Cistern'] = makeSquare(9);
+
+// 11x11
+FOOTPRINTS['HarborTavern'] = makeSquare(11);
+
+// Plus shape
+['AppleTrees','Piggery','SheepFarm','Stonecutter'].forEach(id => FOOTPRINTS[id] = makePlus());
+
+// Diamond 3-5-5-5-3
+['ArcheryRange','Barracks','BerserkerHall','BootCamp',
+ 'HorseBreeder','LongbowArcheryRange','RidingArena','Well'].forEach(id => FOOTPRINTS[id] = makeDiamond([3,5,5,5,3]));
+
+// Diamond 1-3-5-3-1
+FOOTPRINTS['Warehouse2'] = makeDiamond([1,3,5,3,1]);
+
+// Diamond 3-5-7-7-7-5-3
+['Forester','Tavern'].forEach(id => FOOTPRINTS[id] = makeDiamond([3,5,7,7,7,5,3]));
+
+// Diamond 5-7-7-7-7-7-5
+['Shipyard','SmallShipyard'].forEach(id => FOOTPRINTS[id] = makeDiamond([5,7,7,7,7,7,5]));
+
+// Diamond 1-3-5-7-5-3-1
+['School','Warehouse3'].forEach(id => FOOTPRINTS[id] = makeDiamond([1,3,5,7,5,3,1]));
+
+// ===== BUILDING LOCATION REQUIREMENTS =====
+// Requirement types:
+//   ocean_adjacent  - at least one adjacent cell (4-dir) must be water terrain
+//   straight_river  - building cell itself must be river terrain (water-wheel)
+//   river_adjacent  - at least one adjacent cell (4-dir) must be river terrain
+//   in_water_coastal - building must be placed on water, adjacent to non-water land
+//   not_mountain    - building cannot be placed on mountain terrain
+const LOCATION_REQUIREMENTS = {
+  // === Ocean adjacency (trade/harbor buildings) ===
+  HarborTavern:            { type: 'ocean_adjacent', label: 'Must be next to ocean' },
+
+  // === Straight river / water-wheel buildings ===
+  Sawmill:                 { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  FlourMill:               { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  MortarBatchWorks:        { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  TextileFactory:          { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  FeltmakingMill:          { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  IronArmory:              { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  CrossbowMaker:           { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  SteelFurnace:            { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  Armorsmith:              { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  PaperMill:               { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  PlaningMill:             { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  PowderMill:              { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  CannonFoundry:           { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  Winepress:               { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  BrocadeSpinningFactory:  { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  MusketMaker:             { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  SugarMill:               { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  SpinningMill:            { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  SilkTwineMill:           { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+  GoldPanner:              { type: 'straight_river', label: 'Needs straight river (water wheel)' },
+
+  // === River adjacency (general, not water-wheel) ===
+  Tannery:                 { type: 'river_adjacent', label: 'Must be next to a river' },
+
+  // === In water next to beach ===
+  SalmonFishermansHut:     { type: 'in_water_coastal', label: 'Must be in water next to beach' },
+
+  // === Cannot be on mountain ===
+  Stonecutter:             { type: 'not_mountain', label: 'Cannot be on a mountain' },
+  MarbleQuarry:            { type: 'not_mountain', label: 'Cannot be on a mountain' },
+};
+
+// Helper: get 4-directional neighbors
+function getAdjacentCells(x, y, width, height) {
+  const adj = [];
+  if (x > 0) adj.push({ x: x-1, y });
+  if (x < width-1) adj.push({ x: x+1, y });
+  if (y > 0) adj.push({ x, y: y-1 });
+  if (y < height-1) adj.push({ x, y: y+1 });
+  return adj;
+}
+
+// Check if a building can be placed at (x, y) based on location requirements
+// Returns { ok: true } or { ok: false, reason: string }
+function checkLocationRequirement(buildingId, x, y) {
+  const req = LOCATION_REQUIREMENTS[buildingId];
+  if (!req) return { ok: true };
+
+  if (!state.island) return { ok: false, reason: 'No island' };
+  const { width, height, cells } = state.island;
+  const cell = cells[y][x];
+  const neighbors = getAdjacentCells(x, y, width, height);
+
+  switch (req.type) {
+    case 'ocean_adjacent': {
+      const hasOcean = neighbors.some(n => cells[n.y][n.x].terrain === 'water');
+      return hasOcean ? { ok: true } : { ok: false, reason: req.label };
+    }
+    case 'straight_river': {
+      // Building must be placed on a river tile (the water wheel sits on the river)
+      if (cell.terrain !== 'river') {
+        return { ok: false, reason: req.label };
+      }
+      return { ok: true };
+    }
+    case 'river_adjacent': {
+      const hasRiver = neighbors.some(n => cells[n.y][n.x].terrain === 'river');
+      return hasRiver ? { ok: true } : { ok: false, reason: req.label };
+    }
+    case 'in_water_coastal': {
+      // Must be placed ON water AND adjacent to non-water land (beach/coastal)
+      if (cell.terrain !== 'water' && cell.terrain !== 'coastal') {
+        return { ok: false, reason: req.label + ' (must be on water)' };
+      }
+      const hasLand = neighbors.some(n => {
+        const t = cells[n.y][n.x].terrain;
+        return t !== 'water';
+      });
+      return hasLand ? { ok: true } : { ok: false, reason: req.label + ' (no adjacent land)' };
+    }
+    case 'not_mountain': {
+      if (cell.terrain === 'mountain') {
+        return { ok: false, reason: req.label };
+      }
+      return { ok: true };
+    }
+    default:
+      return { ok: true };
+  }
+}
+
+// ===== TERRAIN TYPES =====
+const TERRAIN_COLORS = {
+  grass:    '#3a7d44',
+  water:    '#1a6eb0',
+  river:    '#2e86c1',
+  coastal:  '#4db8c9',
+  forest:   '#1e5631',
+  mountain: '#6c6c6c',
+  empty:    '#0d1117',
+};
+
+const DEPOSIT_TYPES = [
+  { id: 'copper_deposit', name: 'Copper', color: '#c87533' },
+  { id: 'coal_deposit', name: 'Coal', color: '#2c2c2c' },
+  { id: 'iron_deposit', name: 'Iron', color: '#8b4513' },
+  { id: 'rock_salt_deposit', name: 'Rock Salt', color: '#d4c5a9' },
+  { id: 'clay_deposit', name: 'Clay', color: '#b87040' },
+  { id: 'cliff', name: 'Cliff', color: '#9e9e9e' },
+  { id: 'marble_deposit', name: 'Marble', color: '#d0d0d0' },
+  { id: 'gold_deposit', name: 'Gold', color: '#ffd700' },
+  { id: 'gemstone_deposit', name: 'Gemstone', color: '#9b59b6' },
+  { id: 'lead_deposit', name: 'Lead', color: '#708090' },
+  { id: 'zinc_deposit', name: 'Zinc', color: '#a0b0c0' },
+  { id: 'nitrate_field', name: 'Nitrate', color: '#c8e6c9' },
+  { id: 'hop_field', name: 'Hop Field', color: '#7cb342' },
+  { id: 'wheat_field', name: 'Wheat Field', color: '#fdd835' },
+  { id: 'linseed_field', name: 'Linseed Field', color: '#81d4fa' },
+  { id: 'strawberry_field', name: 'Strawberry', color: '#ef5350' },
+  { id: 'apple_trees', name: 'Apple Trees', color: '#66bb6a' },
+  { id: 'vineyard', name: 'Vineyard', color: '#8e24aa' },
+  { id: 'rose_field', name: 'Rose Field', color: '#f06292' },
+  { id: 'sugar_beet_field', name: 'Sugar Beet', color: '#8d6e63' },
+  { id: 'sperm_whale_swarm', name: 'Whale Swarm', color: '#4a697b' },
+  { id: 'weir', name: 'Weir', color: '#00897b' },
+];
+
+// ===== TILE RESOURCE IDs (terrain tiles that buildings need within footprint) =====
+const TILE_RESOURCE_IDS = new Set();
+PP2DATA.tiles.forEach(t => TILE_RESOURCE_IDS.add(t.produces));
+
+// ===== APPLICATION STATE =====
+const state = {
+  island: null,     // { width, height, cells: 2D array }
+  tool: 'select',   // current tool
+  terrainType: null, // if tool=terrain
+  depositType: null, // if tool=deposit
+  buildingId: null,  // if placing a building
+  zoom: 30,
+  panX: 0, panY: 0,
+  isPanning: false,
+  dragStart: null,
+  undoStack: [],
+  redoStack: [],
+  hoveredCell: null,
+  unlockedBuildings: new Set(), // building IDs the user has unlocked
+  savedIslands: [],  // localStorage saves
+};
+
+// Cell data: { terrain, deposit, building, buildingId (for placed buildings back-ref) }
+function createCell(terrain = 'grass') {
+  return { terrain, deposit: null, building: null };
+}
+
+// ===== ISLAND CREATION =====
+function createIsland(width, height) {
+  const cells = [];
+  for (let y = 0; y < height; y++) {
+    const row = [];
+    for (let x = 0; x < width; x++) {
+      row.push(createCell('grass'));
+    }
+    cells.push(row);
+  }
+  return { width, height, cells, buildings: [] };
+}
+
+// buildings array entry: { id: buildingId, x, y, uniqueId }
+let nextBuildingUid = 1;
+
+// ===== CANVAS RENDERING =====
+const canvas = document.getElementById('grid-canvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  const area = document.getElementById('canvas-area');
+  canvas.width = area.clientWidth;
+  canvas.height = area.clientHeight;
+  render();
+}
+
+function render() {
+  if (!state.island) return;
+  const { width, height, cells } = state.island;
+  const z = state.zoom;
+  const ox = state.panX;
+  const oy = state.panY;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw grid cells
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const cell = cells[y][x];
+      const px = ox + x * z;
+      const py = oy + y * z;
+
+      // Skip offscreen
+      if (px + z < 0 || py + z < 0 || px > canvas.width || py > canvas.height) continue;
+
+      // Base terrain color
+      let color = TERRAIN_COLORS[cell.terrain] || TERRAIN_COLORS.empty;
+      ctx.fillStyle = color;
+      ctx.fillRect(px, py, z, z);
+
+      // Deposit overlay
+      if (cell.deposit) {
+        const dep = DEPOSIT_TYPES.find(d => d.id === cell.deposit);
+        if (dep) {
+          ctx.fillStyle = dep.color;
+          ctx.globalAlpha = 0.7;
+          ctx.fillRect(px + 2, py + 2, z - 4, z - 4);
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      // Building
+      if (cell.building) {
+        ctx.fillStyle = '#e94560';
+        ctx.globalAlpha = 0.85;
+        ctx.fillRect(px + 1, py + 1, z - 2, z - 2);
+        ctx.globalAlpha = 1;
+        // Building letter
+        if (z >= 16) {
+          ctx.fillStyle = '#fff';
+          ctx.font = `bold ${Math.max(8, z * 0.4)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          const b = PP2DATA.getBuilding(cell.building);
+          const letter = b ? b.name[0] : '?';
+          ctx.fillText(letter, px + z/2, py + z/2);
+        }
+      }
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.strokeRect(px, py, z, z);
+    }
+  }
+
+  // Highlight hovered cell
+  if (state.hoveredCell) {
+    const { x: hx, y: hy } = state.hoveredCell;
+    if (hx >= 0 && hx < width && hy >= 0 && hy < height) {
+      ctx.strokeStyle = '#e94560';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(ox + hx * z, oy + hy * z, z, z);
+      ctx.lineWidth = 1;
+
+      // Show footprint preview when placing a building
+      if (state.tool === 'building' && state.buildingId) {
+        // Check location validity for color feedback
+        const locValid = checkLocationRequirement(state.buildingId, hx, hy);
+        const cellOccupied = cells[hy][hx].building;
+        const canPlace = locValid.ok && !cellOccupied;
+        const fpColor = canPlace ? 'rgba(46,204,113,0.25)' : 'rgba(231,76,60,0.3)';
+        const fpStroke = canPlace ? 'rgba(46,204,113,0.5)' : 'rgba(231,76,60,0.6)';
+        // Highlight the building cell itself
+        ctx.fillStyle = canPlace ? 'rgba(46,204,113,0.4)' : 'rgba(231,76,60,0.5)';
+        ctx.fillRect(ox + hx * z, oy + hy * z, z, z);
+
+        const fp = FOOTPRINTS[state.buildingId];
+        if (fp) {
+          ctx.fillStyle = fpColor;
+          ctx.strokeStyle = fpStroke;
+          fp.forEach(([dx, dy]) => {
+            const fx = hx + dx, fy = hy + dy;
+            if (fx >= 0 && fx < width && fy >= 0 && fy < height) {
+              ctx.fillRect(ox + fx * z, oy + fy * z, z, z);
+              ctx.strokeRect(ox + fx * z, oy + fy * z, z, z);
+            }
+          });
+        }
+      }
+    }
+  }
+
+  // Draw footprint overlay for selected building on grid
+  state.island.buildings.forEach(b => {
+    if (b === state.selectedBuilding) {
+      const fp = FOOTPRINTS[b.id];
+      if (fp) {
+        ctx.fillStyle = 'rgba(52,152,219,0.15)';
+        ctx.strokeStyle = 'rgba(52,152,219,0.4)';
+        fp.forEach(([dx, dy]) => {
+          const fx = b.x + dx, fy = b.y + dy;
+          if (fx >= 0 && fx < width && fy >= 0 && fy < height) {
+            ctx.fillRect(ox + fx * z, oy + fy * z, z, z);
+            ctx.strokeRect(ox + fx * z, oy + fy * z, z, z);
+          }
+        });
+      }
+    }
+  });
+
+  // Draw deposit labels if zoomed in enough
+  if (z >= 24) {
+    ctx.font = `${Math.max(7, z * 0.28)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const cell = cells[y][x];
+        if (cell.deposit && !cell.building) {
+          const dep = DEPOSIT_TYPES.find(d => d.id === cell.deposit);
+          if (dep) {
+            const px = ox + x * z;
+            const py = oy + y * z;
+            ctx.fillStyle = '#fff';
+            ctx.fillText(dep.name.substring(0, 3), px + z/2, py + z/2);
+          }
+        }
+      }
+    }
+  }
+}
+
+// ===== PAN/ZOOM =====
+function cellFromMouse(e) {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const x = Math.floor((mx - state.panX) / state.zoom);
+  const y = Math.floor((my - state.panY) / state.zoom);
+  return { x, y };
+}
+
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const oldZoom = state.zoom;
+  const delta = e.deltaY > 0 ? -2 : 2;
+  state.zoom = Math.max(10, Math.min(60, state.zoom + delta));
+  // Zoom toward cursor
+  state.panX = mx - (mx - state.panX) * (state.zoom / oldZoom);
+  state.panY = my - (my - state.panY) * (state.zoom / oldZoom);
+  document.getElementById('zoom-slider').value = state.zoom;
+  document.getElementById('zoom-label').textContent = state.zoom + 'px';
+  render();
+});
+
+document.getElementById('zoom-slider').addEventListener('input', (e) => {
+  state.zoom = parseInt(e.target.value);
+  document.getElementById('zoom-label').textContent = state.zoom + 'px';
+  render();
+});
+
+// ===== MOUSE INTERACTION =====
+let isMouseDown = false;
+let lastPaintedCell = null;
+
+canvas.addEventListener('mousedown', (e) => {
+  if (e.button === 1 || (e.button === 0 && e.altKey)) {
+    // Middle click or Alt+click = pan
+    state.isPanning = true;
+    state.dragStart = { x: e.clientX - state.panX, y: e.clientY - state.panY };
+    canvas.style.cursor = 'grabbing';
+    return;
+  }
+  if (e.button === 2) return; // handled by contextmenu
+
+  isMouseDown = true;
+  const cell = cellFromMouse(e);
+  handleCellAction(cell.x, cell.y, e);
+  lastPaintedCell = `${cell.x},${cell.y}`;
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (state.isPanning) {
+    state.panX = e.clientX - state.dragStart.x;
+    state.panY = e.clientY - state.dragStart.y;
+    render();
+    return;
+  }
+
+  const cell = cellFromMouse(e);
+  state.hoveredCell = cell;
+
+  // Paint while dragging for terrain/deposit/eraser
+  if (isMouseDown && (state.tool === 'terrain' || state.tool === 'deposit' || state.tool === 'eraser')) {
+    const key = `${cell.x},${cell.y}`;
+    if (key !== lastPaintedCell) {
+      handleCellAction(cell.x, cell.y, e);
+      lastPaintedCell = key;
+    }
+  }
+
+  updateCellInfo(cell.x, cell.y);
+  render();
+});
+
+canvas.addEventListener('mouseup', (e) => {
+  if (state.isPanning) {
+    state.isPanning = false;
+    canvas.style.cursor = '';
+    return;
+  }
+  isMouseDown = false;
+  lastPaintedCell = null;
+});
+
+canvas.addEventListener('mouseleave', () => {
+  state.hoveredCell = null;
+  isMouseDown = false;
+  state.isPanning = false;
+  render();
+});
+
+// Right-click context menu
+canvas.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  const cell = cellFromMouse(e);
+  showContextMenu(e.clientX, e.clientY, cell.x, cell.y);
+});
+
+// ===== CELL ACTIONS =====
+function handleCellAction(x, y, e) {
+  if (!state.island) return;
+  const { width, height, cells } = state.island;
+  if (x < 0 || x >= width || y < 0 || y >= height) return;
+
+  const cell = cells[y][x];
+
+  if (state.tool === 'terrain' && state.terrainType) {
+    pushUndo();
+    cell.terrain = state.terrainType;
+    cell.deposit = null;
+    cell.building = null;
+    removeBuildingAt(x, y);
+    updateStats();
+    render();
+  } else if (state.tool === 'deposit' && state.depositType) {
+    pushUndo();
+    cell.deposit = state.depositType;
+    updateStats();
+    render();
+  } else if (state.tool === 'eraser') {
+    pushUndo();
+    if (cell.building) {
+      removeBuildingAt(x, y);
+      cell.building = null;
+    }
+    cell.deposit = null;
+    cell.terrain = 'grass';
+    updateStats();
+    render();
+  } else if (state.tool === 'building' && state.buildingId) {
+    if (cell.building) return; // already occupied
+    // Check location requirements before placing
+    const locCheck = checkLocationRequirement(state.buildingId, x, y);
+    if (!locCheck.ok) {
+      showTooltipMessage(x, y, locCheck.reason);
+      return;
+    }
+    pushUndo();
+    placeBuilding(state.buildingId, x, y);
+    updateStats();
+    validateIsland();
+    render();
+  } else if (state.tool === 'select') {
+    // Select a building if there is one
+    const b = state.island.buildings.find(b => b.x === x && b.y === y);
+    state.selectedBuilding = b || null;
+    updateBuildingInfo();
+    render();
+  }
+}
+
+function placeBuilding(buildingId, x, y) {
+  const { cells } = state.island;
+  cells[y][x].building = buildingId;
+  state.island.buildings.push({ id: buildingId, x, y, uid: nextBuildingUid++ });
+}
+
+function removeBuildingAt(x, y) {
+  if (!state.island) return;
+  state.island.buildings = state.island.buildings.filter(b => !(b.x === x && b.y === y));
+}
+
+// ===== CONTEXT MENU =====
+function showContextMenu(px, py, cellX, cellY) {
+  const menu = document.getElementById('context-menu');
+  menu.innerHTML = '';
+  if (!state.island) return;
+  const { width, height, cells } = state.island;
+  if (cellX < 0 || cellX >= width || cellY < 0 || cellY >= height) return;
+  const cell = cells[cellY][cellX];
+
+  if (cell.building) {
+    addMenuItem(menu, 'Remove Building', () => {
+      pushUndo();
+      cell.building = null;
+      removeBuildingAt(cellX, cellY);
+      updateStats();
+      validateIsland();
+      render();
+    });
+    addMenuItem(menu, 'Show Footprint', () => {
+      const b = state.island.buildings.find(b => b.x === cellX && b.y === cellY);
+      state.selectedBuilding = b;
+      updateBuildingInfo();
+      render();
+    });
+  }
+  if (cell.deposit) {
+    addMenuItem(menu, 'Remove Deposit', () => {
+      pushUndo();
+      cell.deposit = null;
+      updateStats();
+      render();
+    });
+  }
+  addMenuItem(menu, 'Set to Water', () => {
+    pushUndo();
+    cell.terrain = 'water';
+    cell.deposit = null;
+    if (cell.building) { removeBuildingAt(cellX, cellY); cell.building = null; }
+    updateStats();
+    render();
+  });
+
+  menu.style.left = px + 'px';
+  menu.style.top = py + 'px';
+  menu.style.display = 'block';
+}
+
+function addMenuItem(menu, text, callback) {
+  const item = document.createElement('div');
+  item.className = 'context-menu-item';
+  item.textContent = text;
+  item.addEventListener('click', () => {
+    menu.style.display = 'none';
+    callback();
+  });
+  menu.appendChild(item);
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('context-menu').style.display = 'none';
+});
+
+// ===== TOOLTIPS FOR PLACEMENT ERRORS =====
+function showTooltipMessage(cellX, cellY, message) {
+  const z = state.zoom;
+  const px = state.panX + cellX * z;
+  const py = state.panY + cellY * z;
+  const area = document.getElementById('canvas-area');
+  const rect = area.getBoundingClientRect();
+
+  const tip = document.getElementById('tooltip');
+  tip.textContent = '\u26A0 ' + message;
+  tip.style.left = (rect.left + px + z) + 'px';
+  tip.style.top = (rect.top + py) + 'px';
+  tip.style.display = 'block';
+  tip.style.color = '#e74c3c';
+  tip.style.borderColor = '#e74c3c';
+  clearTimeout(tip._hideTimer);
+  tip._hideTimer = setTimeout(() => {
+    tip.style.display = 'none';
+    tip.style.color = '';
+    tip.style.borderColor = '';
+  }, 2500);
+}
+
+// ===== UNDO/REDO =====
+function pushUndo() {
+  if (!state.island) return;
+  state.undoStack.push(JSON.stringify(state.island));
+  state.redoStack = [];
+  if (state.undoStack.length > 100) state.undoStack.shift();
+}
+
+document.getElementById('btn-undo').addEventListener('click', () => {
+  if (state.undoStack.length === 0) return;
+  state.redoStack.push(JSON.stringify(state.island));
+  state.island = JSON.parse(state.undoStack.pop());
+  updateStats();
+  validateIsland();
+  render();
+});
+
+document.getElementById('btn-redo').addEventListener('click', () => {
+  if (state.redoStack.length === 0) return;
+  state.undoStack.push(JSON.stringify(state.island));
+  state.island = JSON.parse(state.redoStack.pop());
+  updateStats();
+  validateIsland();
+  render();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'z') { document.getElementById('btn-undo').click(); e.preventDefault(); }
+  if (e.ctrlKey && e.key === 'y') { document.getElementById('btn-redo').click(); e.preventDefault(); }
+  if (e.key === 'Escape') {
+    state.tool = 'select';
+    state.buildingId = null;
+    clearToolSelection();
+    render();
+  }
+  if (e.key === 'Delete' && state.selectedBuilding) {
+    pushUndo();
+    const b = state.selectedBuilding;
+    state.island.cells[b.y][b.x].building = null;
+    removeBuildingAt(b.x, b.y);
+    state.selectedBuilding = null;
+    updateBuildingInfo();
+    updateStats();
+    validateIsland();
+    render();
+  }
+});
+
+// ===== TOOL SELECTION =====
+function clearToolSelection() {
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.building-btn').forEach(b => b.classList.remove('active'));
+}
+
+// Terrain tools
+document.getElementById('terrain-tools').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tool-btn');
+  if (!btn) return;
+  clearToolSelection();
+  btn.classList.add('active');
+  state.tool = 'terrain';
+  state.terrainType = btn.dataset.terrain;
+  state.buildingId = null;
+});
+
+// Deposit tools (built dynamically)
+function buildDepositTools() {
+  const container = document.getElementById('deposit-tools');
+  DEPOSIT_TYPES.forEach(dep => {
+    const btn = document.createElement('button');
+    btn.className = 'tool-btn';
+    btn.textContent = dep.name;
+    btn.style.borderLeft = `4px solid ${dep.color}`;
+    btn.addEventListener('click', () => {
+      clearToolSelection();
+      btn.classList.add('active');
+      state.tool = 'deposit';
+      state.depositType = dep.id;
+      state.buildingId = null;
+    });
+    container.appendChild(btn);
+  });
+}
+
+// Eraser / Select
+document.querySelectorAll('[data-tool="eraser"],[data-tool="select"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    clearToolSelection();
+    btn.classList.add('active');
+    state.tool = btn.dataset.tool;
+    state.buildingId = null;
+  });
+});
+
+// ===== BUILDING PALETTE =====
+function buildBuildingList() {
+  const container = document.getElementById('building-list');
+  container.innerHTML = '';
+  const tiers = ['Pioneers', 'Colonists', 'Townsmen', 'Merchants', 'Paragons',
+                 'Farmers', 'Workers', 'Northern Islands'];
+
+  tiers.forEach(tier => {
+    const buildings = PP2DATA.buildings.filter(b => b.tier === tier && !b.isPopulation);
+    if (buildings.length === 0) return;
+
+    const group = document.createElement('div');
+    group.className = 'tier-group';
+
+    const header = document.createElement('div');
+    header.className = 'tier-header';
+    header.innerHTML = `<span>${tier}</span><span>${buildings.length}</span>`;
+    header.addEventListener('click', () => {
+      const list = group.querySelector('.tier-buildings');
+      list.classList.toggle('open');
+    });
+    group.appendChild(header);
+
+    const list = document.createElement('div');
+    list.className = 'tier-buildings';
+
+    buildings.forEach(b => {
+      const btn = document.createElement('button');
+      btn.className = 'building-btn';
+      if (!state.unlockedBuildings.has(b.id)) btn.classList.add('locked');
+      btn.textContent = b.name;
+      btn.dataset.buildingId = b.id;
+      btn.addEventListener('click', () => {
+        clearToolSelection();
+        btn.classList.add('active');
+        state.tool = 'building';
+        state.buildingId = b.id;
+        showBuildingPreview(b);
+      });
+      btn.addEventListener('dblclick', () => {
+        // Toggle unlock
+        if (state.unlockedBuildings.has(b.id)) {
+          state.unlockedBuildings.delete(b.id);
+          btn.classList.add('locked');
+        } else {
+          state.unlockedBuildings.add(b.id);
+          btn.classList.remove('locked');
+        }
+        saveUnlocks();
+      });
+      list.appendChild(btn);
+    });
+
+    group.appendChild(list);
+    container.appendChild(group);
+  });
+
+  // Also add population buildings
+  const popBuildings = PP2DATA.buildings.filter(b => b.isPopulation);
+  if (popBuildings.length > 0) {
+    const group = document.createElement('div');
+    group.className = 'tier-group';
+    const header = document.createElement('div');
+    header.className = 'tier-header';
+    header.innerHTML = `<span>Population</span><span>${popBuildings.length}</span>`;
+    header.addEventListener('click', () => {
+      group.querySelector('.tier-buildings').classList.toggle('open');
+    });
+    group.appendChild(header);
+    const list = document.createElement('div');
+    list.className = 'tier-buildings';
+    popBuildings.forEach(b => {
+      const btn = document.createElement('button');
+      btn.className = 'building-btn';
+      btn.textContent = b.name.replace('Population ', '');
+      btn.dataset.buildingId = b.id;
+      btn.addEventListener('click', () => {
+        clearToolSelection();
+        btn.classList.add('active');
+        state.tool = 'building';
+        state.buildingId = b.id;
+      });
+      list.appendChild(btn);
+    });
+    group.appendChild(list);
+    container.appendChild(group);
+  }
+}
+
+// Filter
+document.getElementById('building-filter').addEventListener('input', (e) => {
+  const q = e.target.value.toLowerCase();
+  document.querySelectorAll('.building-btn').forEach(btn => {
+    const match = btn.textContent.toLowerCase().includes(q);
+    btn.style.display = match ? '' : 'none';
+  });
+  // Open all tier groups when filtering
+  if (q.length > 0) {
+    document.querySelectorAll('.tier-buildings').forEach(el => el.classList.add('open'));
+  }
+});
+
+// ===== INFO PANELS =====
+function updateCellInfo(x, y) {
+  const el = document.getElementById('cell-info');
+  if (!state.island) { el.innerHTML = '<h4>Cell Info</h4><p style="color:#666">No island</p>'; return; }
+  const { width, height, cells } = state.island;
+  if (x < 0 || x >= width || y < 0 || y >= height) {
+    el.innerHTML = '<h4>Cell Info</h4><p style="color:#666">Out of bounds</p>';
+    return;
+  }
+  const cell = cells[y][x];
+  let html = `<h4>Cell (${x}, ${y})</h4>`;
+  html += `<div class="info-row"><span class="info-label">Terrain:</span><span class="info-value">${cell.terrain}</span></div>`;
+  if (cell.deposit) {
+    const dep = DEPOSIT_TYPES.find(d => d.id === cell.deposit);
+    html += `<div class="info-row"><span class="info-label">Deposit:</span><span class="info-value">${dep ? dep.name : cell.deposit}</span></div>`;
+  }
+  if (cell.building) {
+    const b = PP2DATA.getBuilding(cell.building);
+    html += `<div class="info-row"><span class="info-label">Building:</span><span class="info-value">${b ? b.name : cell.building}</span></div>`;
+    html += `<div class="info-row"><span class="info-label">Produces:</span><span class="info-value">${b ? PP2DATA.getResourceName(b.produces) : '?'}</span></div>`;
+  }
+  el.innerHTML = html;
+}
+
+function showBuildingPreview(building) {
+  const el = document.getElementById('building-info');
+  el.style.display = 'block';
+  const fp = FOOTPRINTS[building.id];
+  let html = `<h4>${building.name}</h4>`;
+  html += `<div class="info-row"><span class="info-label">Tier:</span><span class="info-value">${building.tier}</span></div>`;
+  html += `<div class="info-row"><span class="info-label">Produces:</span><span class="info-value">${PP2DATA.getResourceName(building.produces)}</span></div>`;
+  html += `<div class="info-row"><span class="info-label">Rate:</span><span class="info-value">${building.producePerMinute}/min</span></div>`;
+  html += `<div class="info-row"><span class="info-label">Footprint:</span><span class="info-value">${fp ? fp.length + ' cells' : 'unknown'}</span></div>`;
+
+  // Location requirement
+  const locReq = LOCATION_REQUIREMENTS[building.id];
+  if (locReq) {
+    html += `<div class="info-row"><span class="info-label">Placement:</span><span class="info-value warning-text">${locReq.label}</span></div>`;
+  }
+
+  // Inputs (tile requirements)
+  if (building.inputs && Object.keys(building.inputs).length > 0) {
+    html += '<h4 style="margin-top:6px">Inputs</h4>';
+    for (const [resId, amount] of Object.entries(building.inputs)) {
+      const isTile = TILE_RESOURCE_IDS.has(resId);
+      html += `<div class="info-row">
+        <span class="info-label">${PP2DATA.getResourceName(resId)}${isTile ? ' ⬡' : ''}</span>
+        <span class="info-value">${amount}/cycle</span>
+      </div>`;
+    }
+  }
+  el.innerHTML = html;
+}
+
+function updateBuildingInfo() {
+  const el = document.getElementById('building-info');
+  if (!state.selectedBuilding) {
+    el.style.display = 'none';
+    return;
+  }
+  const b = PP2DATA.getBuilding(state.selectedBuilding.id);
+  if (b) showBuildingPreview(b);
+}
+
+// ===== ISLAND STATS =====
+function updateStats() {
+  if (!state.island) return;
+  const el = document.getElementById('stats-content');
+  const { width, height, cells, buildings } = state.island;
+
+  // Count terrain types
+  const terrainCounts = {};
+  const depositCounts = {};
+  let buildingCount = buildings.length;
+  let totalCells = 0;
+  let landCells = 0;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      totalCells++;
+      const cell = cells[y][x];
+      terrainCounts[cell.terrain] = (terrainCounts[cell.terrain] || 0) + 1;
+      if (cell.terrain !== 'water') landCells++;
+      if (cell.deposit) depositCounts[cell.deposit] = (depositCounts[cell.deposit] || 0) + 1;
+    }
+  }
+
+  let html = `<div class="info-row"><span class="info-label">Size:</span><span class="info-value">${width}×${height}</span></div>`;
+  html += `<div class="info-row"><span class="info-label">Land:</span><span class="info-value">${landCells}/${totalCells}</span></div>`;
+  html += `<div class="info-row"><span class="info-label">Buildings:</span><span class="info-value">${buildingCount}</span></div>`;
+  html += `<div class="info-row"><span class="info-label">Free land:</span><span class="info-value">${landCells - buildingCount}</span></div>`;
+  html += '<h4 style="margin-top:6px">Terrain</h4>';
+  for (const [t, c] of Object.entries(terrainCounts)) {
+    html += `<div class="info-row"><span class="info-label">${t}:</span><span class="info-value">${c}</span></div>`;
+  }
+  if (Object.keys(depositCounts).length > 0) {
+    html += '<h4 style="margin-top:6px">Deposits</h4>';
+    for (const [d, c] of Object.entries(depositCounts)) {
+      const dep = DEPOSIT_TYPES.find(dt => dt.id === d);
+      html += `<div class="info-row"><span class="info-label">${dep ? dep.name : d}:</span><span class="info-value">${c}</span></div>`;
+    }
+  }
+
+  // Building summary
+  if (buildings.length > 0) {
+    html += '<h4 style="margin-top:6px">Buildings</h4>';
+    const bCounts = {};
+    buildings.forEach(b => { bCounts[b.id] = (bCounts[b.id] || 0) + 1; });
+    for (const [id, count] of Object.entries(bCounts)) {
+      const b = PP2DATA.getBuilding(id);
+      html += `<div class="info-row"><span class="info-label">${b ? b.name : id}:</span><span class="info-value">${count}</span></div>`;
+    }
+  }
+
+  el.innerHTML = html;
+}
+
+// ===== VALIDATION =====
+function validateIsland() {
+  if (!state.island) return;
+  const issues = [];
+  const { width, height, cells, buildings } = state.island;
+
+  // Check each building
+  buildings.forEach(b => {
+    const building = PP2DATA.getBuilding(b.id);
+    if (!building) return;
+
+    // Check warehouse coverage (does any warehouse's footprint cover this cell?)
+    const warehouseIds = ['Warehouse1', 'Warehouse2', 'Warehouse3'];
+    const warehouses = buildings.filter(w => warehouseIds.includes(w.id));
+    let inWarehouseRange = false;
+    // Warehouses and some buildings don't need warehouse coverage
+    if (!warehouseIds.includes(b.id) && !building.isPopulation) {
+      warehouses.forEach(wh => {
+        const fp = FOOTPRINTS[wh.id];
+        if (fp) {
+          fp.forEach(([dx, dy]) => {
+            if (wh.x + dx === b.x && wh.y + dy === b.y) inWarehouseRange = true;
+          });
+        }
+      });
+      if (!inWarehouseRange && warehouses.length > 0) {
+        issues.push({ type: 'error', msg: `${building.name} at (${b.x},${b.y}) outside warehouse range` });
+      }
+    }
+
+    // Check location requirements
+    const locReq = LOCATION_REQUIREMENTS[b.id];
+    if (locReq) {
+      const locCheck = checkLocationRequirement(b.id, b.x, b.y);
+      if (!locCheck.ok) {
+        issues.push({ type: 'error', msg: `${building.name} at (${b.x},${b.y}): ${locCheck.reason}` });
+      }
+    }
+
+    // Check tile resource requirements within footprint
+    if (building.inputs) {
+      const fp = FOOTPRINTS[b.id] || [[0,0]];
+      for (const [resId, amount] of Object.entries(building.inputs)) {
+        if (!TILE_RESOURCE_IDS.has(resId)) continue;
+        // Skip river check for water-wheel buildings (handled by location requirement)
+        if (resId === 'river' && LOCATION_REQUIREMENTS[b.id] && 
+            (LOCATION_REQUIREMENTS[b.id].type === 'straight_river' || LOCATION_REQUIREMENTS[b.id].type === 'river_adjacent')) continue;
+        // Count matching tiles in footprint
+        let tileCount = 0;
+        fp.forEach(([dx, dy]) => {
+          const fx = b.x + dx, fy = b.y + dy;
+          if (fx >= 0 && fx < width && fy >= 0 && fy < height) {
+            const fc = cells[fy][fx];
+            // Match terrain or deposit to resource
+            if (matchesTileResource(fc, resId)) tileCount++;
+          }
+        });
+        if (tileCount === 0) {
+          issues.push({ type: 'warning', msg: `${building.name} at (${b.x},${b.y}) needs ${PP2DATA.getResourceName(resId)} tiles in footprint` });
+        }
+      }
+    }
+  });
+
+  // Display
+  const el = document.getElementById('validation-content');
+  if (issues.length === 0) {
+    el.innerHTML = '<span class="ok-text">No issues found</span>';
+  } else {
+    el.innerHTML = issues.map(i =>
+      `<div class="${i.type === 'error' ? 'error-text' : 'warning-text'}" style="margin-bottom:4px;font-size:0.75rem">${i.msg}</div>`
+    ).join('');
+  }
+}
+
+function matchesTileResource(cell, resId) {
+  // Map resource IDs to terrain/deposit types
+  const terrainMap = {
+    'water_tile': 'water',
+    'grass': 'grass',
+    'grass_north': 'grass',
+    'forest': 'forest',
+    'conifer_forest': 'forest',
+    'river': 'river',
+    'river_north': 'river',
+    'river_tropical': 'river',
+    'coastal': 'coastal',
+    'coastal_north': 'coastal',
+    'coastal_tropical': 'coastal',
+  };
+  if (terrainMap[resId] && cell.terrain === terrainMap[resId]) return true;
+  if (cell.deposit === resId) return true;
+  // Some deposits match partial names
+  if (resId === 'cliff' && cell.terrain === 'mountain') return true;
+  if (resId === 'cliff_tropical' && cell.terrain === 'mountain') return true;
+  return false;
+}
+
+// ===== SAVE / LOAD =====
+function saveToLocalStorage() {
+  if (!state.island) return;
+  const saves = JSON.parse(localStorage.getItem('pp2_island_saves') || '[]');
+  const name = prompt('Save name:', `Island ${saves.length + 1}`);
+  if (!name) return;
+  saves.push({
+    name,
+    date: new Date().toISOString(),
+    island: state.island,
+  });
+  localStorage.setItem('pp2_island_saves', JSON.stringify(saves));
+  alert('Saved!');
+}
+
+function loadFromLocalStorage() {
+  const saves = JSON.parse(localStorage.getItem('pp2_island_saves') || '[]');
+  if (saves.length === 0) { alert('No saves found.'); return; }
+
+  const choice = prompt(
+    'Enter save number to load:\n' +
+    saves.map((s, i) => `${i + 1}. ${s.name} (${new Date(s.date).toLocaleDateString()})`).join('\n')
+  );
+  const idx = parseInt(choice) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= saves.length) return;
+
+  state.island = saves[idx].island;
+  state.undoStack = [];
+  state.redoStack = [];
+  state.selectedBuilding = null;
+  centerView();
+  updateStats();
+  validateIsland();
+  render();
+}
+
+document.getElementById('btn-save').addEventListener('click', saveToLocalStorage);
+document.getElementById('btn-load').addEventListener('click', loadFromLocalStorage);
+
+function saveUnlocks() {
+  localStorage.setItem('pp2_unlocked_buildings', JSON.stringify([...state.unlockedBuildings]));
+}
+
+function loadUnlocks() {
+  const data = localStorage.getItem('pp2_unlocked_buildings');
+  if (data) {
+    state.unlockedBuildings = new Set(JSON.parse(data));
+  } else {
+    // Default: unlock all Pioneer + population buildings
+    PP2DATA.buildings.filter(b => b.tier === 'Pioneers' || b.isPopulation).forEach(b => {
+      state.unlockedBuildings.add(b.id);
+    });
+  }
+}
+
+// ===== NEW ISLAND MODAL =====
+document.getElementById('btn-new-island').addEventListener('click', showNewIslandModal);
+
+function showNewIslandModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <h2>New Island</h2>
+      <label>Width</label>
+      <input type="number" id="modal-width" value="21" min="5" max="50">
+      <label>Height</label>
+      <input type="number" id="modal-height" value="21" min="5" max="50">
+      <label>Default Terrain</label>
+      <select id="modal-terrain">
+        <option value="grass">Grass</option>
+        <option value="water">Water (blank slate)</option>
+      </select>
+      <div class="modal-actions">
+        <button class="header-btn" id="modal-cancel">Cancel</button>
+        <button class="header-btn" id="modal-create" style="background:#e94560;border-color:#e94560;">Create</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.querySelector('#modal-cancel').addEventListener('click', () => overlay.remove());
+  overlay.querySelector('#modal-create').addEventListener('click', () => {
+    const w = parseInt(overlay.querySelector('#modal-width').value) || 21;
+    const h = parseInt(overlay.querySelector('#modal-height').value) || 21;
+    const terrain = overlay.querySelector('#modal-terrain').value;
+    state.island = createIsland(
+      Math.max(5, Math.min(50, w)),
+      Math.max(5, Math.min(50, h))
+    );
+    if (terrain === 'water') {
+      // Set all cells to water initially (user will paint land)
+      state.island.cells.forEach(row => row.forEach(c => c.terrain = 'water'));
+    }
+    state.undoStack = [];
+    state.redoStack = [];
+    state.selectedBuilding = null;
+    centerView();
+    updateStats();
+    validateIsland();
+    overlay.remove();
+    render();
+  });
+}
+
+function centerView() {
+  if (!state.island) return;
+  const area = document.getElementById('canvas-area');
+  const totalW = state.island.width * state.zoom;
+  const totalH = state.island.height * state.zoom;
+  state.panX = (area.clientWidth - totalW) / 2;
+  state.panY = (area.clientHeight - totalH) / 2;
+}
+
+// ===== INITIALIZATION =====
+function init() {
+  loadUnlocks();
+  buildDepositTools();
+  buildBuildingList();
+  resizeCanvas();
+
+  // Show new island modal on first load if no island
+  if (!state.island) {
+    showNewIslandModal();
+  }
+}
+
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('load', init);
+</script>
+</body>
+</html>

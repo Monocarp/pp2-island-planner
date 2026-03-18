@@ -255,10 +255,95 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
   display: none;
   max-width: 250px;
 }
+
+/* ===== MOBILE DRAWER TOGGLES ===== */
+.mobile-toggle {
+  display: none;
+  position: fixed;
+  z-index: 50;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #0f3460;
+  border-radius: 8px;
+  background: #16213e;
+  color: #e94560;
+  font-size: 1.2rem;
+  line-height: 1;
+  align-items: center;
+  justify-content: center;
+}
+#toggle-left { left: 8px; top: 56px; }
+#toggle-right { right: 8px; top: 56px; }
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 900px) {
+  #app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  header {
+    padding: 8px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 1rem; }
+  .header-controls { gap: 6px; }
+  .header-btn { padding: 6px 10px; font-size: 0.75rem; }
+
+  #left-panel, #right-panel {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    z-index: 60;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    padding-top: 50px;
+  }
+  #left-panel { left: 0; }
+  #right-panel {
+    right: 0;
+    left: auto;
+    transform: translateX(100%);
+    border-left: 2px solid #0f3460;
+    border-right: none;
+  }
+  #left-panel.open { transform: translateX(0); }
+  #right-panel.open { transform: translateX(0); }
+
+  .mobile-toggle { display: flex; }
+
+  .drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 55;
+    display: none;
+  }
+  .drawer-backdrop.show { display: block; }
+
+  /* Larger touch targets */
+  .tool-btn { padding: 8px 12px; font-size: 0.85rem; min-height: 36px; }
+  .building-btn { padding: 8px 10px; font-size: 0.85rem; min-height: 36px; }
+  .tier-header { padding: 8px 10px; font-size: 0.85rem; }
+  .building-filter { padding: 8px 10px; font-size: 0.9rem; }
+  .context-menu-item { padding: 10px 16px; font-size: 0.9rem; }
+
+  /* Zoom slider wider on mobile */
+  #zoom-slider { width: 80px !important; }
+}
+
+@media (max-width: 500px) {
+  header h1 { display: none; }
+  .header-controls label[for="zoom"] { display: none; }
+}
 </style>
 </head>
 <body>
 <div id="app">
+  <button class="mobile-toggle" id="toggle-left" aria-label="Tools">&#9776;</button>
+  <button class="mobile-toggle" id="toggle-right" aria-label="Info">&#9432;</button>
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
   <header>
     <h1>PP2 Island Planner</h1>
     <div class="header-controls" id="header-controls">
@@ -835,6 +920,133 @@ canvas.addEventListener('mouseleave', () => {
   state.isPanning = false;
   render();
 });
+
+// ===== TOUCH SUPPORT =====
+let touchState = { lastTouches: null, isPinching: false, lastTap: 0 };
+
+function cellFromTouch(touch) {
+  const rect = canvas.getBoundingClientRect();
+  const mx = touch.clientX - rect.left;
+  const my = touch.clientY - rect.top;
+  const x = Math.floor((mx - state.panX) / state.zoom);
+  const y = Math.floor((my - state.panY) / state.zoom);
+  return { x, y };
+}
+
+function touchDist(t1, t2) {
+  const dx = t1.clientX - t2.clientX;
+  const dy = t1.clientY - t2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function touchMid(t1, t2) {
+  return { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+}
+
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  const touches = e.touches;
+  if (touches.length === 2) {
+    // Pinch-zoom start
+    touchState.isPinching = true;
+    touchState.lastTouches = [touches[0], touches[1]];
+    return;
+  }
+  if (touches.length === 1) {
+    touchState.isPinching = false;
+    const t = touches[0];
+    // Double-tap detection for context menu
+    const now = Date.now();
+    if (now - touchState.lastTap < 300) {
+      const cell = cellFromTouch(t);
+      showContextMenu(t.clientX, t.clientY, cell.x, cell.y);
+      touchState.lastTap = 0;
+      return;
+    }
+    touchState.lastTap = now;
+
+    if (state.tool === 'select' || state.tool === 'building') {
+      // Single tap = action
+      const cell = cellFromTouch(t);
+      handleCellAction(cell.x, cell.y, {});
+    } else {
+      // For terrain/deposit/eraser, start painting
+      state.isPanning = false;
+      isMouseDown = true;
+      const cell = cellFromTouch(t);
+      handleCellAction(cell.x, cell.y, {});
+      lastPaintedCell = `${cell.x},${cell.y}`;
+    }
+    touchState.lastTouches = [t];
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  const touches = e.touches;
+  if (touches.length === 2 && touchState.isPinching && touchState.lastTouches) {
+    // Pinch zoom
+    const oldDist = touchDist(touchState.lastTouches[0], touchState.lastTouches[1]);
+    const newDist = touchDist(touches[0], touches[1]);
+    const mid = touchMid(touches[0], touches[1]);
+    const rect = canvas.getBoundingClientRect();
+    const mx = mid.x - rect.left;
+    const my = mid.y - rect.top;
+    const scale = newDist / oldDist;
+    const oldZoom = state.zoom;
+    state.zoom = Math.max(10, Math.min(60, Math.round(state.zoom * scale)));
+    state.panX = mx - (mx - state.panX) * (state.zoom / oldZoom);
+    state.panY = my - (my - state.panY) * (state.zoom / oldZoom);
+
+    // Also pan with midpoint movement
+    const oldMid = touchMid(touchState.lastTouches[0], touchState.lastTouches[1]);
+    state.panX += mid.x - oldMid.x;
+    state.panY += mid.y - oldMid.y;
+
+    document.getElementById('zoom-slider').value = state.zoom;
+    document.getElementById('zoom-label').textContent = state.zoom + 'px';
+    touchState.lastTouches = [touches[0], touches[1]];
+    render();
+    return;
+  }
+  if (touches.length === 1) {
+    const t = touches[0];
+    if (touchState.isPinching) return;
+    if (state.tool === 'select' || state.tool === 'building') {
+      // Single-finger drag = pan
+      if (touchState.lastTouches && touchState.lastTouches.length === 1) {
+        state.panX += t.clientX - touchState.lastTouches[0].clientX;
+        state.panY += t.clientY - touchState.lastTouches[0].clientY;
+      }
+      touchState.lastTouches = [t];
+      render();
+    } else {
+      // Paint mode drag
+      const cell = cellFromTouch(t);
+      state.hoveredCell = cell;
+      const key = `${cell.x},${cell.y}`;
+      if (key !== lastPaintedCell) {
+        handleCellAction(cell.x, cell.y, {});
+        lastPaintedCell = key;
+      }
+      touchState.lastTouches = [t];
+      render();
+    }
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  if (e.touches.length === 0) {
+    touchState.isPinching = false;
+    touchState.lastTouches = null;
+    isMouseDown = false;
+    lastPaintedCell = null;
+  } else if (e.touches.length === 1) {
+    touchState.isPinching = false;
+    touchState.lastTouches = [e.touches[0]];
+  }
+}, { passive: false });
 
 // Right-click context menu
 canvas.addEventListener('contextmenu', (e) => {
@@ -1533,6 +1745,31 @@ function init() {
 
 window.addEventListener('resize', resizeCanvas);
 window.addEventListener('load', init);
+
+// ===== MOBILE DRAWER TOGGLES =====
+(function() {
+  const left = document.getElementById('left-panel');
+  const right = document.getElementById('right-panel');
+  const backdrop = document.getElementById('drawer-backdrop');
+  const toggleLeft = document.getElementById('toggle-left');
+  const toggleRight = document.getElementById('toggle-right');
+  function closeAll() {
+    left.classList.remove('open');
+    right.classList.remove('open');
+    backdrop.classList.remove('show');
+  }
+  toggleLeft.addEventListener('click', () => {
+    const opening = !left.classList.contains('open');
+    closeAll();
+    if (opening) { left.classList.add('open'); backdrop.classList.add('show'); }
+  });
+  toggleRight.addEventListener('click', () => {
+    const opening = !right.classList.contains('open');
+    closeAll();
+    if (opening) { right.classList.add('open'); backdrop.classList.add('show'); }
+  });
+  backdrop.addEventListener('click', closeAll);
+})();
 </script>
 </body>
 </html>

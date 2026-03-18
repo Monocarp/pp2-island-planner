@@ -508,6 +508,8 @@ const EXTRA_BUILDINGS = [
   { id: 'School', name: 'School', tier: 'Townsmen', produces: null, isService: true },
   { id: 'Tavern', name: 'Tavern', tier: 'Pioneers', produces: null, isService: true },
   { id: 'HarborTavern', name: 'Harbor Tavern', tier: 'Colonists', produces: null, isService: true },
+  { id: 'SmallShipyard', name: 'Small Shipyard', tier: 'Colonists', produces: null, isInfrastructure: true },
+  { id: 'Shipyard', name: 'Shipyard', tier: 'Townsmen', produces: null, isInfrastructure: true },
 ];
 
 // Combined lookup: check PP2DATA first, then EXTRA_BUILDINGS
@@ -542,6 +544,8 @@ function canPlaceOnTerrain(buildingId, terrain) {
 const LOCATION_REQUIREMENTS = {
   // === Ocean adjacency (trade/harbor buildings) ===
   HarborTavern:            { type: 'ocean_adjacent', label: 'Must be next to ocean' },
+  SmallShipyard:           { type: 'ocean_adjacent', label: 'Must be next to ocean' },
+  Shipyard:                { type: 'ocean_adjacent', label: 'Must be next to ocean' },
 
   // === Straight river / water-wheel buildings ===
   Sawmill:                 { type: 'straight_river', label: 'Needs straight river (water wheel)' },

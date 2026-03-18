@@ -281,6 +281,12 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
 }
 .planner-building-row .count { color: #2ecc71; font-weight: 600; }
 .planner-building-row.fractional .count { color: #f39c12; }
+.producer-switch {
+  cursor: pointer; color: #e94560; font-size: 0.7rem; margin-left: 2px;
+  border: 1px solid #e94560; border-radius: 3px; padding: 0 3px;
+  display: inline-block; line-height: 1.2;
+}
+.producer-switch:hover { background: #e94560; color: #fff; }
 .planner-summary {
   border-top: 1px solid #0f3460; margin-top: 6px; padding-top: 6px;
 }
@@ -773,6 +779,7 @@ const state = {
   unlockedBuildings: new Set(), // building IDs the user has unlocked
   savedIslands: [],  // localStorage saves
   plannerActive: false, // auto-refresh planner on stats update
+  producerOverrides: {}, // resourceId -> preferred producerId
 };
 
 // Cell data: { terrain, deposit, building, buildingId (for placed buildings back-ref) }
@@ -1919,8 +1926,31 @@ function getPopulationDemand() {
 // Recursively resolve production chains.
 // Tiles with iterationTime=1 are spatial (grass, water, deposits) - counted per building footprint.
 // Tiles with real iteration times (apple trees, forests, fields) - counted by production rate.
+
+// Tier priority for default producer selection (lower index = preferred)
+const TIER_PRIORITY = ['Pioneers', 'Colonists', 'Townsmen', 'Farmers', 'Merchants', 'Workers', 'Paragons', 'Northern Islands'];
+
+function pickProducer(resourceId, producers) {
+  // Check user override first
+  if (state.producerOverrides[resourceId]) {
+    const override = producers.find(p => p.id === state.producerOverrides[resourceId]);
+    if (override) return override;
+  }
+  // Filter to only buildings (not tiles)
+  const buildings = producers.filter(p => PP2DATA.getBuilding(p.id));
+  if (buildings.length === 0) return producers[0];
+  if (buildings.length === 1) return buildings[0];
+  // Prefer lowest tier
+  buildings.sort((a, b) => {
+    const ta = TIER_PRIORITY.indexOf(a.tier);
+    const tb = TIER_PRIORITY.indexOf(b.tier);
+    return (ta === -1 ? 99 : ta) - (tb === -1 ? 99 : tb);
+  });
+  return buildings[0];
+}
+
 function resolveProductionChain(demand) {
-  const result = {};     // buildingId -> { building, count, producedResource }
+  const result = {};     // buildingId -> { building, count, producedResource, alternatives }
   const tileNeeds = {};  // tileId -> { tile, count, producedResource, isSpatial }
   const visited = new Set();
 
@@ -1932,8 +1962,7 @@ function resolveProductionChain(demand) {
     if (rateNeeded <= 0) return;
     if (SERVICE_RESOURCES.has(resourceId)) return;
 
-    // Spatial tile resources (grass, water_tile, deposits, river) — skip rate resolution,
-    // these are counted per-building from inputs below
+    // Spatial tile resources — skip rate resolution, counted per-building below
     if (spatialTileResources.has(resourceId)) return;
 
     // Find producers for this resource
@@ -1953,8 +1982,9 @@ function resolveProductionChain(demand) {
       return;
     }
 
-    // Pick the first building producer (not a tile)
-    const producer = producers.find(p => PP2DATA.getBuilding(p.id)) || producers[0];
+    // Pick producer (user override or tier-based default)
+    const allBuildings = producers.filter(p => PP2DATA.getBuilding(p.id));
+    const producer = pickProducer(resourceId, producers);
 
     if (!producer || !producer.producePerMinute) return;
 
@@ -1967,6 +1997,7 @@ function resolveProductionChain(demand) {
         building: producer,
         count: countNeeded,
         producedResource: resourceId,
+        alternatives: allBuildings.length > 1 ? allBuildings : null,
       };
     }
 
@@ -1984,15 +2015,15 @@ function resolveProductionChain(demand) {
   }
 
   // Collect spatial tile needs from building inputs (grass, water_tile, deposits, etc.)
+  // Use fractional building count, not ceiled
   for (const entry of Object.values(result)) {
     const b = entry.building;
     if (!b.inputs) continue;
-    const rounded = Math.ceil(entry.count);
     for (const [resId, amountPerIter] of Object.entries(b.inputs)) {
       if (spatialTileResources.has(resId)) {
         const tile = (PP2DATA.getProducersOf(resId) || []).find(p => PP2DATA.getTile(p.id));
         if (!tile) continue;
-        const totalTiles = rounded * amountPerIter;
+        const totalTiles = entry.count * amountPerIter;
         if (tileNeeds[tile.id]) {
           tileNeeds[tile.id].count += totalTiles;
         } else {
@@ -2003,6 +2034,15 @@ function resolveProductionChain(demand) {
   }
 
   return { buildings: result, tileNeeds };
+}
+
+function cycleProducer(resourceId, currentBuildingId) {
+  const producers = (PP2DATA.getProducersOf(resourceId) || []).filter(p => PP2DATA.getBuilding(p.id));
+  if (producers.length <= 1) return;
+  const idx = producers.findIndex(p => p.id === currentBuildingId);
+  const next = producers[(idx + 1) % producers.length];
+  state.producerOverrides[resourceId] = next.id;
+  calculateProduction();
 }
 
 function calculateProduction() {
@@ -2054,7 +2094,7 @@ function calculateProduction() {
   let totalBuildings = 0;
   let currentTier = '';
   for (const entry of sortedBuildings) {
-    const { building, count, producedResource } = entry;
+    const { building, count, producedResource, alternatives } = entry;
     const rounded = Math.ceil(count);
     totalBuildings += rounded;
     const placed = placedCounts[building.id] || 0;
@@ -2066,8 +2106,9 @@ function calculateProduction() {
     }
 
     const statusColor = placed >= rounded ? '#2ecc71' : placed > 0 ? '#f39c12' : '#e74c3c';
+    const altHtml = alternatives ? ` <span class="producer-switch" title="Click to change producer" onclick="cycleProducer('${producedResource}','${building.id}')">\u21C5</span>` : '';
     html += `<div class="planner-building-row${isFractional ? ' fractional' : ''}">
-      <span>${building.name} <span style="color:#666;font-size:0.6rem">(${PP2DATA.getResourceName(producedResource)})</span></span>
+      <span>${building.name}${altHtml} <span style="color:#666;font-size:0.6rem">(${PP2DATA.getResourceName(producedResource)})</span></span>
       <span><span style="color:${statusColor}">${placed}</span>/<span class="count">${rounded}</span>${isFractional ? ` <span style="color:#666;font-size:0.6rem">(${count.toFixed(2)})</span>` : ''}</span>
     </div>`;
   }
@@ -2080,19 +2121,13 @@ function calculateProduction() {
   if (Object.keys(tileNeeds).length > 0) {
     html += '<div class="planner-section"><h5>Tile Resources Needed</h5>';
     for (const [tileId, entry] of Object.entries(tileNeeds)) {
-      if (entry.isSpatial) {
-        html += `<div class="planner-building-row">
-          <span>${entry.tile.name}</span>
-          <span class="count">${entry.count} <span style="color:#666;font-size:0.6rem">(footprint)</span></span>
-        </div>`;
-      } else {
-        const rounded = Math.ceil(entry.count);
-        const isFractional = entry.count % 1 > 0.01 && entry.count % 1 < 0.99;
-        html += `<div class="planner-building-row${isFractional ? ' fractional' : ''}">
-          <span>${entry.tile.name}</span>
-          <span class="count">${rounded}${isFractional ? ` <span style="color:#666;font-size:0.6rem">(${entry.count.toFixed(2)})</span>` : ''}</span>
-        </div>`;
-      }
+      const rounded = Math.ceil(entry.count);
+      const isFractional = entry.count % 1 > 0.01 && entry.count % 1 < 0.99;
+      const label = entry.isSpatial ? 'footprint' : 'regen';
+      html += `<div class="planner-building-row${isFractional ? ' fractional' : ''}">
+        <span>${entry.tile.name} <span style="color:#666;font-size:0.6rem">(${label})</span></span>
+        <span class="count">${rounded}${isFractional ? ` <span style="color:#666;font-size:0.6rem">(${entry.count.toFixed(2)})</span>` : ''}</span>
+      </div>`;
     }
     html += '</div>';
   }

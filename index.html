@@ -1918,21 +1918,17 @@ function getPopulationDemand() {
 
 // Recursively resolve production chains.
 // Returns: { buildingId -> { building, count (fractional), resource, rateNeeded } }
-// Also collects tile resource needs.
+// Also collects tile resource needs per building.
 function resolveProductionChain(demand) {
   const result = {};     // buildingId -> { building, count, producedResource }
-  const tileNeeds = {};  // tileResourceId -> totalRateNeeded
   const visited = new Set(); // prevent infinite loops
 
   function resolve(resourceId, rateNeeded) {
     if (rateNeeded <= 0) return;
     if (SERVICE_RESOURCES.has(resourceId)) return;
 
-    // Check if this is a tile resource (grass, forest, water_tile, river, deposits)
-    if (TILE_RESOURCE_IDS.has(resourceId)) {
-      tileNeeds[resourceId] = (tileNeeds[resourceId] || 0) + rateNeeded;
-      return;
-    }
+    // Tile resources are handled per-building (footprint requirements), skip here
+    if (TILE_RESOURCE_IDS.has(resourceId)) return;
 
     // Find producers for this resource
     const producers = PP2DATA.getProducersOf(resourceId);
@@ -1966,6 +1962,21 @@ function resolveProductionChain(demand) {
 
   for (const [resId, rate] of Object.entries(demand)) {
     resolve(resId, rate);
+  }
+
+  // Calculate tile needs: for each building, count tiles needed from its inputs
+  const tileNeeds = {};
+  for (const entry of Object.values(result)) {
+    const b = entry.building;
+    if (!b.inputs) continue;
+    const rounded = Math.ceil(entry.count);
+    for (const [resId, amountPerIter] of Object.entries(b.inputs)) {
+      if (TILE_RESOURCE_IDS.has(resId)) {
+        const tilesPerBuilding = amountPerIter;
+        if (!tileNeeds[resId]) tileNeeds[resId] = [];
+        tileNeeds[resId].push({ buildingName: b.name, count: rounded, tilesEach: tilesPerBuilding, total: rounded * tilesPerBuilding });
+      }
+    }
   }
 
   return { buildings: result, tileNeeds };
@@ -2045,11 +2056,15 @@ function calculateProduction() {
   // === Tile resource needs ===
   if (Object.keys(tileNeeds).length > 0) {
     html += '<div class="planner-section"><h5>Tile Resources Needed</h5>';
-    for (const [resId, rate] of Object.entries(tileNeeds)) {
-      html += `<div class="planner-summary-row">
-        <span>${PP2DATA.getResourceName(resId)}</span>
-        <span>${rate.toFixed(2)} tiles</span>
-      </div>`;
+    for (const [resId, entries] of Object.entries(tileNeeds)) {
+      const totalTiles = entries.reduce((s, e) => s + e.total, 0);
+      html += `<div class="planner-resource-header"><span>${PP2DATA.getResourceName(resId)}</span><span>${totalTiles} tiles</span></div>`;
+      for (const e of entries) {
+        html += `<div class="planner-building-row">
+          <span>${e.count}× ${e.buildingName}</span>
+          <span>${e.tilesEach} each = ${e.total}</span>
+        </div>`;
+      }
     }
     html += '</div>';
   }

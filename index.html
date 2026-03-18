@@ -469,7 +469,7 @@ function makePlus() {
  'FlourMill','FlourWindmill','Furriery','HopFarm','LimeKiln',
  'LinenWeaver','Longbowyer','Malthouse','Medicus','MortarBatchWorks',
  'RenderingWorks','Ropery','Sailmaker','SaltWorks','SausageMaker',
- 'SawMill','SawWorks','SoapMaker','StrawberryFarm','Tannery',
+ 'Sawmill','SawWorks','SoapMaker','StrawberryFarm','Tannery',
  'TextileFactory','Weaver'].forEach(id => FOOTPRINTS[id] = makeSquare(5));
 
 // 9x9
@@ -1728,11 +1728,12 @@ function validateIsland() {
     const warehouseIds = ['Warehouse1', 'Warehouse2', 'Warehouse3'];
     const warehouses = buildings.filter(w => warehouseIds.includes(w.id));
     let inWarehouseRange = false;
-    // Warehouses and service buildings don't need warehouse coverage
+    // Warehouses, service, infrastructure, and population buildings don't need warehouse coverage
     const isWarehouse = warehouseIds.includes(b.id);
     const isService = building.isService;
+    const isInfra = building.isInfrastructure;
     const isPop = building.isPopulation;
-    if (!isWarehouse && !isService && !isPop) {
+    if (!isWarehouse && !isService && !isInfra && !isPop) {
       warehouses.forEach(wh => {
         const fp = FOOTPRINTS[wh.id];
         if (fp) {

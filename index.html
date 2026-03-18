@@ -1917,25 +1917,36 @@ function getPopulationDemand() {
 }
 
 // Recursively resolve production chains.
-// Returns: { buildingId -> { building, count (fractional), resource, rateNeeded } }
-// Also collects tile resource needs per building.
+// Returns: { buildings: { id -> { building, count, producedResource } }, tileNeeds: { id -> { tile, count, producedResource } } }
 function resolveProductionChain(demand) {
   const result = {};     // buildingId -> { building, count, producedResource }
+  const tileNeeds = {};  // tileId -> { tile, count, producedResource }
   const visited = new Set(); // prevent infinite loops
 
   function resolve(resourceId, rateNeeded) {
     if (rateNeeded <= 0) return;
     if (SERVICE_RESOURCES.has(resourceId)) return;
 
-    // Tile resources are handled per-building (footprint requirements), skip here
-    if (TILE_RESOURCE_IDS.has(resourceId)) return;
-
     // Find producers for this resource
     const producers = PP2DATA.getProducersOf(resourceId);
     if (!producers || producers.length === 0) return;
 
-    // Pick the first non-tile producer (prefer buildings over tiles)
-    const producer = producers.find(p => !p.id.endsWith('Field') && !p.id.endsWith('Trees') && !p.id.endsWith('Forest') && !p.id.endsWith('Grass') && !p.id.endsWith('North') && PP2DATA.getBuilding(p.id)) || producers[0];
+    // Check if this is a tile resource
+    if (TILE_RESOURCE_IDS.has(resourceId)) {
+      // Resolve as tile: pick the tile producer
+      const tile = producers.find(p => PP2DATA.getTile(p.id)) || producers[0];
+      if (!tile || !tile.producePerMinute) return;
+      const countNeeded = rateNeeded / tile.producePerMinute;
+      if (tileNeeds[tile.id]) {
+        tileNeeds[tile.id].count += countNeeded;
+      } else {
+        tileNeeds[tile.id] = { tile, count: countNeeded, producedResource: resourceId };
+      }
+      return;
+    }
+
+    // Pick the first building producer (not a tile)
+    const producer = producers.find(p => PP2DATA.getBuilding(p.id)) || producers[0];
 
     if (!producer || !producer.producePerMinute) return;
 
@@ -1962,21 +1973,6 @@ function resolveProductionChain(demand) {
 
   for (const [resId, rate] of Object.entries(demand)) {
     resolve(resId, rate);
-  }
-
-  // Calculate tile needs: for each building, count tiles needed from its inputs
-  const tileNeeds = {};
-  for (const entry of Object.values(result)) {
-    const b = entry.building;
-    if (!b.inputs) continue;
-    const rounded = Math.ceil(entry.count);
-    for (const [resId, amountPerIter] of Object.entries(b.inputs)) {
-      if (TILE_RESOURCE_IDS.has(resId)) {
-        const tilesPerBuilding = amountPerIter;
-        if (!tileNeeds[resId]) tileNeeds[resId] = [];
-        tileNeeds[resId].push({ buildingName: b.name, count: rounded, tilesEach: tilesPerBuilding, total: rounded * tilesPerBuilding });
-      }
-    }
   }
 
   return { buildings: result, tileNeeds };
@@ -2056,15 +2052,13 @@ function calculateProduction() {
   // === Tile resource needs ===
   if (Object.keys(tileNeeds).length > 0) {
     html += '<div class="planner-section"><h5>Tile Resources Needed</h5>';
-    for (const [resId, entries] of Object.entries(tileNeeds)) {
-      const totalTiles = entries.reduce((s, e) => s + e.total, 0);
-      html += `<div class="planner-resource-header"><span>${PP2DATA.getResourceName(resId)}</span><span>${totalTiles} tiles</span></div>`;
-      for (const e of entries) {
-        html += `<div class="planner-building-row">
-          <span>${e.count}× ${e.buildingName}</span>
-          <span>${e.tilesEach} each = ${e.total}</span>
-        </div>`;
-      }
+    for (const [tileId, entry] of Object.entries(tileNeeds)) {
+      const rounded = Math.ceil(entry.count);
+      const isFractional = entry.count % 1 > 0.01 && entry.count % 1 < 0.99;
+      html += `<div class="planner-building-row${isFractional ? ' fractional' : ''}">
+        <span>${entry.tile.name}</span>
+        <span class="count">${rounded}${isFractional ? ` <span style="color:#666;font-size:0.6rem">(${entry.count.toFixed(2)})</span>` : ''}</span>
+      </div>`;
     }
     html += '</div>';
   }

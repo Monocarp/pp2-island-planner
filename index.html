@@ -255,6 +255,42 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
   max-width: 250px;
 }
 
+/* ===== PRODUCTION PLANNER ===== */
+.planner-section { margin-bottom: 8px; }
+.planner-section h5 {
+  font-size: 0.8rem; color: #e94560; margin-bottom: 4px; cursor: pointer; user-select: none;
+}
+.planner-section h5:hover { color: #ff6b81; }
+.planner-inputs { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.planner-row {
+  display: flex; align-items: center; gap: 6px; font-size: 0.75rem;
+}
+.planner-row label { flex: 1; color: #a0a0a0; }
+.planner-row input[type="number"] {
+  width: 50px; padding: 2px 4px; border: 1px solid #0f3460; border-radius: 3px;
+  background: #1a1a2e; color: #e0e0e0; font-size: 0.75rem; text-align: center;
+}
+.planner-results { font-size: 0.7rem; }
+.planner-resource-group { margin-bottom: 6px; }
+.planner-resource-header {
+  display: flex; justify-content: space-between; padding: 2px 4px;
+  background: #0f3460; border-radius: 2px; margin-bottom: 2px; font-weight: 600;
+}
+.planner-building-row {
+  display: flex; justify-content: space-between; padding: 1px 8px; color: #b0b0b0;
+}
+.planner-building-row .count { color: #2ecc71; font-weight: 600; }
+.planner-building-row.fractional .count { color: #f39c12; }
+.planner-summary {
+  border-top: 1px solid #0f3460; margin-top: 6px; padding-top: 6px;
+}
+.planner-summary-row {
+  display: flex; justify-content: space-between; padding: 1px 4px; font-size: 0.7rem;
+}
+.planner-surplus { color: #2ecc71; }
+.planner-deficit { color: #e74c3c; }
+.planner-neutral { color: #a0a0a0; }
+
 /* ===== MOBILE DRAWER TOGGLES ===== */
 .mobile-toggle {
   display: none;
@@ -410,6 +446,12 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
     <div class="info-box" id="validation-panel">
       <h4>Issues</h4>
       <div id="validation-content" style="color:#666;font-size:0.8rem;">No issues</div>
+    </div>
+    <div class="info-box" id="production-planner">
+      <h4>Production Planner</h4>
+      <div class="planner-inputs" id="planner-inputs"></div>
+      <button onclick="calculateProduction()" style="width:100%;padding:4px 8px;margin-bottom:6px;background:#e94560;border:none;color:#fff;border-radius:3px;font-size:0.75rem;font-weight:600;">Calculate</button>
+      <div class="planner-results" id="planner-results" style="color:#666;font-size:0.75rem;">Set house counts above and click Calculate</div>
     </div>
   </div>
 </div>
@@ -730,6 +772,7 @@ const state = {
   hoveredCell: null,
   unlockedBuildings: new Set(), // building IDs the user has unlocked
   savedIslands: [],  // localStorage saves
+  plannerActive: false, // auto-refresh planner on stats update
 };
 
 // Cell data: { terrain, deposit, building, buildingId (for placed buildings back-ref) }
@@ -1711,6 +1754,9 @@ function updateStats() {
   }
 
   el.innerHTML = html;
+
+  // Auto-refresh planner if it has results
+  if (state.plannerActive) calculateProduction();
 }
 
 // ===== VALIDATION =====
@@ -1821,6 +1867,209 @@ function matchesTileResource(cell, resId) {
   if (terrainMap[resId] && cell.terrain === terrainMap[resId]) return true;
   if (cell.deposit === resId) return true;
   return false;
+}
+
+// ===== PRODUCTION PLANNER =====
+
+// Population building IDs mapped to display tier names
+const POP_BUILDINGS = [
+  { id: 'PopulationPioneersHut',     label: 'Pioneer Huts',     tier: 'Pioneers' },
+  { id: 'PopulationColonistsHouse',  label: 'Colonist Houses',  tier: 'Colonists' },
+  { id: 'PopulationTownsmenHouse',   label: 'Townsmen Houses',  tier: 'Townsmen' },
+  { id: 'PopulationFarmersShack',    label: 'Farmer Shacks',    tier: 'Farmers' },
+  { id: 'PopulationMerchantsMansion',label: 'Merchant Mansions', tier: 'Merchants' },
+  { id: 'PopulationWorkersHouse',    label: 'Worker Houses',    tier: 'Workers' },
+  { id: 'PopulationParagonsResidence',label: 'Paragon Residences',tier: 'Paragons' },
+];
+
+// Resources that are service/coverage-based (consumePerMinute = 60), not production chain goods
+const SERVICE_RESOURCES = new Set([
+  'water', 'community', 'education', 'medical_care', 'sports',
+  'administration', 'hygiene', 'trading', 'cemetery', 'entertainment',
+  'coiffeur', 'higher_education', 'gambling', 'heat',
+]);
+
+function buildPlannerInputs() {
+  const el = document.getElementById('planner-inputs');
+  el.innerHTML = POP_BUILDINGS.map(pb =>
+    `<div class="planner-row">
+      <label>${pb.label}:</label>
+      <input type="number" id="planner-${pb.id}" min="0" value="0" data-pop-id="${pb.id}">
+    </div>`
+  ).join('');
+}
+
+// Calculate total resource demand from population houses
+function getPopulationDemand() {
+  const demand = {}; // resourceId -> totalPerMinute
+  POP_BUILDINGS.forEach(pb => {
+    const input = document.getElementById(`planner-${pb.id}`);
+    const count = parseInt(input.value) || 0;
+    if (count === 0) return;
+    const building = PP2DATA.getBuilding(pb.id);
+    if (!building || !building.consumePerMinute) return;
+    for (const [resId, rate] of Object.entries(building.consumePerMinute)) {
+      if (SERVICE_RESOURCES.has(resId)) continue; // skip service needs
+      demand[resId] = (demand[resId] || 0) + rate * count;
+    }
+  });
+  return demand;
+}
+
+// Recursively resolve production chains.
+// Returns: { buildingId -> { building, count (fractional), resource, rateNeeded } }
+// Also collects tile resource needs.
+function resolveProductionChain(demand) {
+  const result = {};     // buildingId -> { building, count, producedResource }
+  const tileNeeds = {};  // tileResourceId -> totalRateNeeded
+  const visited = new Set(); // prevent infinite loops
+
+  function resolve(resourceId, rateNeeded) {
+    if (rateNeeded <= 0) return;
+    if (SERVICE_RESOURCES.has(resourceId)) return;
+
+    // Check if this is a tile resource (grass, forest, water_tile, river, deposits)
+    if (TILE_RESOURCE_IDS.has(resourceId)) {
+      tileNeeds[resourceId] = (tileNeeds[resourceId] || 0) + rateNeeded;
+      return;
+    }
+
+    // Find producers for this resource
+    const producers = PP2DATA.getProducersOf(resourceId);
+    if (!producers || producers.length === 0) return;
+
+    // Pick the first non-tile producer (prefer buildings over tiles)
+    const producer = producers.find(p => !p.id.endsWith('Field') && !p.id.endsWith('Trees') && !p.id.endsWith('Forest') && !p.id.endsWith('Grass') && !p.id.endsWith('North') && PP2DATA.getBuilding(p.id)) || producers[0];
+
+    if (!producer || !producer.producePerMinute) return;
+
+    const countNeeded = rateNeeded / producer.producePerMinute;
+
+    if (result[producer.id]) {
+      result[producer.id].count += countNeeded;
+    } else {
+      result[producer.id] = {
+        building: producer,
+        count: countNeeded,
+        producedResource: resourceId,
+      };
+    }
+
+    // Recurse into this producer's inputs
+    if (producer.consumePerMinute && !visited.has(producer.id + ':' + resourceId)) {
+      visited.add(producer.id + ':' + resourceId);
+      for (const [inputRes, inputRate] of Object.entries(producer.consumePerMinute)) {
+        resolve(inputRes, inputRate * countNeeded);
+      }
+    }
+  }
+
+  for (const [resId, rate] of Object.entries(demand)) {
+    resolve(resId, rate);
+  }
+
+  return { buildings: result, tileNeeds };
+}
+
+function calculateProduction() {
+  const demand = getPopulationDemand();
+  const el = document.getElementById('planner-results');
+
+  if (Object.keys(demand).length === 0) {
+    el.innerHTML = '<span style="color:#666">Set at least one house count above 0</span>';
+    state.plannerActive = false;
+    return;
+  }
+
+  state.plannerActive = true;
+  const { buildings, tileNeeds } = resolveProductionChain(demand);
+
+  // Compare with placed buildings on island
+  const placedCounts = {};
+  if (state.island) {
+    state.island.buildings.forEach(b => {
+      placedCounts[b.id] = (placedCounts[b.id] || 0) + 1;
+    });
+  }
+
+  // Group by the final consumed resource (what population needs)
+  // For display, organize as: demand resource -> chain of buildings
+  let html = '';
+
+  // === Resource demand summary ===
+  html += '<div class="planner-section"><h5>Resource Demand (per min)</h5>';
+  const sortedDemand = Object.entries(demand).sort((a, b) => b[1] - a[1]);
+  for (const [resId, rate] of sortedDemand) {
+    html += `<div class="planner-summary-row">
+      <span>${PP2DATA.getResourceName(resId)}</span>
+      <span>${rate.toFixed(3)}/min</span>
+    </div>`;
+  }
+  html += '</div>';
+
+  // === Building requirements ===
+  html += '<div class="planner-section"><h5>Buildings Needed</h5>';
+  const sortedBuildings = Object.values(buildings).sort((a, b) => {
+    const tierOrder = ['Pioneers', 'Colonists', 'Townsmen', 'Farmers', 'Merchants', 'Workers', 'Paragons', 'Northern Islands'];
+    const ta = tierOrder.indexOf(a.building.tier);
+    const tb = tierOrder.indexOf(b.building.tier);
+    if (ta !== tb) return ta - tb;
+    return a.building.name.localeCompare(b.building.name);
+  });
+
+  let totalBuildings = 0;
+  let currentTier = '';
+  for (const entry of sortedBuildings) {
+    const { building, count, producedResource } = entry;
+    const rounded = Math.ceil(count);
+    totalBuildings += rounded;
+    const placed = placedCounts[building.id] || 0;
+    const isFractional = count % 1 > 0.01 && count % 1 < 0.99;
+
+    if (building.tier !== currentTier) {
+      currentTier = building.tier;
+      html += `<div class="planner-resource-header"><span>${currentTier}</span></div>`;
+    }
+
+    const statusColor = placed >= rounded ? '#2ecc71' : placed > 0 ? '#f39c12' : '#e74c3c';
+    html += `<div class="planner-building-row${isFractional ? ' fractional' : ''}">
+      <span>${building.name} <span style="color:#666;font-size:0.6rem">(${PP2DATA.getResourceName(producedResource)})</span></span>
+      <span><span style="color:${statusColor}">${placed}</span>/<span class="count">${rounded}</span>${isFractional ? ` <span style="color:#666;font-size:0.6rem">(${count.toFixed(2)})</span>` : ''}</span>
+    </div>`;
+  }
+  html += `<div class="planner-summary-row" style="font-weight:600;margin-top:4px;">
+    <span>Total production buildings</span><span>${totalBuildings}</span>
+  </div>`;
+  html += '</div>';
+
+  // === Tile resource needs ===
+  if (Object.keys(tileNeeds).length > 0) {
+    html += '<div class="planner-section"><h5>Tile Resources Needed</h5>';
+    for (const [resId, rate] of Object.entries(tileNeeds)) {
+      html += `<div class="planner-summary-row">
+        <span>${PP2DATA.getResourceName(resId)}</span>
+        <span>${rate.toFixed(2)} tiles</span>
+      </div>`;
+    }
+    html += '</div>';
+  }
+
+  // === Population house summary ===
+  html += '<div class="planner-section"><h5>Population Houses</h5>';
+  POP_BUILDINGS.forEach(pb => {
+    const count = parseInt(document.getElementById(`planner-${pb.id}`).value) || 0;
+    if (count > 0) {
+      const placed = placedCounts[pb.id] || 0;
+      const statusColor = placed >= count ? '#2ecc71' : placed > 0 ? '#f39c12' : '#e74c3c';
+      html += `<div class="planner-building-row">
+        <span>${pb.label}</span>
+        <span><span style="color:${statusColor}">${placed}</span>/<span class="count">${count}</span></span>
+      </div>`;
+    }
+  });
+  html += '</div>';
+
+  el.innerHTML = html;
 }
 
 // ===== SAVE / LOAD =====
@@ -1942,6 +2191,7 @@ function init() {
   loadUnlocks();
   buildDepositTools();
   buildBuildingList();
+  buildPlannerInputs();
   resizeCanvas();
 
   // Show new island modal on first load if no island

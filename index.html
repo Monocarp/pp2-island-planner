@@ -1771,6 +1771,9 @@ function validateIsland() {
             const fc = cells[fy][fx];
             // Match terrain or deposit to resource
             if (matchesTileResource(fc, resId)) tileCount++;
+          } else {
+            // Out-of-bounds counts as water
+            if (resId === 'water_tile') tileCount++;
           }
         });
         if (tileCount === 0) {
@@ -1793,8 +1796,11 @@ function validateIsland() {
 
 function matchesTileResource(cell, resId) {
   // Map resource IDs to terrain/deposit types
+  // Some resource IDs can match multiple terrain types
+  const terrainMultiMap = {
+    'water_tile': ['water', 'coastal'],
+  };
   const terrainMap = {
-    'water_tile': 'water',
     'grass': 'grass',
     'grass_north': 'grass',
     'forest': 'forest',
@@ -1806,6 +1812,7 @@ function matchesTileResource(cell, resId) {
     'coastal_north': 'coastal',
     'coastal_tropical': 'coastal',
   };
+  if (terrainMultiMap[resId] && terrainMultiMap[resId].includes(cell.terrain)) return true;
   if (terrainMap[resId] && cell.terrain === terrainMap[resId]) return true;
   if (cell.deposit === resId) return true;
   return false;

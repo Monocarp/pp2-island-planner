@@ -499,6 +499,44 @@ FOOTPRINTS['Warehouse2'] = makeDiamond([1,3,5,3,1]);
 // Diamond 1-3-5-7-5-3-1
 ['School','Warehouse3'].forEach(id => FOOTPRINTS[id] = makeDiamond([1,3,5,7,5,3,1]));
 
+// ===== NON-PRODUCTION BUILDINGS (not in data.js) =====
+// These are infrastructure buildings that don't produce resources.
+const EXTRA_BUILDINGS = [
+  { id: 'Warehouse1', name: 'Small Warehouse', tier: 'Pioneers', produces: null, isInfrastructure: true },
+  { id: 'Warehouse2', name: 'Warehouse', tier: 'Colonists', produces: null, isInfrastructure: true },
+  { id: 'Warehouse3', name: 'Large Warehouse', tier: 'Townsmen', produces: null, isInfrastructure: true },
+  { id: 'Well', name: 'Well', tier: 'Pioneers', produces: null, isService: true },
+  { id: 'Cistern', name: 'Cistern', tier: 'Colonists', produces: null, isService: true },
+  { id: 'School', name: 'School', tier: 'Townsmen', produces: null, isService: true },
+  { id: 'Tavern', name: 'Tavern', tier: 'Pioneers', produces: null, isService: true },
+  { id: 'HarborTavern', name: 'Harbor Tavern', tier: 'Colonists', produces: null, isService: true },
+];
+
+// Combined lookup: check PP2DATA first, then EXTRA_BUILDINGS
+function getBuildingData(id) {
+  const b = PP2DATA.getBuilding(id);
+  if (b) return b;
+  return EXTRA_BUILDINGS.find(e => e.id === id) || null;
+}
+
+// ===== TERRAIN PLACEMENT RULES =====
+// Which terrains a building can be placed on.
+// By default, buildings can only go on grass, forest, coastal.
+// Special cases are handled via LOCATION_REQUIREMENTS.
+const PLACEABLE_TERRAIN = new Set(['grass', 'forest', 'coastal', 'mountain']);
+
+function canPlaceOnTerrain(buildingId, terrain) {
+  const locReq = LOCATION_REQUIREMENTS[buildingId];
+  // Water-wheel buildings go ON river
+  if (locReq && locReq.type === 'straight_river') return terrain === 'river';
+  // In-water buildings go on water/coastal
+  if (locReq && locReq.type === 'in_water_coastal') return terrain === 'water' || terrain === 'coastal';
+  // Cannot-on-mountain buildings
+  if (locReq && locReq.type === 'not_mountain' && terrain === 'mountain') return false;
+  // Default: only placeable terrain (excludes water and river)
+  return PLACEABLE_TERRAIN.has(terrain);
+}
+
 // ===== BUILDING LOCATION REQUIREMENTS =====
 // Requirement types:
 //   ocean_adjacent  - at least one adjacent cell (4-dir) must be water terrain
@@ -543,14 +581,22 @@ const LOCATION_REQUIREMENTS = {
   MarbleQuarry:            { type: 'not_mountain', label: 'Cannot be on a mountain' },
 };
 
-// Helper: get 4-directional neighbors
+// Helper: get terrain at a position, treating out-of-bounds as ocean water
+function getTerrainAt(x, y) {
+  if (!state.island) return 'water';
+  const { width, height, cells } = state.island;
+  if (x < 0 || x >= width || y < 0 || y >= height) return 'water';
+  return cells[y][x].terrain;
+}
+
+// Helper: get 4-directional neighbors (includes out-of-bounds positions)
 function getAdjacentCells(x, y, width, height) {
-  const adj = [];
-  if (x > 0) adj.push({ x: x-1, y });
-  if (x < width-1) adj.push({ x: x+1, y });
-  if (y > 0) adj.push({ x, y: y-1 });
-  if (y < height-1) adj.push({ x, y: y+1 });
-  return adj;
+  return [
+    { x: x-1, y },
+    { x: x+1, y },
+    { x, y: y-1 },
+    { x, y: y+1 },
+  ];
 }
 
 // ===== RIVER SHAPE DETECTION =====
@@ -558,12 +604,13 @@ function getAdjacentCells(x, y, width, height) {
 function getRiverShape(x, y) {
   if (!state.island) return 'isolated';
   const { width, height, cells } = state.island;
+  if (x < 0 || x >= width || y < 0 || y >= height) return null;
   if (cells[y][x].terrain !== 'river') return null;
 
-  const left  = x > 0          && cells[y][x-1].terrain === 'river';
-  const right = x < width - 1  && cells[y][x+1].terrain === 'river';
-  const up    = y > 0          && cells[y-1][x].terrain === 'river';
-  const down  = y < height - 1 && cells[y+1][x].terrain === 'river';
+  const left  = getTerrainAt(x-1, y) === 'river';
+  const right = getTerrainAt(x+1, y) === 'river';
+  const up    = getTerrainAt(x, y-1) === 'river';
+  const down  = getTerrainAt(x, y+1) === 'river';
   const count = (left?1:0) + (right?1:0) + (up?1:0) + (down?1:0);
 
   if (count === 0) return 'isolated';
@@ -594,7 +641,7 @@ function checkLocationRequirement(buildingId, x, y) {
 
   switch (req.type) {
     case 'ocean_adjacent': {
-      const hasOcean = neighbors.some(n => cells[n.y][n.x].terrain === 'water');
+      const hasOcean = neighbors.some(n => getTerrainAt(n.x, n.y) === 'water');
       return hasOcean ? { ok: true } : { ok: false, reason: req.label };
     }
     case 'straight_river': {
@@ -608,7 +655,7 @@ function checkLocationRequirement(buildingId, x, y) {
       return { ok: true };
     }
     case 'river_adjacent': {
-      const hasRiver = neighbors.some(n => cells[n.y][n.x].terrain === 'river');
+      const hasRiver = neighbors.some(n => getTerrainAt(n.x, n.y) === 'river');
       return hasRiver ? { ok: true } : { ok: false, reason: req.label };
     }
     case 'in_water_coastal': {
@@ -617,7 +664,7 @@ function checkLocationRequirement(buildingId, x, y) {
         return { ok: false, reason: req.label + ' (must be on water)' };
       }
       const hasLand = neighbors.some(n => {
-        const t = cells[n.y][n.x].terrain;
+        const t = getTerrainAt(n.x, n.y);
         return t !== 'water';
       });
       return hasLand ? { ok: true } : { ok: false, reason: req.label + ' (no adjacent land)' };
@@ -799,10 +846,10 @@ function render() {
           ctx.lineWidth = 1;
         } else if (shape === 'endpoint') {
           // Single-direction stub line
-          const left  = x > 0              && cells[y][x-1].terrain === 'river';
-          const right = x < width - 1      && cells[y][x+1].terrain === 'river';
-          const up    = y > 0              && cells[y-1][x].terrain === 'river';
-          const down  = y < height - 1     && cells[y+1][x].terrain === 'river';
+          const left  = getTerrainAt(x-1, y) === 'river';
+          const right = getTerrainAt(x+1, y) === 'river';
+          const up    = getTerrainAt(x, y-1) === 'river';
+          const down  = getTerrainAt(x, y+1) === 'river';
           ctx.strokeStyle = '#7ec8e3';
           ctx.lineWidth = Math.max(2, z * 0.18);
           ctx.beginPath();
@@ -844,7 +891,7 @@ function render() {
           ctx.font = `bold ${Math.max(8, z * 0.4)}px sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          const b = PP2DATA.getBuilding(cell.building);
+          const b = getBuildingData(cell.building);
           const letter = b ? b.name[0] : '?';
           ctx.fillText(letter, px + z/2, py + z/2);
         }
@@ -1193,6 +1240,11 @@ function handleCellAction(x, y, e) {
     render();
   } else if (state.tool === 'building' && state.buildingId) {
     if (cell.building) return; // already occupied
+    // Check terrain validity
+    if (!canPlaceOnTerrain(state.buildingId, cell.terrain)) {
+      showTooltipMessage(x, y, `Cannot place on ${cell.terrain}`);
+      return;
+    }
     // Check location requirements before placing
     const locCheck = checkLocationRequirement(state.buildingId, x, y);
     if (!locCheck.ok) {
@@ -1412,7 +1464,10 @@ function buildBuildingList() {
                  'Farmers', 'Workers', 'Northern Islands'];
 
   tiers.forEach(tier => {
-    const buildings = PP2DATA.buildings.filter(b => b.tier === tier && !b.isPopulation);
+    // Combine data.js buildings + extra infrastructure buildings for this tier
+    const dataBuildings = PP2DATA.buildings.filter(b => b.tier === tier && !b.isPopulation);
+    const extraBuildings = EXTRA_BUILDINGS.filter(b => b.tier === tier);
+    const buildings = [...extraBuildings, ...dataBuildings];
     if (buildings.length === 0) return;
 
     const group = document.createElement('div');
@@ -1420,7 +1475,21 @@ function buildBuildingList() {
 
     const header = document.createElement('div');
     header.className = 'tier-header';
-    header.innerHTML = `<span>${tier}</span><span>${buildings.length}</span>`;
+    // Add tier unlock toggle
+    const tierBuildingIds = buildings.map(b => b.id);
+    const allUnlocked = tierBuildingIds.every(id => state.unlockedBuildings.has(id));
+    header.innerHTML = `<span>${tier}</span><span><button class="tier-unlock-btn" title="Toggle unlock all ${tier} buildings" style="background:none;border:1px solid #0f3460;color:${allUnlocked ? '#2ecc71' : '#666'};border-radius:3px;padding:1px 6px;font-size:0.7rem;cursor:pointer;margin-right:4px">${allUnlocked ? '\u2713' : '\u2610'}</button>${buildings.length}</span>`;
+    const unlockBtn = header.querySelector('.tier-unlock-btn');
+    unlockBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const shouldUnlock = !tierBuildingIds.every(id => state.unlockedBuildings.has(id));
+      tierBuildingIds.forEach(id => {
+        if (shouldUnlock) state.unlockedBuildings.add(id);
+        else state.unlockedBuildings.delete(id);
+      });
+      saveUnlocks();
+      buildBuildingList(); // rebuild to update visual state
+    });
     header.addEventListener('click', () => {
       const list = group.querySelector('.tier-buildings');
       list.classList.toggle('open');
@@ -1434,14 +1503,17 @@ function buildBuildingList() {
       const btn = document.createElement('button');
       btn.className = 'building-btn';
       if (!state.unlockedBuildings.has(b.id)) btn.classList.add('locked');
-      btn.textContent = b.name;
+      // Mark infrastructure/service buildings
+      const prefix = b.isInfrastructure ? '\uD83C\uDFE0 ' : b.isService ? '\u2764 ' : '';
+      btn.textContent = prefix + b.name;
       btn.dataset.buildingId = b.id;
       btn.addEventListener('click', () => {
         clearToolSelection();
         btn.classList.add('active');
         state.tool = 'building';
         state.buildingId = b.id;
-        showBuildingPreview(b);
+        const bData = getBuildingData(b.id);
+        if (bData) showBuildingPreview(bData);
       });
       btn.addEventListener('dblclick', () => {
         // Toggle unlock
@@ -1536,9 +1608,9 @@ function updateCellInfo(x, y) {
     html += `<div class="info-row"><span class="info-label">Deposit:</span><span class="info-value">${dep ? dep.name : cell.deposit}</span></div>`;
   }
   if (cell.building) {
-    const b = PP2DATA.getBuilding(cell.building);
+    const b = getBuildingData(cell.building);
     html += `<div class="info-row"><span class="info-label">Building:</span><span class="info-value">${b ? b.name : cell.building}</span></div>`;
-    html += `<div class="info-row"><span class="info-label">Produces:</span><span class="info-value">${b ? PP2DATA.getResourceName(b.produces) : '?'}</span></div>`;
+    if (b && b.produces) html += `<div class="info-row"><span class="info-label">Produces:</span><span class="info-value">${PP2DATA.getResourceName(b.produces)}</span></div>`;
   }
   el.innerHTML = html;
 }
@@ -1549,8 +1621,18 @@ function showBuildingPreview(building) {
   const fp = FOOTPRINTS[building.id];
   let html = `<h4>${building.name}</h4>`;
   html += `<div class="info-row"><span class="info-label">Tier:</span><span class="info-value">${building.tier}</span></div>`;
-  html += `<div class="info-row"><span class="info-label">Produces:</span><span class="info-value">${PP2DATA.getResourceName(building.produces)}</span></div>`;
-  html += `<div class="info-row"><span class="info-label">Rate:</span><span class="info-value">${building.producePerMinute}/min</span></div>`;
+  if (building.produces) {
+    html += `<div class="info-row"><span class="info-label">Produces:</span><span class="info-value">${PP2DATA.getResourceName(building.produces)}</span></div>`;
+  }
+  if (building.producePerMinute) {
+    html += `<div class="info-row"><span class="info-label">Rate:</span><span class="info-value">${building.producePerMinute}/min</span></div>`;
+  }
+  if (building.isInfrastructure) {
+    html += `<div class="info-row"><span class="info-label">Type:</span><span class="info-value">Warehouse</span></div>`;
+  }
+  if (building.isService) {
+    html += `<div class="info-row"><span class="info-label">Type:</span><span class="info-value">Service</span></div>`;
+  }
   html += `<div class="info-row"><span class="info-label">Footprint:</span><span class="info-value">${fp ? fp.length + ' cells' : 'unknown'}</span></div>`;
 
   // Location requirement
@@ -1579,7 +1661,7 @@ function updateBuildingInfo() {
     el.style.display = 'none';
     return;
   }
-  const b = PP2DATA.getBuilding(state.selectedBuilding.id);
+  const b = getBuildingData(state.selectedBuilding.id);
   if (b) showBuildingPreview(b);
 }
 
@@ -1628,7 +1710,7 @@ function updateStats() {
     const bCounts = {};
     buildings.forEach(b => { bCounts[b.id] = (bCounts[b.id] || 0) + 1; });
     for (const [id, count] of Object.entries(bCounts)) {
-      const b = PP2DATA.getBuilding(id);
+      const b = getBuildingData(id);
       html += `<div class="info-row"><span class="info-label">${b ? b.name : id}:</span><span class="info-value">${count}</span></div>`;
     }
   }
@@ -1644,15 +1726,18 @@ function validateIsland() {
 
   // Check each building
   buildings.forEach(b => {
-    const building = PP2DATA.getBuilding(b.id);
+    const building = getBuildingData(b.id);
     if (!building) return;
 
     // Check warehouse coverage (does any warehouse's footprint cover this cell?)
     const warehouseIds = ['Warehouse1', 'Warehouse2', 'Warehouse3'];
     const warehouses = buildings.filter(w => warehouseIds.includes(w.id));
     let inWarehouseRange = false;
-    // Warehouses and some buildings don't need warehouse coverage
-    if (!warehouseIds.includes(b.id) && !building.isPopulation) {
+    // Warehouses and service buildings don't need warehouse coverage
+    const isWarehouse = warehouseIds.includes(b.id);
+    const isService = building.isService;
+    const isPop = building.isPopulation;
+    if (!isWarehouse && !isService && !isPop) {
       warehouses.forEach(wh => {
         const fp = FOOTPRINTS[wh.id];
         if (fp) {
@@ -1661,8 +1746,12 @@ function validateIsland() {
           });
         }
       });
-      if (!inWarehouseRange && warehouses.length > 0) {
-        issues.push({ type: 'error', msg: `${building.name} at (${b.x},${b.y}) outside warehouse range` });
+      if (!inWarehouseRange) {
+        if (warehouses.length === 0) {
+          issues.push({ type: 'warning', msg: `${building.name} at (${b.x},${b.y}): no warehouses on island` });
+        } else {
+          issues.push({ type: 'error', msg: `${building.name} at (${b.x},${b.y}) outside warehouse range` });
+        }
       }
     }
 

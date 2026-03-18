@@ -635,7 +635,10 @@ function checkLocationRequirement(buildingId, x, y) {
 
   switch (req.type) {
     case 'ocean_adjacent': {
-      const hasOcean = neighbors.some(n => getTerrainAt(n.x, n.y) === 'water');
+      const hasOcean = neighbors.some(n => {
+        const t = getTerrainAt(n.x, n.y);
+        return t === 'water' || t === 'coastal';
+      });
       return hasOcean ? { ok: true } : { ok: false, reason: req.label };
     }
     case 'straight_river': {
@@ -902,9 +905,10 @@ function render() {
       // Show footprint preview when placing a building
       if (state.tool === 'building' && state.buildingId) {
         // Check location validity for color feedback
+        const terrainOk = canPlaceOnTerrain(state.buildingId, cells[hy][hx].terrain);
         const locValid = checkLocationRequirement(state.buildingId, hx, hy);
         const cellOccupied = cells[hy][hx].building;
-        const canPlace = locValid.ok && !cellOccupied;
+        const canPlace = terrainOk && locValid.ok && !cellOccupied;
         const fpColor = canPlace ? 'rgba(46,204,113,0.25)' : 'rgba(231,76,60,0.3)';
         const fpStroke = canPlace ? 'rgba(46,204,113,0.5)' : 'rgba(231,76,60,0.6)';
         // Highlight the building cell itself

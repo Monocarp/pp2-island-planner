@@ -118,7 +118,7 @@ function render() {
         }
       }
 
-      // Building
+      // Building (anchor cell only; selected-building footprint drawn below)
       if (cell.building) {
         ctx.fillStyle = '#e94560';
         ctx.globalAlpha = 0.85;

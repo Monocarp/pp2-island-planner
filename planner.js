@@ -267,7 +267,8 @@ function calculateProduction() {
 
 // ===== AUTO-POPULATE =====
 
-// Check if a building can be placed at (x, y) — all footprint cells must be valid and unoccupied.
+// Check if a building can be placed at (x, y) — footprint cells must be valid terrain;
+// only the anchor cell must be free (other buildings may overlap coverage areas).
 function canAutoPlace(buildingId, x, y) {
   const { width, height, cells } = state.island;
   const fp = FOOTPRINTS[buildingId] || [[0, 0]];
@@ -284,12 +285,10 @@ function canAutoPlace(buildingId, x, y) {
     const cx = x + dx, cy = y + dy;
     if (cx < 0 || cx >= width || cy < 0 || cy >= height) return false;
     const cell = cells[cy][cx];
-    if (cell.building) return false;
     if (dx === 0 && dy === 0) {
-      // Anchor cell: full terrain check per location requirement
+      if (cell.building) return false;
       if (!canPlaceOnTerrain(buildingId, cell.terrain)) return false;
     } else {
-      // Non-anchor cells: must not be open water unless the building uses water in footprint
       if (!acceptsWaterInFootprint && cell.terrain === 'water') return false;
     }
   }
@@ -460,8 +459,7 @@ function findBestPositions(buildingId, building, opts) {
   return candidates;
 }
 
-// Place building during auto-populate — delegates to placeBuilding so all
-// footprint cells are marked consistently with manual placement.
+// Place building during auto-populate — same anchor-only marking as manual placement.
 function autoPlaceBuilding(buildingId, x, y) {
   placeBuilding(buildingId, x, y);
 }
@@ -551,8 +549,8 @@ function diagnosePlacementFailure(buildingId, building, opts) {
         const nx = x + dx, ny = y + dy;
         if (nx < 0 || nx >= width || ny < 0 || ny >= height) { canPlace = false; break; }
         const cell = cells[ny][nx];
-        if (cell.building) { canPlace = false; break; }
         if (dx === 0 && dy === 0) {
+          if (cell.building) { canPlace = false; break; }
           if (!canPlaceOnTerrain(buildingId, cell.terrain)) { canPlace = false; break; }
         } else if (!acceptsWater && cell.terrain === 'water') {
           canPlace = false; break;

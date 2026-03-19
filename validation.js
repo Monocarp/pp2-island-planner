@@ -176,11 +176,62 @@ function validateIsland() {
           }
         });
         if (tileCount === 0) {
-          issues.push({ type: 'warning', msg: `${building.name} at (${b.x},${b.y}) needs ${PP2DATA.getResourceName(resId)} tiles in footprint` });
+          issues.push({ type: 'error', msg: `${building.name} at (${b.x},${b.y}) needs ${PP2DATA.getResourceName(resId)} tiles in footprint` });
+        } else if (tileCount < amount) {
+          issues.push({ type: 'warning', msg: `${building.name} at (${b.x},${b.y}) has ${tileCount}/${amount} ${PP2DATA.getResourceName(resId)} tiles (needs ${amount})` });
         }
       }
     }
   });
+
+  // --- Detect overlapping spatial tile claims between buildings ---
+  // tileClaims: "x,y,resId" -> [{ building, bx, by, needed }]
+  const tileClaims = {};
+  buildings.forEach(b => {
+    const building = getBuildingData(b.id);
+    if (!building || !building.inputs) return;
+    const fp = FOOTPRINTS[b.id] || [[0,0]];
+    for (const [resId, amount] of Object.entries(building.inputs)) {
+      if (!TILE_RESOURCE_IDS.has(resId)) continue;
+      // Skip river (handled by location requirements)
+      if (resId === 'river' && LOCATION_REQUIREMENTS[b.id]) continue;
+      // Collect matching tiles in this building's footprint
+      const matching = [];
+      fp.forEach(([dx, dy]) => {
+        const fx = b.x + dx, fy = b.y + dy;
+        if (fx >= 0 && fx < width && fy >= 0 && fy < height) {
+          if (matchesTileResource(cells[fy][fx], resId)) matching.push(`${fx},${fy}`);
+        }
+      });
+      matching.forEach(key => {
+        const ck = key + ',' + resId;
+        if (!tileClaims[ck]) tileClaims[ck] = [];
+        tileClaims[ck].push({ name: building.name, x: b.x, y: b.y });
+      });
+    }
+  });
+
+  // Find buildings that share tiles and might be short
+  // Group overlaps by pairs of buildings
+  const overlapPairs = {};
+  for (const [ck, claimants] of Object.entries(tileClaims)) {
+    if (claimants.length < 2) continue;
+    const resId = ck.split(',')[2];
+    for (let i = 0; i < claimants.length; i++) {
+      for (let j = i + 1; j < claimants.length; j++) {
+        const a = claimants[i], b = claimants[j];
+        const pairKey = `${a.name}@${a.x},${a.y}|${b.name}@${b.x},${b.y}|${resId}`;
+        overlapPairs[pairKey] = (overlapPairs[pairKey] || 0) + 1;
+      }
+    }
+  }
+  for (const [pairKey, sharedCount] of Object.entries(overlapPairs)) {
+    const [aStr, bStr, resId] = pairKey.split('|');
+    const [aName, aCoord] = aStr.split('@');
+    const [bName, bCoord] = bStr.split('@');
+    const resName = PP2DATA.getResourceName(resId);
+    issues.push({ type: 'warning', msg: `${aName} at (${aCoord}) and ${bName} at (${bCoord}) share ${sharedCount} ${resName} tile${sharedCount > 1 ? 's' : ''}` });
+  }
 
   // Display
   const el = document.getElementById('validation-content');

@@ -994,17 +994,25 @@ function autoPopulate() {
   // For each production building that needs a deposit (apple_trees, hop_field, etc.) or
   // paintable terrain (forest for Lumberjack), find a valid position first (ignoring those
   // requirements), then paint so Phase 2 can place the building there.
-  // For rate-based tiles (iterationTime > 1, e.g. apple_trees, forest) use the rate-based
-  // tileNeeds count rather than the building's `inputs` minimum.
+  // For rate-based tiles (iterationTime > 1, e.g. apple_trees, forest) compute needed tiles
+  // directly from consumePerMinute / tile.producePerMinute instead of building.inputs minimum.
   {
-    // Build resId -> rate-based total tile count for non-spatial tiles
-    const rateTileCountByRes = {};
-    for (const tn of Object.values(tileNeeds)) {
-      if (!tn.isSpatial) rateTileCountByRes[tn.producedResource] = tn.count;
-    }
-
     const depositTypeSet = DEPOSIT_TYPE_ID_SET;
     const reservedFootprints = []; // {x, y, id} — positions reserved for upcoming placements
+
+    // Helper: how many tiles of resId does each instance of buildingId really need?
+    // For rate-based tiles (iterationTime > 1) this is consumeRate / tileRate.
+    // For spatial tiles (iterationTime <= 1) this is just building.inputs[resId].
+    function tilesNeededPerBuilding(building, resId) {
+      const inputMin = building.inputs[resId] || 1;
+      const consumeRate = (building.consumePerMinute || {})[resId];
+      if (!consumeRate) return inputMin;
+      const producers = PP2DATA.getProducersOf(resId) || [];
+      const tile = producers.find(p => PP2DATA.getTile(p.id));
+      if (!tile || !tile.producePerMinute || tile.iterationTime <= 1) return inputMin;
+      return Math.max(inputMin, Math.ceil(consumeRate / tile.producePerMinute));
+    }
+
     for (const item of productionList) {
       if (!item.building.inputs) continue;
       const depositInputs = Object.entries(item.building.inputs)
@@ -1028,11 +1036,8 @@ function autoPopulate() {
 
         const pos = positions[0];
         const fp = FOOTPRINTS[item.id] || [[0, 0]];
-        for (const [resId, inputsPerBuilding] of depositInputs) {
-          const rateTotal = rateTileCountByRes[resId];
-          const needed = Math.ceil(
-            rateTotal != null ? rateTotal / item.count : inputsPerBuilding
-          );
+        for (const [resId] of depositInputs) {
+          const needed = tilesNeededPerBuilding(item.building, resId);
           const have = countTileResource(item.id, pos.x, pos.y, resId, claimedCells);
           const deficit = needed - have;
           if (deficit <= 0) continue;
@@ -1052,12 +1057,9 @@ function autoPopulate() {
             runLog.phases.deposits.push({ kind: 'deposit', resId, name: PP2DATA.getResourceName(resId), x: cx, y: cy });
           }
         }
-        for (const [resId, inputsPerBuilding] of terrainInputs) {
+        for (const [resId] of terrainInputs) {
           const ter = TERRAIN_PAINT_RESOURCES[resId];
-          const rateTotal = rateTileCountByRes[resId];
-          const needed = Math.ceil(
-            rateTotal != null ? rateTotal / item.count : inputsPerBuilding
-          );
+          const needed = tilesNeededPerBuilding(item.building, resId);
           const have = countTileResource(item.id, pos.x, pos.y, resId, claimedCells);
           const deficit = needed - have;
           if (deficit <= 0) continue;

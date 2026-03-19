@@ -267,6 +267,23 @@ function calculateProduction() {
 
 // ===== AUTO-POPULATE =====
 
+// Map spatial inputs that use terrain (not deposit) — Phase 1.5 paints these via cell.terrain.
+const TERRAIN_PAINT_RESOURCES = {
+  forest: 'forest',
+  conifer_forest: 'forest',
+};
+
+/** Deposit / auto-painted spatial inputs must sort before other production so Phase 2 does not steal their prepared anchor. */
+const DEPOSIT_TYPE_ID_SET = new Set(DEPOSIT_TYPES.map(d => d.id));
+
+function isHighPrioritySpatialInput(resId) {
+  if (!TILE_RESOURCE_IDS.has(resId)) return false;
+  if (TERRAIN_PAINT_RESOURCES[resId]) return true;
+  if (DEPOSIT_TYPE_ID_SET.has(resId)) return true;
+  if (resId.includes('deposit') || resId === 'cliff') return true;
+  return false;
+}
+
 function sortProductionListByConstraint(list) {
   list.sort((a, b) => {
     const constraintScore = (item) => {
@@ -282,7 +299,7 @@ function sortProductionListByConstraint(list) {
       if (bld.inputs) {
         for (const [resId, amt] of Object.entries(bld.inputs)) {
           if (!TILE_RESOURCE_IDS.has(resId)) continue;
-          if (resId.includes('deposit') || resId === 'cliff') score += 200;
+          if (isHighPrioritySpatialInput(resId)) score += 200;
           else if (resId === 'grass') score += amt;
         }
       }
@@ -440,6 +457,40 @@ function pickWarehouseId() {
   if (state.unlockedBuildings.has('Warehouse3')) return 'Warehouse3';
   if (state.unlockedBuildings.has('Warehouse2')) return 'Warehouse2';
   return 'Warehouse1';
+}
+
+/** True if (x,y) is in any existing warehouse footprint or in the optional planned warehouse at (wx,wy). */
+function isInWarehouseRangeConsidering(x, y, optWhId, optWx, optWy) {
+  if (isInWarehouseRange(x, y)) return true;
+  if (optWhId == null) return false;
+  const fp = FOOTPRINTS[optWhId];
+  if (!fp) return false;
+  for (const [dx, dy] of fp) {
+    if (optWx + dx === x && optWy + dy === y) return true;
+  }
+  return false;
+}
+
+/** Count island positions that can host a fisher (water_tile building) with warehouse delivery. */
+function countFishAnchorsInRange(fisherId, waterNeeded, optWhId, optWx, optWy) {
+  const { width, height } = state.island;
+  let n = 0;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (!isInWarehouseRangeConsidering(x, y, optWhId, optWx, optWy)) continue;
+      if (!canAutoPlace(fisherId, x, y)) continue;
+      if (countTileResource(fisherId, x, y, 'water_tile', null) < waterNeeded) continue;
+      n++;
+    }
+  }
+  return n;
+}
+
+/** How many new fishable anchors a warehouse at (wx,wy) would enable vs current coverage only. */
+function countNewFishAnchorsForWarehouse(whId, wx, wy, fisherId, waterNeeded) {
+  const before = countFishAnchorsInRange(fisherId, waterNeeded, null, 0, 0);
+  const after = countFishAnchorsInRange(fisherId, waterNeeded, whId, wx, wy);
+  return Math.max(0, after - before);
 }
 
 // Find all valid positions for a building, sorted by score.
@@ -674,9 +725,12 @@ function emitAutoPopulateLog(log) {
 
   // Phase 1.5
   if (phases.deposits.length > 0) {
-    console.group(`Phase 1.5 — Deposits (${phases.deposits.length} auto-placed)`);
-    phases.deposits.forEach(d =>
-      console.log(`+ ${d.name} deposit at (${d.x},${d.y})`));
+    console.group(`Phase 1.5 — Deposits & terrain (${phases.deposits.length} auto-placed)`);
+    phases.deposits.forEach(d => {
+      const k = d.kind || 'deposit';
+      if (k === 'terrain') console.log(`+ ${d.name} terrain at (${d.x},${d.y})`);
+      else console.log(`+ ${d.name} deposit at (${d.x},${d.y})`);
+    });
     console.groupEnd();
   }
 
@@ -876,40 +930,43 @@ function autoPopulate() {
     }
   }
 
-  // === PHASE 0.5: Coastal warehouse ===
-  // If any production building needs water_tile (e.g. Fisherman's Hut) and no warehouse
-  // footprint covers positions near the map edge, place a dedicated coastal warehouse so that
-  // fisher hut anchors on the border can deliver to it.
+  // === PHASE 0.5: Coastal warehouse(s) ===
+  // Fisher huts need warehouse range *and* enough water_tile cells; one Warehouse3 often covers
+  // only two such anchors. Loop: add coastal warehouses until we have enough fishable anchors
+  // or placements stop improving.
   {
-    const needsCoastal = productionList.some(
+    const fishItems = productionList.filter(
       item => item.building.inputs && 'water_tile' in item.building.inputs
     );
-    if (needsCoastal) {
-      let coastalCovered = false;
-      outer:
-      for (let cy = 0; cy < height; cy++) {
-        for (let cx = 0; cx < width; cx++) {
-          if (Math.min(cx, width - 1 - cx, cy, height - 1 - cy) > 1) continue;
-          if (state.island.cells[cy][cx].terrain === 'water') continue;
-          if (isInWarehouseRange(cx, cy)) { coastalCovered = true; break outer; }
-        }
-      }
-      if (!coastalCovered) {
+    if (fishItems.length > 0) {
+      const fisherId = fishItems[0].id;
+      const waterNeeded = Math.ceil(fishItems[0].building.inputs.water_tile);
+      const totalFishNeeded = fishItems.reduce((s, it) => s + it.count, 0);
+      const maxExtra = Math.min(8, Math.max(1, totalFishNeeded));
+      for (let extra = 0; extra < maxExtra; extra++) {
+        const viable = countFishAnchorsInRange(fisherId, waterNeeded, null, 0, 0);
+        if (viable >= totalFishNeeded) break;
         const whId = pickWarehouseId();
         const whBuilding = getBuildingData(whId) || {};
-        let bestWh = null, bestCount = 0;
+        let bestWh = null;
+        let bestNewFish = -1;
+        let bestCoastal = -1;
         for (let cy = 0; cy < height; cy++) {
           for (let cx = 0; cx < width; cx++) {
             if (!canAutoPlace(whId, cx, cy)) continue;
-            const count = countNewCoastalCoverage(whId, cx, cy);
-            if (count > bestCount) { bestCount = count; bestWh = { x: cx, y: cy }; }
+            const newFish = countNewFishAnchorsForWarehouse(whId, cx, cy, fisherId, waterNeeded);
+            const coastal = countNewCoastalCoverage(whId, cx, cy);
+            if (newFish > bestNewFish || (newFish === bestNewFish && coastal > bestCoastal)) {
+              bestNewFish = newFish;
+              bestCoastal = coastal;
+              bestWh = { x: cx, y: cy };
+            }
           }
         }
-        if (bestWh && bestCount > 0) {
-          autoPlaceBuilding(whId, bestWh.x, bestWh.y);
-          placed.push({ id: whId, x: bestWh.x, y: bestWh.y });
-          runLog.phases.warehouses.placed.push({ name: whBuilding.name || whId, x: bestWh.x, y: bestWh.y });
-        }
+        if (!bestWh || bestNewFish <= 0) break;
+        autoPlaceBuilding(whId, bestWh.x, bestWh.y);
+        placed.push({ id: whId, x: bestWh.x, y: bestWh.y });
+        runLog.phases.warehouses.placed.push({ name: whBuilding.name || whId, x: bestWh.x, y: bestWh.y });
       }
     }
   }
@@ -933,21 +990,26 @@ function autoPopulate() {
   // Same ordering as Phase 2 so deposit painting prioritizes constrained buildings first
   sortProductionListByConstraint(productionList);
 
-  // === PHASE 1.5: Auto-place missing deposit tiles co-located with building footprints ===
-  // For each production building that needs a deposit (apple_trees, hop_field, etc.), find a
-  // valid position first (ignoring that deposit requirement), then paint the deficit deposits
-  // on grass cells within that footprint so Phase 2 can place the building there.
+  // === PHASE 1.5: Auto-place missing deposits & terrain in building footprints ===
+  // For each production building that needs a deposit (apple_trees, hop_field, etc.) or
+  // paintable terrain (forest for Lumberjack), find a valid position first (ignoring those
+  // requirements), then paint so Phase 2 can place the building there.
   {
-    const depositTypeSet = new Set(DEPOSIT_TYPES.map(d => d.id));
+    const depositTypeSet = DEPOSIT_TYPE_ID_SET;
     const reservedFootprints = []; // {x, y, id} — positions reserved for upcoming placements
     for (const item of productionList) {
       if (!item.building.inputs) continue;
       const depositInputs = Object.entries(item.building.inputs)
         .filter(([r]) => TILE_RESOURCE_IDS.has(r) && depositTypeSet.has(r));
-      if (depositInputs.length === 0) continue;
+      const terrainInputs = Object.entries(item.building.inputs)
+        .filter(([r]) => TILE_RESOURCE_IDS.has(r) && TERRAIN_PAINT_RESOURCES[r]);
+      if (depositInputs.length === 0 && terrainInputs.length === 0) continue;
 
       for (let i = 0; i < item.count; i++) {
-        const ignoreRes = new Set(depositInputs.map(([r]) => r));
+        const ignoreRes = new Set([
+          ...depositInputs.map(([r]) => r),
+          ...terrainInputs.map(([r]) => r),
+        ]);
         const positions = findBestPositions(item.id, item.building, {
           requireWarehouse: true,
           claimedCells,
@@ -976,7 +1038,34 @@ function autoPopulate() {
             if (claimedCells.has(`${cx},${cy}`)) continue;
             cell.deposit = resId;
             placedCount++;
-            runLog.phases.deposits.push({ resId, name: PP2DATA.getResourceName(resId), x: cx, y: cy });
+            runLog.phases.deposits.push({ kind: 'deposit', resId, name: PP2DATA.getResourceName(resId), x: cx, y: cy });
+          }
+        }
+        for (const [resId, neededPerBuilding] of terrainInputs) {
+          const ter = TERRAIN_PAINT_RESOURCES[resId];
+          const needed = Math.ceil(neededPerBuilding);
+          const have = countTileResource(item.id, pos.x, pos.y, resId, claimedCells);
+          const deficit = needed - have;
+          if (deficit <= 0) continue;
+
+          let painted = 0;
+          for (const [dx, dy] of fp) {
+            if (painted >= deficit) break;
+            const cx = pos.x + dx, cy = pos.y + dy;
+            if (cx < 0 || cx >= width || cy < 0 || cy >= height) continue;
+            const cell = state.island.cells[cy][cx];
+            if (cell.terrain !== 'grass') continue;
+            if (cell.building) continue;
+            if (claimedCells.has(`${cx},${cy}`)) continue;
+            cell.terrain = ter;
+            painted++;
+            runLog.phases.deposits.push({
+              kind: 'terrain',
+              resId,
+              name: PP2DATA.getResourceName(resId),
+              x: cx,
+              y: cy,
+            });
           }
         }
         reservedFootprints.push({ x: pos.x, y: pos.y, id: item.id });

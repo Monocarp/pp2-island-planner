@@ -1129,6 +1129,7 @@ function autoPopulate() {
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           if (!canAutoPlace(item.id, x, y)) continue;
+          if (claimedCells.has(`${x},${y}`)) continue; // don't place house anchor on claimed resource cell
 
           // Count how many required services cover this position
           let svcCovered = 0;

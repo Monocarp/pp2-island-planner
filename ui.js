@@ -8,10 +8,13 @@ function handleCellAction(x, y, e) {
 
   if (state.tool === 'terrain' && state.terrainType) {
     pushUndo();
+    // Remove any building whose footprint covers this cell before changing terrain
+    if (cell.building) {
+      const bFound = findBuildingAtCell(x, y);
+      if (bFound) removeBuildingAt(bFound.x, bFound.y);
+    }
     cell.terrain = state.terrainType;
     cell.deposit = null;
-    cell.building = null;
-    removeBuildingAt(x, y);
     updateStats();
     render();
   } else if (state.tool === 'deposit' && state.depositType) {
@@ -22,8 +25,8 @@ function handleCellAction(x, y, e) {
   } else if (state.tool === 'eraser') {
     pushUndo();
     if (cell.building) {
-      removeBuildingAt(x, y);
-      cell.building = null;
+      const bFound = findBuildingAtCell(x, y);
+      if (bFound) removeBuildingAt(bFound.x, bFound.y);
     }
     cell.deposit = null;
     cell.terrain = 'grass';
@@ -48,22 +51,55 @@ function handleCellAction(x, y, e) {
     validateIsland();
     render();
   } else if (state.tool === 'select') {
-    // Select a building if there is one
-    const b = state.island.buildings.find(b => b.x === x && b.y === y);
+    // Select a building if there is one — check by footprint, not just anchor
+    const b = findBuildingAtCell(x, y);
     state.selectedBuilding = b || null;
     updateBuildingInfo();
     render();
   }
 }
 
+// Returns the building entry whose footprint covers cell (x, y), or null.
+// Checks the anchor first, then scans all footprint offsets.
+function findBuildingAtCell(x, y) {
+  if (!state.island) return null;
+  for (const b of state.island.buildings) {
+    if (b.x === x && b.y === y) return b;
+    const fp = FOOTPRINTS[b.id] || [[0, 0]];
+    for (const [dx, dy] of fp) {
+      if (b.x + dx === x && b.y + dy === y) return b;
+    }
+  }
+  return null;
+}
+
 function placeBuilding(buildingId, x, y) {
-  const { cells } = state.island;
-  cells[y][x].building = buildingId;
+  const { cells, width, height } = state.island;
+  const fp = FOOTPRINTS[buildingId] || [[0, 0]];
+  for (const [dx, dy] of fp) {
+    const cx = x + dx, cy = y + dy;
+    if (cx >= 0 && cx < width && cy >= 0 && cy < height) {
+      cells[cy][cx].building = buildingId;
+    }
+  }
   state.island.buildings.push({ id: buildingId, x, y, uid: nextBuildingUid++ });
 }
 
+// Clears all footprint cells of the building whose anchor is at (x, y),
+// then removes it from the buildings list.
 function removeBuildingAt(x, y) {
   if (!state.island) return;
+  const b = state.island.buildings.find(b => b.x === x && b.y === y);
+  if (b) {
+    const { cells, width, height } = state.island;
+    const fp = FOOTPRINTS[b.id] || [[0, 0]];
+    for (const [dx, dy] of fp) {
+      const cx = b.x + dx, cy = b.y + dy;
+      if (cx >= 0 && cx < width && cy >= 0 && cy < height) {
+        cells[cy][cx].building = null;
+      }
+    }
+  }
   state.island.buildings = state.island.buildings.filter(b => !(b.x === x && b.y === y));
 }
 
@@ -79,14 +115,14 @@ function showContextMenu(px, py, cellX, cellY) {
   if (cell.building) {
     addMenuItem(menu, 'Remove Building', () => {
       pushUndo();
-      cell.building = null;
-      removeBuildingAt(cellX, cellY);
+      const bFound = findBuildingAtCell(cellX, cellY);
+      if (bFound) removeBuildingAt(bFound.x, bFound.y);
       updateStats();
       validateIsland();
       render();
     });
     addMenuItem(menu, 'Show Footprint', () => {
-      const b = state.island.buildings.find(b => b.x === cellX && b.y === cellY);
+      const b = findBuildingAtCell(cellX, cellY);
       state.selectedBuilding = b;
       updateBuildingInfo();
       render();
@@ -191,7 +227,6 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Delete' && state.selectedBuilding) {
     pushUndo();
     const b = state.selectedBuilding;
-    state.island.cells[b.y][b.x].building = null;
     removeBuildingAt(b.x, b.y);
     state.selectedBuilding = null;
     updateBuildingInfo();

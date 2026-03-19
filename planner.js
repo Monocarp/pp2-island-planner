@@ -267,19 +267,30 @@ function calculateProduction() {
 
 // ===== AUTO-POPULATE =====
 
-// Check if a building can be placed at (x, y) — all footprint cells must be valid and unoccupied
+// Check if a building can be placed at (x, y) — all footprint cells must be valid and unoccupied.
 function canAutoPlace(buildingId, x, y) {
   const { width, height, cells } = state.island;
-  const fp = FOOTPRINTS[buildingId] || [[0,0]];
+  const fp = FOOTPRINTS[buildingId] || [[0, 0]];
+  const locReq = LOCATION_REQUIREMENTS[buildingId];
+  const building = getBuildingData(buildingId);
+
+  // Does this building legitimately need water/coastal tiles within its footprint?
+  // If so, we must not reject positions where non-anchor cells fall on water.
+  const acceptsWaterInFootprint =
+    (locReq && locReq.type === 'in_water_coastal') ||
+    (building && building.inputs && 'water_tile' in building.inputs);
 
   for (const [dx, dy] of fp) {
     const cx = x + dx, cy = y + dy;
     if (cx < 0 || cx >= width || cy < 0 || cy >= height) return false;
     const cell = cells[cy][cx];
     if (cell.building) return false;
-    // Anchor cell terrain check
     if (dx === 0 && dy === 0) {
+      // Anchor cell: full terrain check per location requirement
       if (!canPlaceOnTerrain(buildingId, cell.terrain)) return false;
+    } else {
+      // Non-anchor cells: must not be open water unless the building uses water in footprint
+      if (!acceptsWaterInFootprint && cell.terrain === 'water') return false;
     }
   }
   // Location requirements (river, ocean, etc.)
@@ -318,12 +329,14 @@ function isInWarehouseRange(x, y) {
   return false;
 }
 
-// Check if position (x,y) is covered by a specific service resource
+// Check if position (x,y) is covered by any placed building that provides
+// the given service resource. Checks all providers (not just one canonical type)
+// so that e.g. HarborTavern and Tavern both count for 'community'.
 function isInServiceCoverage(x, y, serviceResId) {
-  const providerId = pickServiceProvider(serviceResId);
-  if (!providerId) return false;
   for (const b of state.island.buildings) {
-    if (b.id !== providerId) continue;
+    const bld = getBuildingData(b.id);
+    if (!bld || bld.isPopulation) continue;
+    if (bld.produces !== serviceResId) continue;
     const fp = FOOTPRINTS[b.id];
     if (!fp) continue;
     for (const [dx, dy] of fp) {
@@ -398,11 +411,10 @@ function findBestPositions(buildingId, building, opts) {
   return candidates;
 }
 
-// Place building during auto-populate (marks footprint cells)
+// Place building during auto-populate — delegates to placeBuilding so all
+// footprint cells are marked consistently with manual placement.
 function autoPlaceBuilding(buildingId, x, y) {
-  const { cells } = state.island;
-  cells[y][x].building = buildingId;
-  state.island.buildings.push({ id: buildingId, x, y, uid: nextBuildingUid++ });
+  placeBuilding(buildingId, x, y);
 }
 
 // Determine which service buildings are needed for the requested population houses
@@ -420,25 +432,45 @@ function getRequiredServices() {
   return needed;
 }
 
-// Map service resource to best provider building ID
+// Six service resources are consumed by population houses but have no dedicated
+// producer entry in data.js — the buildings that provide them are registered
+// under 'community' or another umbrella resource instead. This fallback map
+// bridges that data gap.
+const SERVICE_PROVIDER_FALLBACK = {
+  'sports':       'SportsGround',
+  'hygiene':      'Bathhouse',
+  'trading':      'MarketHall',
+  'cemetery':     'Cemetery',
+  'entertainment':'Theatre',
+  'gambling':     'Fair',
+};
+
+// Map service resource to best available provider building ID.
+// Uses data.js producers table where it exists (data-driven, respects tier and
+// unlocks). Falls back to SERVICE_PROVIDER_FALLBACK for service resources the
+// data doesn't model with dedicated producers.
 function pickServiceProvider(serviceResId) {
-  const preferred = {
-    'water': 'Well',
-    'community': 'Tavern',
-    'education': 'School',
-    'medical_care': 'Medicus',
-    'sports': 'SportsGround',
-    'administration': 'Townhall',
-    'hygiene': 'Bathhouse',
-    'trading': 'MarketHall',
-    'cemetery': 'Cemetery',
-    'entertainment': 'Theatre',
-    'coiffeur': 'Coiffeur',
-    'higher_education': 'University',
-    'gambling': 'Fair',
-    'heat': 'HeatingPlant',
+  // getProducersOf returns building objects; extract IDs before getBuildingData
+  const producers = PP2DATA.getProducersOf(serviceResId);
+  const candidates = producers
+    .map(p => getBuildingData(p.id))
+    .filter(b => b && !b.isPopulation && FOOTPRINTS[b.id]);
+
+  if (candidates.length === 0) {
+    return SERVICE_PROVIDER_FALLBACK[serviceResId] || null;
+  }
+
+  const byTier = (a, b) => {
+    const ta = TIER_PRIORITY.indexOf(a.tier);
+    const tb = TIER_PRIORITY.indexOf(b.tier);
+    return (ta === -1 ? 99 : ta) - (tb === -1 ? 99 : tb);
   };
-  return preferred[serviceResId] || null;
+
+  // Prefer buildings the player has unlocked in the palette
+  const unlocked = candidates.filter(b => state.unlockedBuildings.has(b.id));
+  const pool = unlocked.length > 0 ? unlocked : candidates;
+  pool.sort(byTier);
+  return pool[0].id;
 }
 
 // Main auto-populate function
@@ -668,6 +700,47 @@ function autoPopulate() {
       } else {
         failed.push({ id: item.id, reason: 'no space' });
       }
+    }
+  }
+
+  // === PHASE 4: Service top-up — cover any houses left uncovered after Phase 3 ===
+  // For each required service, greedily place additional service buildings at whichever
+  // position covers the most currently-uncovered houses. Stops when all houses are
+  // covered or no valid position improves coverage (max 10 placements per service).
+  for (const svcRes of requiredServices) {
+    const providerId = pickServiceProvider(svcRes);
+    if (!providerId) continue;
+    const providerBuilding = getBuildingData(providerId);
+    if (!providerBuilding) continue;
+    const fp = FOOTPRINTS[providerId];
+    if (!fp) continue;
+
+    for (let attempt = 0; attempt < 10; attempt++) {
+      // Find all placed population houses that need this service but aren't covered
+      const uncovered = state.island.buildings.filter(b => {
+        const bld = getBuildingData(b.id);
+        if (!bld || !bld.isPopulation) return false;
+        if (!bld.consumePerMinute || !bld.consumePerMinute[svcRes]) return false;
+        return !isInServiceCoverage(b.x, b.y, svcRes);
+      });
+      if (uncovered.length === 0) break;
+
+      // Find position that covers the most uncovered houses
+      let bestPos = null, bestCount = 0;
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (!canAutoPlace(providerId, x, y)) continue;
+          let count = 0;
+          for (const h of uncovered) {
+            if (fp.some(([dx, dy]) => x + dx === h.x && y + dy === h.y)) count++;
+          }
+          if (count > bestCount) { bestCount = count; bestPos = { x, y }; }
+        }
+      }
+
+      if (!bestPos || bestCount === 0) break;
+      autoPlaceBuilding(providerId, bestPos.x, bestPos.y);
+      placed.push({ id: providerId, x: bestPos.x, y: bestPos.y });
     }
   }
 

@@ -80,7 +80,10 @@ function validateIsland() {
     if (building.isPopulation) {
       popHouses.push({ x: b.x, y: b.y, building });
     }
-    if (building.isService || (building.produces && SERVICE_RESOURCES.has(building.produces))) {
+    // Only classify as a spatial service provider if it is explicitly a service building.
+    // Population buildings (PioneersHut, FarmersShack, etc.) produce service resource IDs
+    // in the raw data but are NOT coverage providers — they only serve themselves.
+    if (!building.isPopulation && (building.isService || (building.produces && SERVICE_RESOURCES.has(building.produces)))) {
       const fp = FOOTPRINTS[b.id];
       if (fp) serviceProviders.push({ x: b.x, y: b.y, building, serviceResource: building.produces, fp });
     }

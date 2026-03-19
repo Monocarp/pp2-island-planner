@@ -473,6 +473,161 @@ function pickServiceProvider(serviceResId) {
   return pool[0].id;
 }
 
+// ===== AUTO-POPULATE DIAGNOSTICS =====
+
+// Finds the best physically valid position for a building while ignoring tile
+// resource requirements, then reports actual tile counts there.
+// Used to produce verbose failure diagnostics (e.g. "grass: 4/8 at (12,8)").
+function diagnosePlacementFailure(buildingId, building, opts) {
+  const { width, height, cells } = state.island;
+  const fp = FOOTPRINTS[buildingId] || [[0, 0]];
+  const requireWarehouse = opts && opts.requireWarehouse;
+  const locReq = LOCATION_REQUIREMENTS[buildingId];
+  const acceptsWater = (locReq && locReq.type === 'in_water_coastal') ||
+    (building && building.inputs && 'water_tile' in building.inputs);
+  const cx = width / 2, cy = height / 2;
+  let bestPos = null, bestDist = Infinity;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (requireWarehouse && !isInWarehouseRange(x, y)) continue;
+      let canPlace = true;
+      for (const [dx, dy] of fp) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || nx >= width || ny < 0 || ny >= height) { canPlace = false; break; }
+        const cell = cells[ny][nx];
+        if (cell.building) { canPlace = false; break; }
+        if (dx === 0 && dy === 0) {
+          if (!canPlaceOnTerrain(buildingId, cell.terrain)) { canPlace = false; break; }
+        } else if (!acceptsWater && cell.terrain === 'water') {
+          canPlace = false; break;
+        }
+      }
+      if (!canPlace) continue;
+      const locCheck = checkLocationRequirement(buildingId, x, y);
+      if (!locCheck.ok) continue;
+      const dist = Math.abs(x - cx) + Math.abs(y - cy);
+      if (dist < bestDist) { bestDist = dist; bestPos = { x, y }; }
+    }
+  }
+
+  if (!bestPos) return null;
+
+  const tileCounts = {};
+  if (building.inputs) {
+    for (const [resId, needed] of Object.entries(building.inputs)) {
+      if (!TILE_RESOURCE_IDS.has(resId)) continue;
+      if (resId === 'river' && LOCATION_REQUIREMENTS[buildingId]) continue;
+      tileCounts[resId] = {
+        available: countTileResource(buildingId, bestPos.x, bestPos.y, resId),
+        needed,
+      };
+    }
+  }
+  return { pos: bestPos, tileCounts };
+}
+
+// Emits a structured, collapsible console.group log for an auto-populate run.
+function emitAutoPopulateLog(log) {
+  const { islandSize, phases, coverage } = log;
+  const totalPlaced = phases.warehouses.placed.length +
+    phases.services.placed.length +
+    phases.production.placed.length +
+    phases.houses.placed.length +
+    phases.topup.length;
+  const totalFailed = phases.services.failed.length +
+    phases.production.failed.length +
+    phases.houses.failed.length;
+
+  console.group(
+    `%c[PP2 Auto-Populate]%c ${islandSize} — ${totalPlaced} placed, ${totalFailed} failed`,
+    'font-weight:bold;color:#e94560', 'font-weight:normal;color:inherit'
+  );
+
+  // Phase 0
+  console.group('Phase 0 — Warehouses');
+  if (phases.warehouses.placed.length === 0) {
+    console.log('No warehouses placed (already existed or no valid position)');
+  } else {
+    phases.warehouses.placed.forEach(w =>
+      console.log(`✓ ${w.name} at (${w.x},${w.y})`));
+  }
+  if (phases.warehouses.coverage !== null) {
+    const pct = (phases.warehouses.coverage * 100).toFixed(1);
+    const style = phases.warehouses.coverage >= 0.7 ? 'color:green' : 'color:orange';
+    console.log(`%cLand coverage: ${pct}%`, style);
+  }
+  console.groupEnd();
+
+  // Phase 1
+  const svcNeed = phases.services.placed.length + phases.services.failed.length;
+  console.group(`Phase 1 — Services (${phases.services.placed.length}/${svcNeed} placed)`);
+  phases.services.placed.forEach(s =>
+    console.log(`✓ ${s.name} at (${s.x},${s.y}) [${s.serviceRes}]`));
+  phases.services.failed.forEach(f =>
+    console.warn(`✗ ${f.name} — ${f.reason}`));
+  console.groupEnd();
+
+  // Phase 2
+  const prodNeed = phases.production.placed.length + phases.production.failed.length;
+  console.group(`Phase 2 — Production (${phases.production.placed.length}/${prodNeed} placed)`);
+  phases.production.placed.forEach(p =>
+    console.log(`✓ ${p.name} at (${p.x},${p.y})${p.usedFallback ? ' ⚠ outside warehouse' : ''}`));
+  phases.production.failed.forEach(f => {
+    if (f.diagnosis) {
+      const tileStr = Object.entries(f.diagnosis.tileCounts)
+        .map(([r, v]) => `${PP2DATA.getResourceName(r)}: ${v.available}/${v.needed}`)
+        .join(', ');
+      console.warn(
+        `✗ ${f.name} — ${f.reason}`,
+        `[best pos (${f.diagnosis.pos.x},${f.diagnosis.pos.y}): ${tileStr || 'n/a'}]`
+      );
+    } else {
+      console.warn(`✗ ${f.name} — ${f.reason} [no physically valid position exists]`);
+    }
+  });
+  console.groupEnd();
+
+  // Phase 3
+  const houseNeed = phases.houses.placed.length + phases.houses.failed.length;
+  console.group(`Phase 3 — Houses (${phases.houses.placed.length}/${houseNeed} placed)`);
+  phases.houses.placed.forEach(h => {
+    if (h.svcTotal > 0 && h.svcCovered < h.svcTotal) {
+      console.warn(`△ ${h.name} at (${h.x},${h.y}) — ${h.svcCovered}/${h.svcTotal} services covered`);
+    } else {
+      console.log(`✓ ${h.name} at (${h.x},${h.y})`);
+    }
+  });
+  phases.houses.failed.forEach(f =>
+    console.warn(`✗ ${f.name} — ${f.reason}`));
+  console.groupEnd();
+
+  // Phase 4
+  if (phases.topup.length > 0) {
+    console.group(`Phase 4 — Service top-up (${phases.topup.length} additional buildings)`);
+    phases.topup.forEach(t =>
+      console.log(`✓ ${t.providerName} at (${t.x},${t.y}) — covered ${t.coveredCount} houses [${t.serviceRes}] (${t.uncoveredBefore} uncovered before)`));
+    console.groupEnd();
+  } else {
+    console.log('Phase 4 — No service top-up needed');
+  }
+
+  // Coverage summary
+  if (Object.keys(coverage).length > 0) {
+    console.group('Coverage summary');
+    for (const [svcRes, c] of Object.entries(coverage)) {
+      const ok = c.covered >= c.total;
+      console.log(
+        `%c${ok ? '✓' : '✗'} ${PP2DATA.getResourceName(svcRes)}: ${c.covered}/${c.total}`,
+        ok ? 'color:green' : 'color:red'
+      );
+    }
+    console.groupEnd();
+  }
+
+  console.groupEnd(); // [PP2 Auto-Populate]
+}
+
 // Main auto-populate function
 function autoPopulate() {
   if (!state.island) return;
@@ -488,6 +643,18 @@ function autoPopulate() {
 
   const { buildings: chainBuildings } = resolveProductionChain(demand);
   const { width, height } = state.island;
+
+  const runLog = {
+    islandSize: `${width}×${height}`,
+    phases: {
+      warehouses: { placed: [], coverage: null },
+      services:   { placed: [], failed: [] },
+      production: { placed: [], failed: [] },
+      houses:     { placed: [], failed: [] },
+      topup:      [],
+    },
+    coverage: {},
+  };
 
   // Already-placed counts (don't double-place)
   const placedCounts = {};
@@ -547,6 +714,7 @@ function autoPopulate() {
     if (positions.length > 0) {
       autoPlaceBuilding(whId, positions[0].x, positions[0].y);
       placed.push({ id: whId, x: positions[0].x, y: positions[0].y });
+      runLog.phases.warehouses.placed.push({ name: whBuilding.name || whId, x: positions[0].x, y: positions[0].y });
     }
   }
 
@@ -565,6 +733,7 @@ function autoPopulate() {
       }
     }
     const coverage = totalLand > 0 ? coveredLand / totalLand : 1;
+    runLog.phases.warehouses.coverage = coverage;
     if (coverage >= 0.7 || totalProdNeeded <= 3) break;
 
     // Place another warehouse where it covers the most uncovered land
@@ -581,6 +750,7 @@ function autoPopulate() {
     if (bestWh && bestNew > 0) {
       autoPlaceBuilding(whId, bestWh.x, bestWh.y);
       placed.push({ id: whId, x: bestWh.x, y: bestWh.y });
+      runLog.phases.warehouses.placed.push({ name: whBuilding.name || whId, x: bestWh.x, y: bestWh.y });
     } else {
       break;
     }
@@ -594,8 +764,10 @@ function autoPopulate() {
       if (positions.length > 0) {
         autoPlaceBuilding(item.id, positions[0].x, positions[0].y);
         placed.push({ id: item.id, x: positions[0].x, y: positions[0].y });
+        runLog.phases.services.placed.push({ name: item.building.name || item.id, x: positions[0].x, y: positions[0].y, serviceRes: item.serviceRes });
       } else {
         failed.push({ id: item.id, reason: 'no valid position for service' });
+        runLog.phases.services.failed.push({ name: item.building.name || item.id, reason: 'no valid position' });
       }
     }
   }
@@ -628,13 +800,16 @@ function autoPopulate() {
     for (let i = 0; i < item.count; i++) {
       // Try in warehouse range first
       let positions = findBestPositions(item.id, item.building, { requireWarehouse: true });
+      let usedFallback = false;
       if (positions.length === 0) {
         // Fallback: anywhere
         positions = findBestPositions(item.id, item.building, {});
+        usedFallback = positions.length > 0;
       }
       if (positions.length > 0) {
         autoPlaceBuilding(item.id, positions[0].x, positions[0].y);
         placed.push({ id: item.id, x: positions[0].x, y: positions[0].y });
+        runLog.phases.production.placed.push({ name: item.building.name || item.id, x: positions[0].x, y: positions[0].y, usedFallback });
       } else {
         // Diagnose why
         const bld = item.building;
@@ -650,6 +825,8 @@ function autoPopulate() {
           reason = LOCATION_REQUIREMENTS[item.id].label;
         }
         failed.push({ id: item.id, reason });
+        const diagnosis = diagnosePlacementFailure(item.id, item.building, { requireWarehouse: false });
+        runLog.phases.production.failed.push({ name: item.building.name || item.id, reason, diagnosis });
       }
     }
   }
@@ -667,6 +844,7 @@ function autoPopulate() {
     for (let i = 0; i < item.count; i++) {
       let bestPos = null;
       let bestScore = -Infinity;
+      let bestSvcCovered = 0;
 
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
@@ -690,6 +868,7 @@ function autoPopulate() {
           if (score > bestScore) {
             bestScore = score;
             bestPos = { x, y };
+            bestSvcCovered = svcCovered;
           }
         }
       }
@@ -697,8 +876,10 @@ function autoPopulate() {
       if (bestPos) {
         autoPlaceBuilding(item.id, bestPos.x, bestPos.y);
         placed.push({ id: item.id, x: bestPos.x, y: bestPos.y });
+        runLog.phases.houses.placed.push({ name: item.building.name || item.id, x: bestPos.x, y: bestPos.y, svcCovered: bestSvcCovered, svcTotal: neededServices.length });
       } else {
         failed.push({ id: item.id, reason: 'no space' });
+        runLog.phases.houses.failed.push({ name: item.building.name || item.id, reason: 'no space' });
       }
     }
   }
@@ -741,8 +922,26 @@ function autoPopulate() {
       if (!bestPos || bestCount === 0) break;
       autoPlaceBuilding(providerId, bestPos.x, bestPos.y);
       placed.push({ id: providerId, x: bestPos.x, y: bestPos.y });
+      runLog.phases.topup.push({ serviceRes: svcRes, providerName: providerBuilding.name || providerId, x: bestPos.x, y: bestPos.y, coveredCount: bestCount, uncoveredBefore: uncovered.length });
     }
   }
+
+  // Build coverage summary for logging
+  for (const svcRes of requiredServices) {
+    const total = state.island.buildings.filter(b => {
+      const bld = getBuildingData(b.id);
+      return bld && bld.isPopulation && bld.consumePerMinute && bld.consumePerMinute[svcRes];
+    }).length;
+    if (total === 0) continue;
+    const covered = state.island.buildings.filter(b => {
+      const bld = getBuildingData(b.id);
+      return bld && bld.isPopulation && bld.consumePerMinute && bld.consumePerMinute[svcRes] &&
+        isInServiceCoverage(b.x, b.y, svcRes);
+    }).length;
+    runLog.coverage[svcRes] = { covered, total };
+  }
+
+  emitAutoPopulateLog(runLog);
 
   // Refresh everything
   updateStats();

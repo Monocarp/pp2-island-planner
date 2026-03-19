@@ -398,15 +398,34 @@ function pickWarehouseId() {
 
 // Find all valid positions for a building, sorted by score.
 // opts.claimedCells: Set of "cx,cy" strings — spatial tiles already used by prior buildings.
+// opts.ignoreTileResources: Set of resIds to skip when checking tile requirements (e.g. to find
+//   a position where we will paint deposits before placing).
+// opts.reservedFootprints: [{x,y,id}] — positions reserved for upcoming placements (skip overlap).
 function findBestPositions(buildingId, building, opts) {
   const { width, height } = state.island;
   const requireWarehouse = opts && opts.requireWarehouse;
   const claimedCells = (opts && opts.claimedCells) || null;
+  const ignoreTileResources = (opts && opts.ignoreTileResources) || null;
+  const reservedFootprints = (opts && opts.reservedFootprints) || [];
+  const fp = FOOTPRINTS[buildingId] || [[0, 0]];
   const candidates = [];
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       if (!canAutoPlace(buildingId, x, y)) continue;
       if (requireWarehouse && !isInWarehouseRange(x, y)) continue;
+      let overlapsReserved = false;
+      for (const r of reservedFootprints) {
+        const rfp = FOOTPRINTS[r.id] || [[0, 0]];
+        for (const [dx, dy] of fp) {
+          const cx = x + dx, cy = y + dy;
+          for (const [rdx, rdy] of rfp) {
+            if (r.x + rdx === cx && r.y + rdy === cy) { overlapsReserved = true; break; }
+          }
+          if (overlapsReserved) break;
+        }
+        if (overlapsReserved) break;
+      }
+      if (overlapsReserved) continue;
 
       // Check tile resource inputs are satisfied (accounting for already-claimed tiles)
       let tileOk = true;
@@ -414,6 +433,7 @@ function findBestPositions(buildingId, building, opts) {
         for (const [resId, needed] of Object.entries(building.inputs)) {
           if (!TILE_RESOURCE_IDS.has(resId)) continue;
           if (resId === 'river' && LOCATION_REQUIREMENTS[buildingId]) continue;
+          if (ignoreTileResources && ignoreTileResources.has(resId)) continue;
           if (countTileResource(buildingId, x, y, resId, claimedCells) < needed) {
             tileOk = false;
             break;
@@ -548,13 +568,14 @@ function diagnosePlacementFailure(buildingId, building, opts) {
 
   if (!bestPos) return null;
 
+  const claimedCells = (opts && opts.claimedCells) || null;
   const tileCounts = {};
   if (building.inputs) {
     for (const [resId, needed] of Object.entries(building.inputs)) {
       if (!TILE_RESOURCE_IDS.has(resId)) continue;
       if (resId === 'river' && LOCATION_REQUIREMENTS[buildingId]) continue;
       tileCounts[resId] = {
-        available: countTileResource(buildingId, bestPos.x, bestPos.y, resId),
+        available: countTileResource(buildingId, bestPos.x, bestPos.y, resId, claimedCells),
         needed,
       };
     }
@@ -615,7 +636,7 @@ function emitAutoPopulateLog(log) {
   const prodNeed = phases.production.placed.length + phases.production.failed.length;
   console.group(`Phase 2 — Production (${phases.production.placed.length}/${prodNeed} placed)`);
   phases.production.placed.forEach(p =>
-    console.log(`✓ ${p.name} at (${p.x},${p.y})${p.usedFallback ? ' ⚠ outside warehouse' : ''}`));
+    console.log(`✓ ${p.name} at (${p.x},${p.y})`));
   phases.production.failed.forEach(f => {
     if (f.diagnosis) {
       const tileStr = Object.entries(f.diagnosis.tileCounts)
@@ -709,6 +730,9 @@ function autoPopulate() {
   // Tracks which spatial tile resource cells (e.g. grass) are already claimed by a placed
   // building, so that subsequent buildings don't overlap on the same grass/deposit tiles.
   const claimedCells = new Set();
+  for (const b of state.island.buildings) {
+    claimTileResourceCells(b.id, b.x, b.y, claimedCells);
+  }
 
   // === Gather what we need to place ===
 
@@ -819,50 +843,54 @@ function autoPopulate() {
     }
   }
 
-  // === PHASE 1.5: Auto-place missing deposit tiles for production buildings ===
-  // If a building needs a deposit (apple_trees, hop_field, etc.) and the island doesn't
-  // have enough, place the deficit count on free grass cells — warehouse range first.
+  // === PHASE 1.5: Auto-place missing deposit tiles co-located with building footprints ===
+  // For each production building that needs a deposit (apple_trees, hop_field, etc.), find a
+  // valid position first (ignoring that deposit requirement), then paint the deficit deposits
+  // on grass cells within that footprint so Phase 2 can place the building there.
   {
     const depositTypeSet = new Set(DEPOSIT_TYPES.map(d => d.id));
+    const reservedFootprints = []; // {x, y, id} — positions reserved for upcoming placements
     for (const item of productionList) {
       if (!item.building.inputs) continue;
-      for (const [resId, neededPerBuilding] of Object.entries(item.building.inputs)) {
-        if (!TILE_RESOURCE_IDS.has(resId)) continue;
-        if (!depositTypeSet.has(resId)) continue; // skip terrain resources (grass, forest, etc.)
+      const depositInputs = Object.entries(item.building.inputs)
+        .filter(([r]) => TILE_RESOURCE_IDS.has(r) && depositTypeSet.has(r));
+      if (depositInputs.length === 0) continue;
 
-        const totalNeeded = Math.ceil(neededPerBuilding) * item.count;
+      for (let i = 0; i < item.count; i++) {
+        const ignoreRes = new Set(depositInputs.map(([r]) => r));
+        const positions = findBestPositions(item.id, item.building, {
+          requireWarehouse: true,
+          claimedCells,
+          ignoreTileResources: ignoreRes,
+          reservedFootprints,
+        });
+        if (positions.length === 0) continue;
 
-        // Count existing deposits of this type (not claimed)
-        let existing = 0;
-        for (let cy = 0; cy < height; cy++) {
-          for (let cx = 0; cx < width; cx++) {
-            if (state.island.cells[cy][cx].deposit === resId && !claimedCells.has(`${cx},${cy}`)) {
-              existing++;
-            }
+        const pos = positions[0];
+        const fp = FOOTPRINTS[item.id] || [[0, 0]];
+        for (const [resId, neededPerBuilding] of depositInputs) {
+          const needed = Math.ceil(neededPerBuilding);
+          const have = countTileResource(item.id, pos.x, pos.y, resId, claimedCells);
+          const deficit = needed - have;
+          if (deficit <= 0) continue;
+
+          let placedCount = 0;
+          for (const [dx, dy] of fp) {
+            if (placedCount >= deficit) break;
+            const cx = pos.x + dx, cy = pos.y + dy;
+            if (cx < 0 || cx >= width || cy < 0 || cy >= height) continue;
+            const cell = state.island.cells[cy][cx];
+            if (cell.terrain !== 'grass') continue;
+            if (cell.deposit) continue;
+            if (cell.building) continue;
+            if (claimedCells.has(`${cx},${cy}`)) continue;
+            cell.deposit = resId;
+            claimedCells.add(`${cx},${cy}`);
+            placedCount++;
+            runLog.phases.deposits.push({ resId, name: PP2DATA.getResourceName(resId), x: cx, y: cy });
           }
         }
-        const deficit = totalNeeded - existing;
-        if (deficit <= 0) continue;
-
-        // Place deposits on free unclaimed grass cells — warehouse range first, then anywhere
-        let placed_count = 0;
-        for (const requireWh of [true, false]) {
-          if (placed_count >= deficit) break;
-          for (let cy = 0; cy < height && placed_count < deficit; cy++) {
-            for (let cx = 0; cx < width && placed_count < deficit; cx++) {
-              const cell = state.island.cells[cy][cx];
-              if (cell.terrain !== 'grass') continue;
-              if (cell.deposit) continue;
-              if (cell.building) continue;
-              if (claimedCells.has(`${cx},${cy}`)) continue;
-              if (requireWh && !isInWarehouseRange(cx, cy)) continue;
-              cell.deposit = resId;
-              claimedCells.add(`${cx},${cy}`);
-              placed_count++;
-              runLog.phases.deposits.push({ resId, name: PP2DATA.getResourceName(resId), x: cx, y: cy });
-            }
-          }
-        }
+        reservedFootprints.push({ x: pos.x, y: pos.y, id: item.id });
       }
     }
   }
@@ -898,7 +926,7 @@ function autoPopulate() {
         autoPlaceBuilding(item.id, positions[0].x, positions[0].y);
         claimTileResourceCells(item.id, positions[0].x, positions[0].y, claimedCells);
         placed.push({ id: item.id, x: positions[0].x, y: positions[0].y });
-        runLog.phases.production.placed.push({ name: item.building.name || item.id, x: positions[0].x, y: positions[0].y, usedFallback: false });
+        runLog.phases.production.placed.push({ name: item.building.name || item.id, x: positions[0].x, y: positions[0].y });
       } else {
         // Diagnose why
         const bld = item.building;
@@ -914,7 +942,7 @@ function autoPopulate() {
           reason = LOCATION_REQUIREMENTS[item.id].label;
         }
         failed.push({ id: item.id, reason });
-        const diagnosis = diagnosePlacementFailure(item.id, item.building, { requireWarehouse: false });
+        const diagnosis = diagnosePlacementFailure(item.id, item.building, { requireWarehouse: false, claimedCells });
         runLog.phases.production.failed.push({ name: item.building.name || item.id, reason, diagnosis });
       }
     }

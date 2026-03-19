@@ -560,11 +560,17 @@ const EXTRA_BUILDINGS = [
   { id: 'Shipyard', name: 'Shipyard', tier: 'Townsmen', produces: null, isInfrastructure: true },
 ];
 
-// Combined lookup: check PP2DATA first, then EXTRA_BUILDINGS
+// Combined lookup: merge PP2DATA building with EXTRA_BUILDINGS flags
 function getBuildingData(id) {
   const b = PP2DATA.getBuilding(id);
-  if (b) return b;
-  return EXTRA_BUILDINGS.find(e => e.id === id) || null;
+  const extra = EXTRA_BUILDINGS.find(e => e.id === id);
+  if (b && extra) {
+    const merged = { ...b };
+    if (extra.isService) merged.isService = true;
+    if (extra.isInfrastructure) merged.isInfrastructure = true;
+    return merged;
+  }
+  return b || extra || null;
 }
 
 // ===== TERRAIN PLACEMENT RULES =====
@@ -1767,26 +1773,50 @@ function updateStats() {
 }
 
 // ===== VALIDATION =====
+// Service resource IDs — used for validation (coverage-based, not production-based)
+const SERVICE_RESOURCES = new Set([
+  'water', 'community', 'education', 'medical_care', 'sports',
+  'administration', 'hygiene', 'trading', 'cemetery', 'entertainment',
+  'coiffeur', 'higher_education', 'gambling', 'heat',
+]);
+
 function validateIsland() {
   if (!state.island) return;
   const issues = [];
   const { width, height, cells, buildings } = state.island;
+
+  const warehouseIds = ['Warehouse1', 'Warehouse2', 'Warehouse3'];
+  const warehouses = buildings.filter(w => warehouseIds.includes(w.id));
+
+  // Collect placed pop houses and service buildings
+  const popHouses = [];  // { x, y, building, placed }
+  const serviceProviders = []; // { x, y, building, serviceResource, fp }
+
+  buildings.forEach(b => {
+    const building = getBuildingData(b.id);
+    if (!building) return;
+    if (building.isPopulation) {
+      popHouses.push({ x: b.x, y: b.y, building });
+    }
+    if (building.isService || (building.produces && SERVICE_RESOURCES.has(building.produces))) {
+      const fp = FOOTPRINTS[b.id];
+      if (fp) serviceProviders.push({ x: b.x, y: b.y, building, serviceResource: building.produces, fp });
+    }
+  });
 
   // Check each building
   buildings.forEach(b => {
     const building = getBuildingData(b.id);
     if (!building) return;
 
-    // Check warehouse coverage (does any warehouse's footprint cover this cell?)
-    const warehouseIds = ['Warehouse1', 'Warehouse2', 'Warehouse3'];
-    const warehouses = buildings.filter(w => warehouseIds.includes(w.id));
-    let inWarehouseRange = false;
-    // Warehouses, service, infrastructure, and population buildings don't need warehouse coverage
     const isWarehouse = warehouseIds.includes(b.id);
-    const isService = building.isService;
+    const isService = building.isService || (building.produces && SERVICE_RESOURCES.has(building.produces));
     const isInfra = building.isInfrastructure;
     const isPop = building.isPopulation;
+
+    // --- Warehouse coverage (production buildings only) ---
     if (!isWarehouse && !isService && !isInfra && !isPop) {
+      let inWarehouseRange = false;
       warehouses.forEach(wh => {
         const fp = FOOTPRINTS[wh.id];
         if (fp) {
@@ -1800,6 +1830,35 @@ function validateIsland() {
           issues.push({ type: 'warning', msg: `${building.name} at (${b.x},${b.y}): no warehouses on island` });
         } else {
           issues.push({ type: 'error', msg: `${building.name} at (${b.x},${b.y}) outside warehouse range` });
+        }
+      }
+    }
+
+    // --- Service building: check it covers at least one pop house ---
+    if (isService && !isPop) {
+      const fp = FOOTPRINTS[b.id];
+      if (fp) {
+        const coversAnyHouse = popHouses.some(h =>
+          fp.some(([dx, dy]) => b.x + dx === h.x && b.y + dy === h.y)
+        );
+        if (!coversAnyHouse && popHouses.length > 0) {
+          issues.push({ type: 'warning', msg: `${building.name} at (${b.x},${b.y}) not covering any houses` });
+        }
+      }
+    }
+
+    // --- Population house: check needed services cover it ---
+    if (isPop && building.consumePerMinute) {
+      for (const [resId, rate] of Object.entries(building.consumePerMinute)) {
+        if (!SERVICE_RESOURCES.has(resId)) continue;
+        // Check if any placed provider of this service covers this house
+        const covered = serviceProviders.some(sp =>
+          sp.serviceResource === resId &&
+          sp.fp.some(([dx, dy]) => sp.x + dx === b.x && sp.y + dy === b.y)
+        );
+        if (!covered) {
+          const resName = PP2DATA.getResourceName(resId);
+          issues.push({ type: 'warning', msg: `${building.name} at (${b.x},${b.y}) not covered by ${resName} service` });
         }
       }
     }
@@ -1888,13 +1947,6 @@ const POP_BUILDINGS = [
   { id: 'PopulationWorkersHouse',    label: 'Worker Houses',    tier: 'Workers' },
   { id: 'PopulationParagonsResidence',label: 'Paragon Residences',tier: 'Paragons' },
 ];
-
-// Resources that are service/coverage-based (consumePerMinute = 60), not production chain goods
-const SERVICE_RESOURCES = new Set([
-  'water', 'community', 'education', 'medical_care', 'sports',
-  'administration', 'hygiene', 'trading', 'cemetery', 'entertainment',
-  'coiffeur', 'higher_education', 'gambling', 'heat',
-]);
 
 function buildPlannerInputs() {
   const el = document.getElementById('planner-inputs');

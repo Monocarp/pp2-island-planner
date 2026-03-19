@@ -1150,6 +1150,10 @@ function autoPopulate() {
 
         const pos = positions[0];
         const fp = FOOTPRINTS[item.id] || [[0, 0]];
+        // The game only places the building on the anchor cell; deposits/terrain must live on
+        // other footprint cells. Painting on (0,0) looks correct until Phase 2 places the
+        // building and the main tile covers the apple tree / field.
+        const skipAnchorForPaint = fp.length > 1;
         for (const [resId] of depositInputs) {
           const needed = tilesNeededPerBuilding(item.building, resId, chainFrac);
           const have = countTileResource(item.id, pos.x, pos.y, resId, claimedCells);
@@ -1158,6 +1162,7 @@ function autoPopulate() {
 
           let placedCount = 0;
           for (const [dx, dy] of fp) {
+            if (skipAnchorForPaint && dx === 0 && dy === 0) continue;
             if (placedCount >= deficit) break;
             const cx = pos.x + dx, cy = pos.y + dy;
             if (cx < 0 || cx >= width || cy < 0 || cy >= height) continue;
@@ -1180,6 +1185,7 @@ function autoPopulate() {
 
           let painted = 0;
           for (const [dx, dy] of fp) {
+            if (skipAnchorForPaint && dx === 0 && dy === 0) continue;
             if (painted >= deficit) break;
             const cx = pos.x + dx, cy = pos.y + dy;
             if (cx < 0 || cx >= width || cy < 0 || cy >= height) continue;

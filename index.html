@@ -474,6 +474,16 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
         </div>
         <div id="planner-custom-list" class="planner-custom-list" style="margin-top:6px;display:flex;flex-direction:column;gap:2px;"></div>
       </div>
+      <div id="planner-military-wrap" class="planner-military-wrap" style="margin-bottom:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,.08);">
+        <h5 style="font-size:0.75rem;margin:0 0 6px 0;color:#aaa;">Military targets (rate / hour)</h5>
+        <div class="planner-row" style="flex-wrap:wrap;gap:4px;align-items:center;">
+          <select id="planner-military-select" style="flex:2;min-width:100px;font-size:0.7rem;padding:2px 4px;max-width:200px;"></select>
+          <input type="number" id="planner-military-rate" min="0" step="0.1" value="6" placeholder="/hr" style="width:52px;font-size:0.7rem;padding:2px 4px;" title="Units per hour">
+          <button type="button" id="planner-military-add" style="padding:3px 8px;font-size:0.7rem;background:#16213e;border:1px solid #e94560;color:#e94560;border-radius:3px;cursor:pointer;">Add</button>
+          <button type="button" id="planner-military-clear" style="padding:3px 6px;font-size:0.65rem;background:transparent;border:1px solid #666;color:#888;border-radius:3px;cursor:pointer;" title="Clear all military targets">Clear</button>
+        </div>
+        <div id="planner-military-list" style="margin-top:6px;display:flex;flex-direction:column;gap:2px;"></div>
+      </div>
       <div style="display:flex;gap:4px;margin-bottom:6px;">
         <button onclick="calculateProduction()" style="flex:1;padding:4px 8px;background:#e94560;border:none;color:#fff;border-radius:3px;font-size:0.75rem;font-weight:600;">Calculate</button>
         <button onclick="autoPopulate()" style="flex:1;padding:4px 8px;background:#0f3460;border:1px solid #e94560;color:#e94560;border-radius:3px;font-size:0.75rem;font-weight:600;" title="Auto-place all needed buildings on the island">Auto-Place</button>

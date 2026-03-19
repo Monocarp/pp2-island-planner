@@ -57,6 +57,8 @@ const state = {
   producerOverrides: {}, // resourceId -> preferred producerId
   /** { id, count }[] — extra production buildings to include in chain + auto-place */
   customBuildingEntries: [],
+  /** { unitResId, ratePerHour }[] — military unit production targets for chain + auto-place */
+  militaryEntries: [],
 };
 
 // Cell data: { terrain, deposit, building, buildingId (for placed buildings back-ref) }

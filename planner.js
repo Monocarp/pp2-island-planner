@@ -19,6 +19,7 @@ function buildPlannerInputs() {
       <input type="number" id="planner-${pb.id}" min="0" value="0" data-pop-id="${pb.id}">
     </div>`
   ).join('');
+  buildCustomBuildingUI();
 }
 
 // Calculate total resource demand from population houses
@@ -38,12 +39,151 @@ function getPopulationDemand() {
   return demand;
 }
 
+function mergeDemand(base, extra) {
+  const o = { ...base };
+  for (const [k, v] of Object.entries(extra)) {
+    o[k] = (o[k] || 0) + v;
+  }
+  return o;
+}
+
+/** True if any population house count in the planner is greater than 0. */
+function hasAnyPopulationHouseRequested() {
+  return POP_BUILDINGS.some(pb => {
+    const input = document.getElementById(`planner-${pb.id}`);
+    return input && (parseInt(input.value) || 0) > 0;
+  });
+}
+
+/**
+ * Demand (resource → rate/min) from extra auto-place building entries.
+ * Each building adds demand for its output at count × producePerMinute.
+ */
+function getCustomBuildingExtraDemand() {
+  const demand = {};
+  const entries = state.customBuildingEntries || [];
+  for (const { id, count } of entries) {
+    if (!id || (count || 0) <= 0) continue;
+    const b = PP2DATA.getBuilding(id);
+    if (!b || !b.produces) continue;
+    const ppm = b.producePerMinute;
+    if (ppm == null || ppm <= 0) continue;
+    demand[b.produces] = (demand[b.produces] || 0) + ppm * count;
+  }
+  return demand;
+}
+
+function populateCustomBuildingSelect(filterText) {
+  const sel = document.getElementById('planner-custom-select');
+  if (!sel) return;
+  const f = (filterText || '').trim().toLowerCase();
+  const list = getCustomBuildingPickerList().filter(b => {
+    if (!f) return true;
+    return b.name.toLowerCase().includes(f) || b.id.toLowerCase().includes(f);
+  });
+  const prev = sel.value;
+  sel.innerHTML = list.length === 0
+    ? '<option value="">(no matches)</option>'
+    : list.map(b => `<option value="${b.id}">${b.name} · ${b.tier}</option>`).join('');
+  if (prev && list.some(b => b.id === prev)) sel.value = prev;
+}
+
+function renderCustomBuildingEntryList() {
+  const el = document.getElementById('planner-custom-list');
+  if (!el) return;
+  const entries = state.customBuildingEntries || [];
+  if (entries.length === 0) {
+    el.innerHTML = '<span style="color:#666;font-size:0.65rem;">No extra buildings — chain is houses only.</span>';
+    return;
+  }
+  el.innerHTML = entries.map((e, i) => {
+    const b = PP2DATA.getBuilding(e.id);
+    const name = b ? b.name : e.id;
+    return `<div class="planner-row planner-custom-entry" style="font-size:0.72rem;">
+      <span>${name}</span>
+      <span style="display:flex;align-items:center;gap:4px;">
+        <input type="number" min="1" value="${e.count}" data-custom-idx="${i}" class="planner-custom-count-edit" style="width:40px;font-size:0.7rem;padding:2px;">
+        <button type="button" data-custom-remove="${i}" title="Remove" style="padding:0 6px;cursor:pointer;background:transparent;border:1px solid #888;color:#ccc;border-radius:2px;font-size:0.85rem;line-height:1.2;">×</button>
+      </span>
+    </div>`;
+  }).join('');
+}
+
+let _customBuildingUiInitialized = false;
+
+function buildCustomBuildingUI() {
+  if (!Array.isArray(state.customBuildingEntries)) state.customBuildingEntries = [];
+  const filterEl = document.getElementById('planner-custom-filter');
+  populateCustomBuildingSelect(filterEl ? filterEl.value : '');
+  renderCustomBuildingEntryList();
+  if (_customBuildingUiInitialized) return;
+  _customBuildingUiInitialized = true;
+
+  const listEl = document.getElementById('planner-custom-list');
+  if (filterEl) {
+    filterEl.addEventListener('input', () => {
+      populateCustomBuildingSelect(filterEl.value);
+    });
+  }
+  document.getElementById('planner-custom-add')?.addEventListener('click', () => {
+    const sel = document.getElementById('planner-custom-select');
+    const id = sel && sel.value;
+    const count = Math.max(1, parseInt(document.getElementById('planner-custom-count')?.value) || 1);
+    if (!id) return;
+    const existing = state.customBuildingEntries.find(e => e.id === id);
+    if (existing) existing.count += count;
+    else state.customBuildingEntries.push({ id, count });
+    renderCustomBuildingEntryList();
+    calculateProduction();
+  });
+  if (listEl) {
+    listEl.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('[data-custom-remove]');
+      if (!btn) return;
+      const i = parseInt(btn.getAttribute('data-custom-remove'), 10);
+      if (Number.isNaN(i)) return;
+      state.customBuildingEntries.splice(i, 1);
+      renderCustomBuildingEntryList();
+      calculateProduction();
+    });
+    listEl.addEventListener('change', (ev) => {
+      const inp = ev.target.closest('.planner-custom-count-edit');
+      if (!inp) return;
+      const i = parseInt(inp.getAttribute('data-custom-idx'), 10);
+      if (Number.isNaN(i) || !state.customBuildingEntries[i]) return;
+      const v = Math.max(1, parseInt(inp.value) || 1);
+      state.customBuildingEntries[i].count = v;
+      inp.value = v;
+      calculateProduction();
+    });
+  }
+}
+
 // Recursively resolve production chains.
 // Tiles with iterationTime=1 are spatial (grass, water, deposits) - counted per building footprint.
 // Tiles with real iteration times (apple trees, forests, fields) - counted by production rate.
 
 // Tier priority for default producer selection (lower index = preferred)
 const TIER_PRIORITY = ['Pioneers', 'Colonists', 'Townsmen', 'Farmers', 'Merchants', 'Workers', 'Paragons', 'Northern Islands'];
+
+/** Production buildings the user may add for auto-place (unlocked, plannable). */
+function getCustomBuildingPickerList() {
+  const popIds = new Set(POP_BUILDINGS.map(pb => pb.id));
+  return PP2DATA.buildings.filter(b => {
+    if (popIds.has(b.id)) return false;
+    const bd = getBuildingData(b.id);
+    if (!bd || bd.isPopulation) return false;
+    if (bd.isInfrastructure || bd.isService) return false;
+    if (!FOOTPRINTS[b.id]) return false;
+    if (!state.unlockedBuildings.has(b.id)) return false;
+    return true;
+  }).sort((a, b) => {
+    const ta = TIER_PRIORITY.indexOf(a.tier);
+    const tb = TIER_PRIORITY.indexOf(b.tier);
+    if (ta !== tb) return (ta === -1 ? 99 : ta) - (tb === -1 ? 99 : tb);
+    return a.name.localeCompare(b.name);
+  });
+}
 
 function pickProducer(resourceId, producers) {
   // Check user override first
@@ -161,11 +301,15 @@ function cycleProducer(resourceId, currentBuildingId) {
 }
 
 function calculateProduction() {
-  const demand = getPopulationDemand();
+  const popDemand = getPopulationDemand();
+  const extraDemand = getCustomBuildingExtraDemand();
+  const demand = mergeDemand(popDemand, extraDemand);
   const el = document.getElementById('planner-results');
+  const hasHouses = hasAnyPopulationHouseRequested();
+  const hasCustom = (state.customBuildingEntries || []).some(e => (e.count || 0) > 0);
 
-  if (Object.keys(demand).length === 0) {
-    el.innerHTML = '<span style="color:#666">Set at least one house count above 0</span>';
+  if (!hasHouses && !hasCustom) {
+    el.innerHTML = '<span style="color:#666">Set house counts and/or add extra production buildings</span>';
     state.plannerActive = false;
     return;
   }
@@ -185,8 +329,27 @@ function calculateProduction() {
   // For display, organize as: demand resource -> chain of buildings
   let html = '';
 
+  // === Extra production targets ===
+  if (hasCustom) {
+    html += '<div class="planner-section"><h5>Extra production (targets)</h5>';
+    for (const e of state.customBuildingEntries) {
+      if ((e.count || 0) <= 0) continue;
+      const b = PP2DATA.getBuilding(e.id);
+      const name = b ? b.name : e.id;
+      const out = b && b.produces ? PP2DATA.getResourceName(b.produces) : '—';
+      html += `<div class="planner-summary-row">
+        <span>${name} ×${e.count}</span>
+        <span style="color:#666;font-size:0.65rem">${out}/min</span>
+      </div>`;
+    }
+    html += '</div>';
+  }
+
   // === Resource demand summary ===
   html += '<div class="planner-section"><h5>Resource Demand (per min)</h5>';
+  if (Object.keys(demand).length === 0) {
+    html += '<div class="planner-summary-row"><span style="color:#888">(no goods demand — service-only houses)</span></div>';
+  }
   const sortedDemand = Object.entries(demand).sort((a, b) => b[1] - a[1]);
   for (const [resId, rate] of sortedDemand) {
     html += `<div class="planner-summary-row">
@@ -898,9 +1061,18 @@ function emitAutoPopulateLog(log) {
 function autoPopulate() {
   if (!state.island) return;
 
-  const demand = getPopulationDemand();
-  if (Object.keys(demand).length === 0) {
-    alert('Set at least one house count above 0 before auto-populating.');
+  const popDemand = getPopulationDemand();
+  const extraDemand = getCustomBuildingExtraDemand();
+  const demand = mergeDemand(popDemand, extraDemand);
+  const hasHouses = hasAnyPopulationHouseRequested();
+  const hasCustom = (state.customBuildingEntries || []).some(e => (e.count || 0) > 0);
+
+  if (!hasHouses && !hasCustom) {
+    alert('Set at least one house count or add extra production buildings before auto-populating.');
+    return;
+  }
+  if (Object.keys(demand).length === 0 && hasCustom) {
+    alert('Extra buildings must produce a good (have producePerMinute) to resolve a chain.');
     return;
   }
 

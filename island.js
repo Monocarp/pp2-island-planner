@@ -55,6 +55,8 @@ const state = {
   savedIslands: [],  // localStorage saves
   plannerActive: false, // auto-refresh planner on stats update
   producerOverrides: {}, // resourceId -> preferred producerId
+  /** { id, count }[] — extra production buildings to include in chain + auto-place */
+  customBuildingEntries: [],
 };
 
 // Cell data: { terrain, deposit, building, buildingId (for placed buildings back-ref) }

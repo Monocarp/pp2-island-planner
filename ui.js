@@ -1,0 +1,461 @@
+// ===== CELL ACTIONS =====
+function handleCellAction(x, y, e) {
+  if (!state.island) return;
+  const { width, height, cells } = state.island;
+  if (x < 0 || x >= width || y < 0 || y >= height) return;
+
+  const cell = cells[y][x];
+
+  if (state.tool === 'terrain' && state.terrainType) {
+    pushUndo();
+    cell.terrain = state.terrainType;
+    cell.deposit = null;
+    cell.building = null;
+    removeBuildingAt(x, y);
+    updateStats();
+    render();
+  } else if (state.tool === 'deposit' && state.depositType) {
+    pushUndo();
+    cell.deposit = state.depositType;
+    updateStats();
+    render();
+  } else if (state.tool === 'eraser') {
+    pushUndo();
+    if (cell.building) {
+      removeBuildingAt(x, y);
+      cell.building = null;
+    }
+    cell.deposit = null;
+    cell.terrain = 'grass';
+    updateStats();
+    render();
+  } else if (state.tool === 'building' && state.buildingId) {
+    if (cell.building) return; // already occupied
+    // Check terrain validity
+    if (!canPlaceOnTerrain(state.buildingId, cell.terrain)) {
+      showTooltipMessage(x, y, `Cannot place on ${cell.terrain}`);
+      return;
+    }
+    // Check location requirements before placing
+    const locCheck = checkLocationRequirement(state.buildingId, x, y);
+    if (!locCheck.ok) {
+      showTooltipMessage(x, y, locCheck.reason);
+      return;
+    }
+    pushUndo();
+    placeBuilding(state.buildingId, x, y);
+    updateStats();
+    validateIsland();
+    render();
+  } else if (state.tool === 'select') {
+    // Select a building if there is one
+    const b = state.island.buildings.find(b => b.x === x && b.y === y);
+    state.selectedBuilding = b || null;
+    updateBuildingInfo();
+    render();
+  }
+}
+
+function placeBuilding(buildingId, x, y) {
+  const { cells } = state.island;
+  cells[y][x].building = buildingId;
+  state.island.buildings.push({ id: buildingId, x, y, uid: nextBuildingUid++ });
+}
+
+function removeBuildingAt(x, y) {
+  if (!state.island) return;
+  state.island.buildings = state.island.buildings.filter(b => !(b.x === x && b.y === y));
+}
+
+// ===== CONTEXT MENU =====
+function showContextMenu(px, py, cellX, cellY) {
+  const menu = document.getElementById('context-menu');
+  menu.innerHTML = '';
+  if (!state.island) return;
+  const { width, height, cells } = state.island;
+  if (cellX < 0 || cellX >= width || cellY < 0 || cellY >= height) return;
+  const cell = cells[cellY][cellX];
+
+  if (cell.building) {
+    addMenuItem(menu, 'Remove Building', () => {
+      pushUndo();
+      cell.building = null;
+      removeBuildingAt(cellX, cellY);
+      updateStats();
+      validateIsland();
+      render();
+    });
+    addMenuItem(menu, 'Show Footprint', () => {
+      const b = state.island.buildings.find(b => b.x === cellX && b.y === cellY);
+      state.selectedBuilding = b;
+      updateBuildingInfo();
+      render();
+    });
+  }
+  if (cell.deposit) {
+    addMenuItem(menu, 'Remove Deposit', () => {
+      pushUndo();
+      cell.deposit = null;
+      updateStats();
+      render();
+    });
+  }
+  addMenuItem(menu, 'Set to Water', () => {
+    pushUndo();
+    cell.terrain = 'water';
+    cell.deposit = null;
+    if (cell.building) { removeBuildingAt(cellX, cellY); cell.building = null; }
+    updateStats();
+    render();
+  });
+
+  menu.style.left = px + 'px';
+  menu.style.top = py + 'px';
+  menu.style.display = 'block';
+}
+
+function addMenuItem(menu, text, callback) {
+  const item = document.createElement('div');
+  item.className = 'context-menu-item';
+  item.textContent = text;
+  item.addEventListener('click', () => {
+    menu.style.display = 'none';
+    callback();
+  });
+  menu.appendChild(item);
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('context-menu').style.display = 'none';
+});
+
+// ===== TOOLTIPS FOR PLACEMENT ERRORS =====
+function showTooltipMessage(cellX, cellY, message) {
+  const z = state.zoom;
+  const px = state.panX + cellX * z;
+  const py = state.panY + cellY * z;
+  const area = document.getElementById('canvas-area');
+  const rect = area.getBoundingClientRect();
+
+  const tip = document.getElementById('tooltip');
+  tip.textContent = '\u26A0 ' + message;
+  tip.style.left = (rect.left + px + z) + 'px';
+  tip.style.top = (rect.top + py) + 'px';
+  tip.style.display = 'block';
+  tip.style.color = '#e74c3c';
+  tip.style.borderColor = '#e74c3c';
+  clearTimeout(tip._hideTimer);
+  tip._hideTimer = setTimeout(() => {
+    tip.style.display = 'none';
+    tip.style.color = '';
+    tip.style.borderColor = '';
+  }, 2500);
+}
+
+// ===== UNDO/REDO =====
+function pushUndo() {
+  if (!state.island) return;
+  state.undoStack.push(JSON.stringify(state.island));
+  state.redoStack = [];
+  if (state.undoStack.length > 100) state.undoStack.shift();
+}
+
+document.getElementById('btn-undo').addEventListener('click', () => {
+  if (state.undoStack.length === 0) return;
+  state.redoStack.push(JSON.stringify(state.island));
+  state.island = JSON.parse(state.undoStack.pop());
+  updateStats();
+  validateIsland();
+  render();
+});
+
+document.getElementById('btn-redo').addEventListener('click', () => {
+  if (state.redoStack.length === 0) return;
+  state.undoStack.push(JSON.stringify(state.island));
+  state.island = JSON.parse(state.redoStack.pop());
+  updateStats();
+  validateIsland();
+  render();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'z') { document.getElementById('btn-undo').click(); e.preventDefault(); }
+  if (e.ctrlKey && e.key === 'y') { document.getElementById('btn-redo').click(); e.preventDefault(); }
+  if (e.key === 'Escape') {
+    state.tool = 'select';
+    state.buildingId = null;
+    clearToolSelection();
+    render();
+  }
+  if (e.key === 'Delete' && state.selectedBuilding) {
+    pushUndo();
+    const b = state.selectedBuilding;
+    state.island.cells[b.y][b.x].building = null;
+    removeBuildingAt(b.x, b.y);
+    state.selectedBuilding = null;
+    updateBuildingInfo();
+    updateStats();
+    validateIsland();
+    render();
+  }
+});
+
+// ===== TOOL SELECTION =====
+function clearToolSelection() {
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.building-btn').forEach(b => b.classList.remove('active'));
+}
+
+// Terrain tools
+document.getElementById('terrain-tools').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tool-btn');
+  if (!btn) return;
+  clearToolSelection();
+  btn.classList.add('active');
+  state.tool = 'terrain';
+  state.terrainType = btn.dataset.terrain;
+  state.buildingId = null;
+});
+
+// Deposit tools (built dynamically)
+function buildDepositTools() {
+  const container = document.getElementById('deposit-tools');
+  DEPOSIT_TYPES.forEach(dep => {
+    const btn = document.createElement('button');
+    btn.className = 'tool-btn';
+    btn.textContent = dep.name;
+    btn.style.borderLeft = `4px solid ${dep.color}`;
+    btn.addEventListener('click', () => {
+      clearToolSelection();
+      btn.classList.add('active');
+      state.tool = 'deposit';
+      state.depositType = dep.id;
+      state.buildingId = null;
+    });
+    container.appendChild(btn);
+  });
+}
+
+// Eraser / Select
+document.querySelectorAll('[data-tool="eraser"],[data-tool="select"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    clearToolSelection();
+    btn.classList.add('active');
+    state.tool = btn.dataset.tool;
+    state.buildingId = null;
+  });
+});
+
+// ===== BUILDING PALETTE =====
+function buildBuildingList() {
+  const container = document.getElementById('building-list');
+  container.innerHTML = '';
+  const tiers = ['Pioneers', 'Colonists', 'Townsmen', 'Merchants', 'Paragons',
+                 'Farmers', 'Workers', 'Northern Islands'];
+
+  tiers.forEach(tier => {
+    // Combine data.js buildings + extra infrastructure buildings for this tier
+    // (dedupe IDs so Well/Cistern/Tavern/etc. don't appear twice)
+    const extraBuildings = EXTRA_BUILDINGS.filter(b => b.tier === tier);
+    const extraIds = new Set(extraBuildings.map(b => b.id));
+    // Filter out zero-production buildings (e.g. PioneersHut, FarmersShack) – they produce nothing and confuse users
+    const dataBuildings = PP2DATA.buildings.filter(b => b.tier === tier && !b.isPopulation && !extraIds.has(b.id) && b.producePerMinute !== 0);
+    const buildings = [...extraBuildings, ...dataBuildings];
+    if (buildings.length === 0) return;
+
+    const group = document.createElement('div');
+    group.className = 'tier-group';
+
+    const header = document.createElement('div');
+    header.className = 'tier-header';
+    // Add tier unlock toggle
+    const tierBuildingIds = buildings.map(b => b.id);
+    const allUnlocked = tierBuildingIds.every(id => state.unlockedBuildings.has(id));
+    header.innerHTML = `<span>${tier}</span><span><button class="tier-unlock-btn" title="Toggle unlock all ${tier} buildings" style="background:none;border:1px solid #0f3460;color:${allUnlocked ? '#2ecc71' : '#666'};border-radius:3px;padding:1px 6px;font-size:0.7rem;cursor:pointer;margin-right:4px">${allUnlocked ? '\u2713' : '\u2610'}</button>${buildings.length}</span>`;
+    const unlockBtn = header.querySelector('.tier-unlock-btn');
+    unlockBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const shouldUnlock = !tierBuildingIds.every(id => state.unlockedBuildings.has(id));
+      tierBuildingIds.forEach(id => {
+        if (shouldUnlock) state.unlockedBuildings.add(id);
+        else state.unlockedBuildings.delete(id);
+      });
+      saveUnlocks();
+      buildBuildingList(); // rebuild to update visual state
+    });
+    header.addEventListener('click', () => {
+      const list = group.querySelector('.tier-buildings');
+      list.classList.toggle('open');
+    });
+    group.appendChild(header);
+
+    const list = document.createElement('div');
+    list.className = 'tier-buildings';
+
+    buildings.forEach(b => {
+      const btn = document.createElement('button');
+      btn.className = 'building-btn';
+      if (!state.unlockedBuildings.has(b.id)) btn.classList.add('locked');
+      // Mark infrastructure/service buildings
+      const prefix = b.isInfrastructure ? '\uD83C\uDFE0 ' : b.isService ? '\u2764 ' : '';
+      let displayName = b.name;
+      btn.textContent = prefix + displayName;
+      btn.dataset.buildingId = b.id;
+      btn.addEventListener('click', () => {
+        clearToolSelection();
+        btn.classList.add('active');
+        state.tool = 'building';
+        state.buildingId = b.id;
+        const bData = getBuildingData(b.id);
+        if (bData) showBuildingPreview(bData);
+      });
+      btn.addEventListener('dblclick', () => {
+        // Toggle unlock
+        if (state.unlockedBuildings.has(b.id)) {
+          state.unlockedBuildings.delete(b.id);
+          btn.classList.add('locked');
+        } else {
+          state.unlockedBuildings.add(b.id);
+          btn.classList.remove('locked');
+        }
+        saveUnlocks();
+      });
+      list.appendChild(btn);
+    });
+
+    group.appendChild(list);
+    container.appendChild(group);
+  });
+
+  // Also add population buildings
+  const popBuildings = PP2DATA.buildings.filter(b => b.isPopulation);
+  if (popBuildings.length > 0) {
+    const group = document.createElement('div');
+    group.className = 'tier-group';
+    const header = document.createElement('div');
+    header.className = 'tier-header';
+    header.innerHTML = `<span>Population</span><span>${popBuildings.length}</span>`;
+    header.addEventListener('click', () => {
+      group.querySelector('.tier-buildings').classList.toggle('open');
+    });
+    group.appendChild(header);
+    const list = document.createElement('div');
+    list.className = 'tier-buildings';
+    popBuildings.forEach(b => {
+      const btn = document.createElement('button');
+      btn.className = 'building-btn';
+      btn.textContent = b.name.replace('Population ', '') + ' (Population)';
+      btn.dataset.buildingId = b.id;
+      btn.addEventListener('click', () => {
+        clearToolSelection();
+        btn.classList.add('active');
+        state.tool = 'building';
+        state.buildingId = b.id;
+      });
+      list.appendChild(btn);
+    });
+    group.appendChild(list);
+    container.appendChild(group);
+  }
+}
+
+// Filter
+document.getElementById('building-filter').addEventListener('input', (e) => {
+  const q = e.target.value.toLowerCase();
+  document.querySelectorAll('.building-btn').forEach(btn => {
+    const match = btn.textContent.toLowerCase().includes(q);
+    btn.style.display = match ? '' : 'none';
+  });
+  // Open all tier groups when filtering
+  if (q.length > 0) {
+    document.querySelectorAll('.tier-buildings').forEach(el => el.classList.add('open'));
+  }
+});
+
+// ===== INFO PANELS =====
+function updateCellInfo(x, y) {
+  const el = document.getElementById('cell-info');
+  if (!state.island) { el.innerHTML = '<h4>Cell Info</h4><p style="color:#666">No island</p>'; return; }
+  const { width, height, cells } = state.island;
+  if (x < 0 || x >= width || y < 0 || y >= height) {
+    el.innerHTML = '<h4>Cell Info</h4><p style="color:#666">Out of bounds</p>';
+    return;
+  }
+  const cell = cells[y][x];
+  let html = `<h4>Cell (${x}, ${y})</h4>`;
+  html += `<div class="info-row"><span class="info-label">Terrain:</span><span class="info-value">${cell.terrain}</span></div>`;
+  if (cell.terrain === 'river') {
+    const shape = getRiverShape(x, y);
+    const shapeLabels = {
+      straight_h: 'Straight (horizontal)',
+      straight_v: 'Straight (vertical)',
+      bend: 'Bend',
+      junction: 'Junction',
+      endpoint: 'Endpoint (straight)',
+      isolated: 'Isolated',
+    };
+    const isStraight = isRiverStraight(x, y);
+    html += `<div class="info-row"><span class="info-label">River:</span><span class="info-value ${isStraight ? 'ok-text' : 'warning-text'}">${shapeLabels[shape] || shape} ${isStraight ? '⚙' : '↱'}</span></div>`;
+  }
+  if (cell.deposit) {
+    const dep = DEPOSIT_TYPES.find(d => d.id === cell.deposit);
+    html += `<div class="info-row"><span class="info-label">Deposit:</span><span class="info-value">${dep ? dep.name : cell.deposit}</span></div>`;
+  }
+  if (cell.building) {
+    const b = getBuildingData(cell.building);
+    html += `<div class="info-row"><span class="info-label">Building:</span><span class="info-value">${b ? b.name : cell.building}</span></div>`;
+    if (b && b.produces) html += `<div class="info-row"><span class="info-label">Produces:</span><span class="info-value">${PP2DATA.getResourceName(b.produces)}</span></div>`;
+  }
+  el.innerHTML = html;
+}
+
+function showBuildingPreview(building) {
+  const el = document.getElementById('building-info');
+  el.style.display = 'block';
+  const fp = FOOTPRINTS[building.id];
+  let html = `<h4>${building.name}</h4>`;
+  html += `<div class="info-row"><span class="info-label">Tier:</span><span class="info-value">${building.tier}</span></div>`;
+  if (building.produces) {
+    html += `<div class="info-row"><span class="info-label">Produces:</span><span class="info-value">${PP2DATA.getResourceName(building.produces)}</span></div>`;
+  }
+  if (building.producePerMinute) {
+    html += `<div class="info-row"><span class="info-label">Rate:</span><span class="info-value">${building.producePerMinute}/min</span></div>`;
+  }
+  if (building.isInfrastructure) {
+    html += `<div class="info-row"><span class="info-label">Type:</span><span class="info-value">Warehouse</span></div>`;
+  }
+  if (building.isService) {
+    html += `<div class="info-row"><span class="info-label">Type:</span><span class="info-value">Service</span></div>`;
+  }
+  html += `<div class="info-row"><span class="info-label">Footprint:</span><span class="info-value">${fp ? fp.length + ' cells' : 'unknown'}</span></div>`;
+
+  // Location requirement
+  const locReq = LOCATION_REQUIREMENTS[building.id];
+  if (locReq) {
+    html += `<div class="info-row"><span class="info-label">Placement:</span><span class="info-value warning-text">${locReq.label}</span></div>`;
+  }
+
+  // Inputs (tile requirements)
+  if (building.inputs && Object.keys(building.inputs).length > 0) {
+    html += '<h4 style="margin-top:6px">Inputs</h4>';
+    for (const [resId, amount] of Object.entries(building.inputs)) {
+      const isTile = TILE_RESOURCE_IDS.has(resId);
+      html += `<div class="info-row">
+        <span class="info-label">${PP2DATA.getResourceName(resId)}${isTile ? ' ⬡' : ''}</span>
+        <span class="info-value">${amount}/cycle</span>
+      </div>`;
+    }
+  }
+  el.innerHTML = html;
+}
+
+function updateBuildingInfo() {
+  const el = document.getElementById('building-info');
+  if (!state.selectedBuilding) {
+    el.style.display = 'none';
+    return;
+  }
+  const b = getBuildingData(state.selectedBuilding.id);
+  if (b) showBuildingPreview(b);
+}

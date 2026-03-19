@@ -1107,6 +1107,8 @@ function autoPopulate() {
   // paintable terrain (forest for Lumberjack), find a valid position first (ignoring those
   // requirements), then paint so Phase 2 can place the building there.
   // Rate-based tiles use chainFraction × consumePerMinute / tile producePerMinute.
+  // Cells painted here must NOT be used as house anchors in Phase 3.
+  const paintedResourceCells = new Set();
   {
     const depositTypeSet = DEPOSIT_TYPE_ID_SET;
     const reservedCells = new Set();
@@ -1172,7 +1174,7 @@ function autoPopulate() {
             if (cell.building) continue;
             if (claimedCells.has(`${cx},${cy}`)) continue;
             cell.deposit = resId;
-            claimedCells.add(`${cx},${cy}`);
+            paintedResourceCells.add(`${cx},${cy}`);
             placedCount++;
             runLog.phases.deposits.push({ kind: 'deposit', resId, name: PP2DATA.getResourceName(resId), x: cx, y: cy });
           }
@@ -1195,7 +1197,7 @@ function autoPopulate() {
             if (cell.building) continue;
             if (claimedCells.has(`${cx},${cy}`)) continue;
             cell.terrain = ter;
-            claimedCells.add(`${cx},${cy}`);
+            paintedResourceCells.add(`${cx},${cy}`);
             painted++;
             runLog.phases.deposits.push({
               kind: 'terrain',
@@ -1274,6 +1276,7 @@ function autoPopulate() {
           if (!canAutoPlace(item.id, x, y)) continue;
           if (!isInWarehouseRange(x, y)) continue;
           if (claimedCells.has(`${x},${y}`)) continue; // don't place house anchor on claimed resource cell
+          if (paintedResourceCells.has(`${x},${y}`)) continue; // don't place house on Phase 1.5 painted deposits/terrain
 
           // Count how many required services cover this position
           let svcCovered = 0;

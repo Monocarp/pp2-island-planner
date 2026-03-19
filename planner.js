@@ -20,6 +20,7 @@ function buildPlannerInputs() {
     </div>`
   ).join('');
   buildCustomBuildingUI();
+  buildMilitaryUI();
 }
 
 // Calculate total resource demand from population houses
@@ -39,10 +40,14 @@ function getPopulationDemand() {
   return demand;
 }
 
-function mergeDemand(base, extra) {
-  const o = { ...base };
-  for (const [k, v] of Object.entries(extra)) {
-    o[k] = (o[k] || 0) + v;
+/** Merge any number of demand maps (resourceId → rate per minute). */
+function mergeDemand(...parts) {
+  const o = {};
+  for (const p of parts) {
+    if (!p) continue;
+    for (const [k, v] of Object.entries(p)) {
+      o[k] = (o[k] || 0) + v;
+    }
   }
   return o;
 }
@@ -71,6 +76,116 @@ function getCustomBuildingExtraDemand() {
     demand[b.produces] = (demand[b.produces] || 0) + ppm * count;
   }
   return demand;
+}
+
+/** Demand (resource → rate/min) from military targets (rates are per hour in UI). */
+function getMilitaryDemand() {
+  const demand = {};
+  for (const e of state.militaryEntries || []) {
+    if (!e || !e.unitResId) continue;
+    const r = parseFloat(e.ratePerHour);
+    if (!Number.isFinite(r) || r <= 0) continue;
+    demand[e.unitResId] = (demand[e.unitResId] || 0) + r / 60;
+  }
+  return demand;
+}
+
+function hasAnyMilitaryRequested() {
+  return (state.militaryEntries || []).some(e => {
+    if (!e || !e.unitResId) return false;
+    const r = parseFloat(e.ratePerHour);
+    return Number.isFinite(r) && r > 0;
+  });
+}
+
+// 10 pioneers/hut × 0.36 militia/hr/person ÷ 60 = 0.06 militia/min/hut
+const MILITIA_PER_MIN_PER_HUT = 0.06;
+
+// Deposits that represent natural mineral veins / geological features and
+// must pre-exist on the island (cannot be auto-painted in Phase 1.5).
+const NATURAL_DEPOSIT_IDS = new Set([
+  'copper_deposit', 'copper_deposit_tropical', 'copper_pyrite_deposit',
+  'coal_deposit', 'iron_deposit',
+  'rock_salt_deposit', 'rock_salt_deposit_north',
+  'clay_deposit', 'cliff', 'marble_deposit', 'marble_deposit_north',
+  'gold_deposit', 'gemstone_deposit', 'lead_deposit', 'zinc_deposit',
+]);
+
+/**
+ * After resolveProductionChain, compute militia demand from BootCamp count
+ * and infer Pioneer Huts needed to supply that militia.
+ * Returns null when no militia is needed.
+ */
+function inferMilitiaHuts(chainBuildings) {
+  const bootCampEntry = chainBuildings['BootCamp'];
+  if (!bootCampEntry) return null;
+  const militiaPerMin = bootCampEntry.count *
+    ((bootCampEntry.building.consumePerMinute || {}).militia || 0.2);
+  if (militiaPerMin <= 0) return null;
+  const hutsNeeded = militiaPerMin / MILITIA_PER_MIN_PER_HUT;
+  const hutBuilding = PP2DATA.getBuilding('PopulationPioneersHut');
+  if (!hutBuilding || !hutBuilding.consumePerMinute) return null;
+  const hutDemand = {};
+  for (const [resId, rate] of Object.entries(hutBuilding.consumePerMinute)) {
+    if (SERVICE_RESOURCES.has(resId)) continue;
+    hutDemand[resId] = rate * hutsNeeded;
+  }
+  return { hutsNeeded, militiaPerMin, hutDemand };
+}
+
+/** Merge a secondary chain result into the primary one (mutates target). */
+function mergeChainResults(target, source) {
+  for (const [bId, entry] of Object.entries(source.buildings)) {
+    if (target.buildings[bId]) {
+      target.buildings[bId].count += entry.count;
+    } else {
+      target.buildings[bId] = { ...entry };
+    }
+  }
+  for (const [tId, entry] of Object.entries(source.tileNeeds)) {
+    if (target.tileNeeds[tId]) {
+      target.tileNeeds[tId].count += entry.count;
+    } else {
+      target.tileNeeds[tId] = { ...entry };
+    }
+  }
+}
+
+/** Collect natural deposit types required by buildings in the resolved chain. */
+function getRequiredNaturalDeposits(chainBuildings) {
+  const needed = new Set();
+  for (const entry of Object.values(chainBuildings)) {
+    const b = entry.building;
+    if (!b.inputs) continue;
+    for (const resId of Object.keys(b.inputs)) {
+      if (NATURAL_DEPOSIT_IDS.has(resId)) needed.add(resId);
+    }
+  }
+  return needed;
+}
+
+/** Scan island cells and return the set of deposit types that exist. */
+function getIslandDepositTypes() {
+  if (!state.island) return new Set();
+  const found = new Set();
+  for (let y = 0; y < state.island.height; y++) {
+    for (let x = 0; x < state.island.width; x++) {
+      const d = state.island.cells[y][x].deposit;
+      if (d) found.add(d);
+    }
+  }
+  return found;
+}
+
+/** Return array of missing natural deposit IDs needed by the chain. */
+function checkMissingDeposits(chainBuildings) {
+  const needed = getRequiredNaturalDeposits(chainBuildings);
+  const onIsland = getIslandDepositTypes();
+  const missing = [];
+  for (const depId of needed) {
+    if (!onIsland.has(depId)) missing.push(depId);
+  }
+  return missing;
 }
 
 function populateCustomBuildingSelect(filterText) {
@@ -204,6 +319,115 @@ function pickProducer(resourceId, producers) {
   return buildings[0];
 }
 
+/** Boot camp + training halls: consume recruits (or produce recruits only at BootCamp). */
+function isMilitaryTrainingBuilding(b) {
+  const bd = getBuildingData(b.id);
+  if (!bd || bd.isPopulation || !b.produces || !FOOTPRINTS[b.id]) return false;
+  if (SERVICE_RESOURCES.has(b.produces)) return false;
+  if (!b.consumePerMinute) return b.produces === 'recruits';
+  return Object.prototype.hasOwnProperty.call(b.consumePerMinute, 'recruits');
+}
+
+/** Unit types available in the military dropdown (default chain producer unlocked). */
+function getMilitaryUnitSelectOptions() {
+  const resIds = new Set();
+  for (const b of PP2DATA.buildings) {
+    if (!isMilitaryTrainingBuilding(b)) continue;
+    resIds.add(b.produces);
+  }
+  const out = [];
+  for (const resId of resIds) {
+    const producers = PP2DATA.getProducersOf(resId) || [];
+    if (!producers.some(p => PP2DATA.getBuilding(p.id))) continue;
+    const chosen = pickProducer(resId, producers);
+    if (!chosen || !PP2DATA.getBuilding(chosen.id)) continue;
+    if (!state.unlockedBuildings.has(chosen.id)) continue;
+    out.push({ resId, label: PP2DATA.getResourceName(resId) });
+  }
+  out.sort((a, b) => a.label.localeCompare(b.label));
+  return out;
+}
+
+function populateMilitarySelect() {
+  const sel = document.getElementById('planner-military-select');
+  if (!sel) return;
+  const prev = sel.value;
+  const opts = getMilitaryUnitSelectOptions();
+  sel.innerHTML = opts.length === 0
+    ? '<option value="">(unlock training buildings)</option>'
+    : opts.map(o => `<option value="${o.resId}">${o.label}</option>`).join('');
+  if (prev && opts.some(o => o.resId === prev)) sel.value = prev;
+}
+
+function renderMilitaryEntryList() {
+  const el = document.getElementById('planner-military-list');
+  if (!el) return;
+  const entries = state.militaryEntries || [];
+  if (entries.length === 0) {
+    el.innerHTML = '<span style="color:#666;font-size:0.65rem;">No military targets.</span>';
+    return;
+  }
+  el.innerHTML = entries.map((e, i) => {
+    const label = PP2DATA.getResourceName(e.unitResId) || e.unitResId;
+    const rate = Number.isFinite(parseFloat(e.ratePerHour)) ? e.ratePerHour : 0;
+    return `<div class="planner-row" style="font-size:0.72rem;">
+      <span>${label}</span>
+      <span style="display:flex;align-items:center;gap:4px;">
+        <input type="number" min="0" step="0.1" value="${rate}" data-mil-idx="${i}" class="planner-military-rate-edit" style="width:52px;font-size:0.7rem;padding:2px;" title="Per hour">
+        <span style="color:#666;font-size:0.65rem">/hr</span>
+        <button type="button" data-mil-remove="${i}" title="Remove" style="padding:0 6px;cursor:pointer;background:transparent;border:1px solid #888;color:#ccc;border-radius:2px;font-size:0.85rem;line-height:1.2;">×</button>
+      </span>
+    </div>`;
+  }).join('');
+}
+
+let _militaryUiInitialized = false;
+
+function buildMilitaryUI() {
+  if (!Array.isArray(state.militaryEntries)) state.militaryEntries = [];
+  populateMilitarySelect();
+  renderMilitaryEntryList();
+  if (_militaryUiInitialized) return;
+  _militaryUiInitialized = true;
+
+  document.getElementById('planner-military-add')?.addEventListener('click', () => {
+    const sel = document.getElementById('planner-military-select');
+    const unitResId = sel && sel.value;
+    const rate = Math.max(0, parseFloat(document.getElementById('planner-military-rate')?.value) || 0);
+    if (!unitResId || rate <= 0) return;
+    state.militaryEntries.push({ unitResId, ratePerHour: rate });
+    renderMilitaryEntryList();
+    calculateProduction();
+  });
+  document.getElementById('planner-military-clear')?.addEventListener('click', () => {
+    state.militaryEntries = [];
+    renderMilitaryEntryList();
+    calculateProduction();
+  });
+  const listEl = document.getElementById('planner-military-list');
+  if (listEl) {
+    listEl.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('[data-mil-remove]');
+      if (!btn) return;
+      const i = parseInt(btn.getAttribute('data-mil-remove'), 10);
+      if (Number.isNaN(i)) return;
+      state.militaryEntries.splice(i, 1);
+      renderMilitaryEntryList();
+      calculateProduction();
+    });
+    listEl.addEventListener('change', (ev) => {
+      const inp = ev.target.closest('.planner-military-rate-edit');
+      if (!inp) return;
+      const i = parseInt(inp.getAttribute('data-mil-idx'), 10);
+      if (Number.isNaN(i) || !state.militaryEntries[i]) return;
+      const v = Math.max(0, parseFloat(inp.value) || 0);
+      state.militaryEntries[i].ratePerHour = v;
+      inp.value = v;
+      calculateProduction();
+    });
+  }
+}
+
 function resolveProductionChain(demand) {
   const result = {};     // buildingId -> { building, count, producedResource, alternatives }
   const tileNeeds = {};  // tileId -> { tile, count, producedResource, isSpatial }
@@ -303,19 +527,34 @@ function cycleProducer(resourceId, currentBuildingId) {
 function calculateProduction() {
   const popDemand = getPopulationDemand();
   const extraDemand = getCustomBuildingExtraDemand();
-  const demand = mergeDemand(popDemand, extraDemand);
+  const militaryDemand = getMilitaryDemand();
+  const demand = mergeDemand(popDemand, extraDemand, militaryDemand);
   const el = document.getElementById('planner-results');
   const hasHouses = hasAnyPopulationHouseRequested();
   const hasCustom = (state.customBuildingEntries || []).some(e => (e.count || 0) > 0);
+  const hasMilitary = hasAnyMilitaryRequested();
 
-  if (!hasHouses && !hasCustom) {
-    el.innerHTML = '<span style="color:#666">Set house counts and/or add extra production buildings</span>';
+  if (!hasHouses && !hasCustom && !hasMilitary) {
+    el.innerHTML = '<span style="color:#666">Set houses, extra production, and/or military targets</span>';
     state.plannerActive = false;
     return;
   }
 
   state.plannerActive = true;
-  const { buildings, tileNeeds } = resolveProductionChain(demand);
+  const chainResult = resolveProductionChain(demand);
+  const { buildings, tileNeeds } = chainResult;
+
+  // Militia inference: BootCamp → militia → Pioneer Huts
+  const militiaInfo = inferMilitiaHuts(buildings);
+  let inferredHutCount = 0;
+  if (militiaInfo) {
+    inferredHutCount = Math.ceil(militiaInfo.hutsNeeded);
+    const hutChain = resolveProductionChain(militiaInfo.hutDemand);
+    mergeChainResults(chainResult, hutChain);
+  }
+
+  // Missing deposit check
+  const missingDeposits = checkMissingDeposits(buildings);
 
   // Compare with placed buildings on island
   const placedCounts = {};
@@ -325,9 +564,20 @@ function calculateProduction() {
     });
   }
 
-  // Group by the final consumed resource (what population needs)
-  // For display, organize as: demand resource -> chain of buildings
   let html = '';
+
+  // === Missing deposits warning ===
+  if (missingDeposits.length > 0) {
+    html += '<div class="planner-section" style="border:1px solid #e74c3c;padding:6px;border-radius:4px;margin-bottom:6px;">';
+    html += '<h5 style="color:#e74c3c;">Missing Deposits</h5>';
+    html += '<div style="font-size:0.7rem;color:#e74c3c;">These deposits are required but not found on the island. Add them manually or buildings that need them will fail to place:</div>';
+    for (const depId of missingDeposits) {
+      html += `<div class="planner-summary-row" style="color:#e74c3c;">
+        <span>${PP2DATA.getResourceName(depId)}</span>
+      </div>`;
+    }
+    html += '</div>';
+  }
 
   // === Extra production targets ===
   if (hasCustom) {
@@ -345,12 +595,25 @@ function calculateProduction() {
     html += '</div>';
   }
 
+  // === Militia inference display ===
+  if (militiaInfo) {
+    html += '<div class="planner-section"><h5>Militia Inference</h5>';
+    html += `<div class="planner-summary-row">
+      <span>Militia demand</span><span>${militiaInfo.militiaPerMin.toFixed(3)}/min</span>
+    </div>`;
+    html += `<div class="planner-summary-row">
+      <span>Pioneer Huts needed (inferred)</span><span>${inferredHutCount} <span style="color:#666;font-size:0.6rem">(${militiaInfo.hutsNeeded.toFixed(2)})</span></span>
+    </div>`;
+    html += '</div>';
+  }
+
   // === Resource demand summary ===
+  const fullDemand = militiaInfo ? mergeDemand(demand, militiaInfo.hutDemand) : demand;
   html += '<div class="planner-section"><h5>Resource Demand (per min)</h5>';
-  if (Object.keys(demand).length === 0) {
+  if (Object.keys(fullDemand).length === 0) {
     html += '<div class="planner-summary-row"><span style="color:#888">(no goods demand — service-only houses)</span></div>';
   }
-  const sortedDemand = Object.entries(demand).sort((a, b) => b[1] - a[1]);
+  const sortedDemand = Object.entries(fullDemand).sort((a, b) => b[1] - a[1]);
   for (const [resId, rate] of sortedDemand) {
     html += `<div class="planner-summary-row">
       <span>${PP2DATA.getResourceName(resId)}</span>
@@ -414,12 +677,15 @@ function calculateProduction() {
   html += '<div class="planner-section"><h5>Population Houses</h5>';
   POP_BUILDINGS.forEach(pb => {
     const count = parseInt(document.getElementById(`planner-${pb.id}`).value) || 0;
-    if (count > 0) {
+    const extra = (pb.id === 'PopulationPioneersHut') ? inferredHutCount : 0;
+    const total = count + extra;
+    if (total > 0) {
       const placed = placedCounts[pb.id] || 0;
-      const statusColor = placed >= count ? '#2ecc71' : placed > 0 ? '#f39c12' : '#e74c3c';
+      const statusColor = placed >= total ? '#2ecc71' : placed > 0 ? '#f39c12' : '#e74c3c';
+      const extraLabel = extra > 0 ? ` <span style="color:#3498db;font-size:0.6rem">(+${extra} militia)</span>` : '';
       html += `<div class="planner-building-row">
-        <span>${pb.label}</span>
-        <span><span style="color:${statusColor}">${placed}</span>/<span class="count">${count}</span></span>
+        <span>${pb.label}${extraLabel}</span>
+        <span><span style="color:${statusColor}">${placed}</span>/<span class="count">${total}</span></span>
       </div>`;
     }
   });
@@ -947,7 +1213,7 @@ function diagnosePlacementFailure(buildingId, building, opts) {
 
 // Emits a structured, collapsible console.group log for an auto-populate run.
 function emitAutoPopulateLog(log) {
-  const { islandSize, phases, coverage } = log;
+  const { islandSize, phases, coverage, militiaInfo, missingDeposits } = log;
   const totalPlaced = phases.warehouses.placed.length +
     phases.services.placed.length +
     phases.production.placed.length +
@@ -961,6 +1227,20 @@ function emitAutoPopulateLog(log) {
     `%c[PP2 Auto-Populate]%c ${islandSize} — ${totalPlaced} placed, ${totalFailed} failed`,
     'font-weight:bold;color:#e94560', 'font-weight:normal;color:inherit'
   );
+
+  if (militiaInfo) {
+    console.log(
+      `%cMilitia: ${militiaInfo.militiaPerMin.toFixed(3)}/min → ${militiaInfo.inferredHuts} Pioneer Huts inferred`,
+      'color:#3498db'
+    );
+  }
+
+  if (missingDeposits && missingDeposits.length > 0) {
+    console.warn(
+      `%c⚠ Missing deposits: ${missingDeposits.map(d => PP2DATA.getResourceName(d)).join(', ')}`,
+      'color:#e74c3c;font-weight:bold'
+    );
+  }
 
   // Phase 0
   console.group('Phase 0 — Warehouses');
@@ -1063,24 +1343,44 @@ function autoPopulate() {
 
   const popDemand = getPopulationDemand();
   const extraDemand = getCustomBuildingExtraDemand();
-  const demand = mergeDemand(popDemand, extraDemand);
+  const militaryDemand = getMilitaryDemand();
+  const demand = mergeDemand(popDemand, extraDemand, militaryDemand);
   const hasHouses = hasAnyPopulationHouseRequested();
   const hasCustom = (state.customBuildingEntries || []).some(e => (e.count || 0) > 0);
+  const hasMilitary = hasAnyMilitaryRequested();
 
-  if (!hasHouses && !hasCustom) {
-    alert('Set at least one house count or add extra production buildings before auto-populating.');
+  if (!hasHouses && !hasCustom && !hasMilitary) {
+    alert('Set house counts, extra production buildings, and/or military targets before auto-populating.');
     return;
   }
   if (Object.keys(demand).length === 0 && hasCustom) {
     alert('Extra buildings must produce a good (have producePerMinute) to resolve a chain.');
     return;
   }
+  if (Object.keys(demand).length === 0 && hasMilitary) {
+    alert('Military targets need a positive rate per hour.');
+    return;
+  }
 
   // Save undo state
   pushUndo();
 
-  const { buildings: chainBuildings } = resolveProductionChain(demand);
+  const chainResult = resolveProductionChain(demand);
+  let chainBuildings = chainResult.buildings;
   const { width, height } = state.island;
+
+  // Militia inference: BootCamp → militia → Pioneer Huts
+  const militiaInfo = inferMilitiaHuts(chainBuildings);
+  let inferredHutCount = 0;
+  if (militiaInfo) {
+    inferredHutCount = Math.ceil(militiaInfo.hutsNeeded);
+    const hutChain = resolveProductionChain(militiaInfo.hutDemand);
+    mergeChainResults(chainResult, hutChain);
+    chainBuildings = chainResult.buildings;
+  }
+
+  // Missing deposit check
+  const missingDeposits = checkMissingDeposits(chainBuildings);
 
   const runLog = {
     islandSize: `${width}×${height}`,
@@ -1093,6 +1393,11 @@ function autoPopulate() {
       topup:      [],
     },
     coverage: {},
+    militiaInfo: militiaInfo ? {
+      militiaPerMin: militiaInfo.militiaPerMin,
+      inferredHuts: inferredHutCount,
+    } : null,
+    missingDeposits,
   };
 
   // Already-placed counts (don't double-place)
@@ -1128,10 +1433,11 @@ function autoPopulate() {
     }
   }
 
-  // Population houses
+  // Population houses (user-specified + militia-inferred)
   const popList = [];
   POP_BUILDINGS.forEach(pb => {
-    const count = parseInt(document.getElementById(`planner-${pb.id}`).value) || 0;
+    let count = parseInt(document.getElementById(`planner-${pb.id}`).value) || 0;
+    if (pb.id === 'PopulationPioneersHut') count += inferredHutCount;
     const already = placedCounts[pb.id] || 0;
     const remaining = count - already;
     if (remaining > 0) {
@@ -1140,9 +1446,17 @@ function autoPopulate() {
     }
   });
 
-  // Service buildings
+  // Service buildings — include services needed by inferred huts
   const serviceList = [];
   const requiredServices = getRequiredServices();
+  if (inferredHutCount > 0) {
+    const hutBuilding = PP2DATA.getBuilding('PopulationPioneersHut');
+    if (hutBuilding && hutBuilding.consumePerMinute) {
+      for (const resId of Object.keys(hutBuilding.consumePerMinute)) {
+        if (SERVICE_RESOURCES.has(resId)) requiredServices.add(resId);
+      }
+    }
+  }
   for (const svcRes of requiredServices) {
     const providerId = pickServiceProvider(svcRes);
     if (!providerId) continue;
@@ -1299,7 +1613,7 @@ function autoPopulate() {
     for (const item of productionList) {
       if (!item.building.inputs) continue;
       const depositInputs = Object.entries(item.building.inputs)
-        .filter(([r]) => TILE_RESOURCE_IDS.has(r) && depositTypeSet.has(r));
+        .filter(([r]) => TILE_RESOURCE_IDS.has(r) && depositTypeSet.has(r) && !NATURAL_DEPOSIT_IDS.has(r));
       const terrainInputs = Object.entries(item.building.inputs)
         .filter(([r]) => TILE_RESOURCE_IDS.has(r) && TERRAIN_PAINT_RESOURCES[r]);
       if (depositInputs.length === 0 && terrainInputs.length === 0) continue;
@@ -1409,7 +1723,11 @@ function autoPopulate() {
         if (bld.inputs) {
           for (const [resId] of Object.entries(bld.inputs)) {
             if (!TILE_RESOURCE_IDS.has(resId)) continue;
-            reason = `needs ${PP2DATA.getResourceName(resId)} tiles`;
+            if (NATURAL_DEPOSIT_IDS.has(resId) && missingDeposits.includes(resId)) {
+              reason = `missing ${PP2DATA.getResourceName(resId)} deposit on island`;
+            } else {
+              reason = `needs ${PP2DATA.getResourceName(resId)} tiles`;
+            }
             break;
           }
         }
@@ -1567,7 +1885,13 @@ function autoPopulate() {
     );
     msg += `\nCould not place: ${failParts.join(', ')}`;
   }
-  showAutoPopulateResult(msg, placed.length, failed.length);
+  if (missingDeposits.length > 0) {
+    msg += `\nMissing deposits: ${missingDeposits.map(d => PP2DATA.getResourceName(d)).join(', ')}`;
+  }
+  if (militiaInfo) {
+    msg += `\n${inferredHutCount} Pioneer Huts auto-added for militia (${militiaInfo.militiaPerMin.toFixed(2)}/min)`;
+  }
+  showAutoPopulateResult(msg, placed.length, failed.length + missingDeposits.length);
 }
 
 function showAutoPopulateResult(msg, placedCount, failedCount) {

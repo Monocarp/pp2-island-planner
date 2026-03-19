@@ -456,7 +456,11 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
     <div class="info-box" id="production-planner">
       <h4>Production Planner</h4>
       <div class="planner-inputs" id="planner-inputs"></div>
-      <button onclick="calculateProduction()" style="width:100%;padding:4px 8px;margin-bottom:6px;background:#e94560;border:none;color:#fff;border-radius:3px;font-size:0.75rem;font-weight:600;">Calculate</button>
+      <div style="display:flex;gap:4px;margin-bottom:6px;">
+        <button onclick="calculateProduction()" style="flex:1;padding:4px 8px;background:#e94560;border:none;color:#fff;border-radius:3px;font-size:0.75rem;font-weight:600;">Calculate</button>
+        <button onclick="autoPopulate()" style="flex:1;padding:4px 8px;background:#0f3460;border:1px solid #e94560;color:#e94560;border-radius:3px;font-size:0.75rem;font-weight:600;" title="Auto-place all needed buildings on the island">Auto-Place</button>
+      </div>
+      <div id="auto-populate-result" style="font-size:0.7rem;margin-bottom:4px;min-height:1em;"></div>
       <div class="planner-results" id="planner-results" style="color:#666;font-size:0.75rem;">Set house counts above and click Calculate</div>
     </div>
   </div>

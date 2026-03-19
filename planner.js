@@ -1482,10 +1482,9 @@ function autoPopulate() {
     }
   });
 
-  // Service buildings — include services needed by inferred huts
-  // Pre-place enough services in Phase 1 to cover all houses (one per ~6 houses).
+  // Service buildings — place exactly 1 of each required type in Phase 1 (near warehouse).
+  // Phase 4 greedy top-up handles spreading additional services across the island.
   const totalPopHouses = popList.reduce((s, p) => s + p.count, 0);
-  const svcPerHouseRatio = 6; // conservative estimate of houses covered per service building
   const serviceList = [];
   const requiredServices = getRequiredServices();
   if (inferredHutCount > 0) {
@@ -1500,11 +1499,9 @@ function autoPopulate() {
     const providerId = pickServiceProvider(svcRes);
     if (!providerId) continue;
     const already = placedCounts[providerId] || 0;
-    const wantCount = Math.max(1, Math.ceil(totalPopHouses / svcPerHouseRatio));
-    const remaining = wantCount - already;
-    if (remaining <= 0) continue;
+    if (already >= 1) continue;
     const building = getBuildingData(providerId);
-    if (building) serviceList.push({ id: providerId, building, count: remaining, serviceRes: svcRes });
+    if (building) serviceList.push({ id: providerId, building, count: 1, serviceRes: svcRes });
   }
 
   const placed = [];
@@ -1722,6 +1719,12 @@ function autoPopulate() {
             const cell = state.island.cells[cy][cx];
             if (cell.terrain !== 'grass') continue;
             if (cell.building) continue;
+            if (cell.deposit && NATURAL_DEPOSIT_IDS.has(cell.deposit)) {
+              // #region agent log
+              console.log(`[DBG Terrain] Skipped painting ${ter} over ${cell.deposit} at (${cx},${cy})`);
+              // #endregion
+              continue;
+            }
             if (claimedCells.has(`${cx},${cy}`)) continue;
             cell.terrain = ter;
             paintedResourceCells.add(`${cx},${cy}`);
@@ -1789,6 +1792,49 @@ function autoPopulate() {
   }
 
   cleanupOrphanDepositsAfterPhase2(width, height);
+
+  // === PHASE 2.5: Pre-house service spread ===
+  // Greedily spread service buildings across all land tiles BEFORE houses are placed.
+  // This ensures Tavern/Cistern anchors aren't blocked by houses in Phase 3.
+  // Target: enough services so ~every land tile has coverage (1 per ~6 houses needed).
+  {
+    const spreadTarget = Math.max(2, Math.ceil(totalPopHouses / 6));
+    for (const svcRes of requiredServices) {
+      const providerId = pickServiceProvider(svcRes);
+      if (!providerId) continue;
+      const providerBuilding = getBuildingData(providerId);
+      if (!providerBuilding) continue;
+      const fp = FOOTPRINTS[providerId];
+      if (!fp) continue;
+
+      const alreadyPlaced = state.island.buildings.filter(b => b.id === providerId).length;
+
+      for (let i = alreadyPlaced; i < spreadTarget; i++) {
+        let bestPos = null, bestCount = 0;
+        for (let sy = 0; sy < height; sy++) {
+          for (let sx = 0; sx < width; sx++) {
+            if (!canAutoPlace(providerId, sx, sy)) continue;
+            // Count uncovered land tiles within this service building's footprint
+            let count = 0;
+            for (const [dx, dy] of fp) {
+              const cx = sx + dx, cy = sy + dy;
+              if (cx < 0 || cx >= width || cy < 0 || cy >= height) continue;
+              const cell = state.island.cells[cy][cx];
+              if (cell.terrain === 'water') continue;
+              if (cell.deposit && NATURAL_DEPOSIT_IDS.has(cell.deposit)) continue;
+              if (!isInServiceCoverage(cx, cy, svcRes)) count++;
+            }
+            if (count > bestCount) { bestCount = count; bestPos = { sx, sy }; }
+          }
+        }
+        if (!bestPos || bestCount === 0) break;
+        autoPlaceBuilding(providerId, bestPos.sx, bestPos.sy);
+        refreshApServiceCov();
+        placed.push({ id: providerId, x: bestPos.sx, y: bestPos.sy });
+        runLog.phases.services.placed.push({ name: providerBuilding.name || providerId, x: bestPos.sx, y: bestPos.sy, serviceRes: svcRes });
+      }
+    }
+  }
 
   // === PHASE 3: Population houses (must be within service coverage) ===
   for (const item of popList) {
@@ -1883,7 +1929,12 @@ function autoPopulate() {
         }
       }
 
-      if (!bestPos || bestCount === 0) break;
+      if (!bestPos || bestCount === 0) {
+        // #region agent log
+        console.log(`[DBG Phase4] ${svcRes}: no coverage found. ${uncovered.length} uncovered houses at:`, uncovered.map(h => `(${h.x},${h.y})`).join(', '));
+        // #endregion
+        break;
+      }
       autoPlaceBuilding(providerId, bestPos.x, bestPos.y);
       refreshApServiceCov();
       placed.push({ id: providerId, x: bestPos.x, y: bestPos.y });

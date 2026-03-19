@@ -1155,30 +1155,33 @@ const SERVICE_PROVIDER_FALLBACK = {
   'gambling':     'Fair',
 };
 
-// Map service resource to best available provider building ID.
-// Uses data.js producers table where it exists (data-driven, respects tier and
-// unlocks). Falls back to SERVICE_PROVIDER_FALLBACK for service resources the
-// data doesn't model with dedicated producers.
-function pickServiceProvider(serviceResId) {
-  // getProducersOf returns building objects; extract IDs before getBuildingData
+// All provider building IDs for a service resource (unlocked-only pool when any unlocks exist).
+function listServiceProviderIdsForResource(serviceResId) {
   const producers = PP2DATA.getProducersOf(serviceResId);
   const candidates = producers
     .map(p => getBuildingData(p.id))
     .filter(b => b && !b.isPopulation && FOOTPRINTS[b.id] && FOOTPRINTS[b.id].length > 1);
 
   if (candidates.length === 0) {
-    return SERVICE_PROVIDER_FALLBACK[serviceResId] || null;
+    const fb = SERVICE_PROVIDER_FALLBACK[serviceResId];
+    return fb ? [fb] : [];
   }
 
+  const unlocked = candidates.filter(b => state.unlockedBuildings.has(b.id));
+  const pool = unlocked.length > 0 ? unlocked : candidates;
+  return pool.map(b => b.id);
+}
+
+// Map service resource to best available provider building ID (lower tier, then larger footprint).
+function pickServiceProvider(serviceResId) {
+  const ids = listServiceProviderIdsForResource(serviceResId);
+  if (ids.length === 0) return null;
+  const pool = ids.map(id => getBuildingData(id)).filter(Boolean);
   const byTier = (a, b) => {
     const ta = TIER_PRIORITY.indexOf(a.tier);
     const tb = TIER_PRIORITY.indexOf(b.tier);
     return (ta === -1 ? 99 : ta) - (tb === -1 ? 99 : tb);
   };
-
-  // Prefer buildings the player has unlocked in the palette
-  const unlocked = candidates.filter(b => state.unlockedBuildings.has(b.id));
-  const pool = unlocked.length > 0 ? unlocked : candidates;
   pool.sort((a, b) => {
     const tierDiff = byTier(a, b);
     if (tierDiff !== 0) return tierDiff;
@@ -1197,22 +1200,22 @@ function pickServiceProvider(serviceResId) {
  */
 function countValidServiceAnchorsForCell(hx, hy, svcRes, occupiedHouseAnchors) {
   const occ = occupiedHouseAnchors || new Set();
-  const providerId = pickServiceProvider(svcRes);
-  if (!providerId) return 0;
-  const fp = FOOTPRINTS[providerId];
-  if (!fp || fp.length === 0) return 0;
   const seen = new Set();
   let n = 0;
-  for (const [dx, dy] of fp) {
-    const ax = hx - dx;
-    const ay = hy - dy;
-    if (ax === hx && ay === hy) continue;
-    const key = `${ax},${ay}`;
-    if (occ.has(key)) continue;
-    if (seen.has(key)) continue;
-    if (!canAutoPlace(providerId, ax, ay)) continue;
-    seen.add(key);
-    n++;
+  for (const providerId of listServiceProviderIdsForResource(svcRes)) {
+    const fp = FOOTPRINTS[providerId];
+    if (!fp || fp.length === 0) continue;
+    for (const [dx, dy] of fp) {
+      const ax = hx - dx;
+      const ay = hy - dy;
+      if (ax === hx && ay === hy) continue;
+      const key = `${ax},${ay}`;
+      if (occ.has(key)) continue;
+      if (seen.has(key)) continue;
+      if (!canAutoPlace(providerId, ax, ay)) continue;
+      seen.add(key);
+      n++;
+    }
   }
   return n;
 }
@@ -1754,12 +1757,7 @@ function autoPopulate() {
             const cell = state.island.cells[cy][cx];
             if (cell.terrain !== 'grass') continue;
             if (cell.building) continue;
-            if (cell.deposit && NATURAL_DEPOSIT_IDS.has(cell.deposit)) {
-              // #region agent log
-              console.log(`[DBG Terrain] Skipped painting ${ter} over ${cell.deposit} at (${cx},${cy})`);
-              // #endregion
-              continue;
-            }
+            if (cell.deposit && NATURAL_DEPOSIT_IDS.has(cell.deposit)) continue;
             if (claimedCells.has(`${cx},${cy}`)) continue;
             cell.terrain = ter;
             paintedResourceCells.add(`${cx},${cy}`);
@@ -1944,12 +1942,8 @@ function autoPopulate() {
   // Attempt cap = total population houses (worst case: one service per house).
   const phase4Cap = Math.max(10, totalPopHouses);
   for (const svcRes of requiredServices) {
-    const providerId = pickServiceProvider(svcRes);
-    if (!providerId) continue;
-    const providerBuilding = getBuildingData(providerId);
-    if (!providerBuilding) continue;
-    const fp = FOOTPRINTS[providerId];
-    if (!fp) continue;
+    const providerIds = listServiceProviderIdsForResource(svcRes);
+    if (providerIds.length === 0) continue;
 
     for (let attempt = 0; attempt < phase4Cap; attempt++) {
       // Find all placed population houses that need this service but aren't covered
@@ -1961,29 +1955,43 @@ function autoPopulate() {
       });
       if (uncovered.length === 0) break;
 
-      // Find position that covers the most uncovered houses
-      let bestPos = null, bestCount = 0;
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          if (!canAutoPlace(providerId, x, y)) continue;
-          let count = 0;
-          for (const h of uncovered) {
-            if (fp.some(([dx, dy]) => x + dx === h.x && y + dy === h.y)) count++;
+      // Best placement over every unlocked provider (larger footprint often reaches edge huts)
+      let best = null;
+      for (const providerId of providerIds) {
+        const fp = FOOTPRINTS[providerId];
+        if (!fp) continue;
+        const fpSize = fp.length;
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            if (!canAutoPlace(providerId, x, y)) continue;
+            let count = 0;
+            for (const h of uncovered) {
+              if (fp.some(([dx, dy]) => x + dx === h.x && y + dy === h.y)) count++;
+            }
+            if (count === 0) continue;
+            if (!best || count > best.count ||
+                (count === best.count && fpSize > best.fpSize) ||
+                (count === best.count && fpSize === best.fpSize && providerId.localeCompare(best.providerId) < 0)) {
+              best = { count, x, y, providerId, fpSize };
+            }
           }
-          if (count > bestCount) { bestCount = count; bestPos = { x, y }; }
         }
       }
 
-      if (!bestPos || bestCount === 0) {
-        // #region agent log
-        console.log(`[DBG Phase4] ${svcRes}: no coverage found. ${uncovered.length} uncovered houses at:`, uncovered.map(h => `(${h.x},${h.y})`).join(', '));
-        // #endregion
-        break;
-      }
-      autoPlaceBuilding(providerId, bestPos.x, bestPos.y);
+      if (!best || best.count === 0) break;
+
+      const providerBuilding = getBuildingData(best.providerId);
+      autoPlaceBuilding(best.providerId, best.x, best.y);
       refreshApServiceCov();
-      placed.push({ id: providerId, x: bestPos.x, y: bestPos.y });
-      runLog.phases.topup.push({ serviceRes: svcRes, providerName: providerBuilding.name || providerId, x: bestPos.x, y: bestPos.y, coveredCount: bestCount, uncoveredBefore: uncovered.length });
+      placed.push({ id: best.providerId, x: best.x, y: best.y });
+      runLog.phases.topup.push({
+        serviceRes: svcRes,
+        providerName: (providerBuilding && providerBuilding.name) || best.providerId,
+        x: best.x,
+        y: best.y,
+        coveredCount: best.count,
+        uncoveredBefore: uncovered.length,
+      });
     }
   }
 

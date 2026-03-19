@@ -1172,6 +1172,7 @@ function autoPopulate() {
             if (cell.building) continue;
             if (claimedCells.has(`${cx},${cy}`)) continue;
             cell.deposit = resId;
+            claimedCells.add(`${cx},${cy}`);
             placedCount++;
             runLog.phases.deposits.push({ kind: 'deposit', resId, name: PP2DATA.getResourceName(resId), x: cx, y: cy });
           }
@@ -1194,6 +1195,7 @@ function autoPopulate() {
             if (cell.building) continue;
             if (claimedCells.has(`${cx},${cy}`)) continue;
             cell.terrain = ter;
+            claimedCells.add(`${cx},${cy}`);
             painted++;
             runLog.phases.deposits.push({
               kind: 'terrain',

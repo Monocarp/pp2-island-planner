@@ -299,20 +299,47 @@ function canAutoPlace(buildingId, x, y) {
   return true;
 }
 
-// Count how many tiles of a given resource type are in the footprint at (x,y)
-function countTileResource(buildingId, x, y, resId) {
+// Count how many tiles of a given resource type are in the footprint at (x,y).
+// If claimedCells is provided (Set of "cx,cy" strings), those cells are skipped
+// so that multiple buildings don't double-count the same spatial tiles (e.g. grass).
+function countTileResource(buildingId, x, y, resId, claimedCells) {
   const { width, height, cells } = state.island;
   const fp = FOOTPRINTS[buildingId] || [[0,0]];
   let count = 0;
   for (const [dx, dy] of fp) {
     const cx = x + dx, cy = y + dy;
     if (cx >= 0 && cx < width && cy >= 0 && cy < height) {
+      if (claimedCells && claimedCells.has(`${cx},${cy}`)) continue;
       if (matchesTileResource(cells[cy][cx], resId)) count++;
     } else if (resId === 'water_tile') {
       count++; // out-of-bounds = ocean
     }
   }
   return count;
+}
+
+// Mark all spatial tile resource cells in a building's footprint as claimed.
+// Called after auto-placing a building so subsequent buildings won't overlap on grass/deposits.
+function claimTileResourceCells(buildingId, x, y, claimedCells) {
+  const { width, height, cells } = state.island;
+  const fp = FOOTPRINTS[buildingId] || [[0,0]];
+  const building = getBuildingData(buildingId);
+  if (!building || !building.inputs) return;
+  const spatialResources = new Set(
+    Object.keys(building.inputs).filter(r => TILE_RESOURCE_IDS.has(r))
+  );
+  if (spatialResources.size === 0) return;
+  for (const [dx, dy] of fp) {
+    const cx = x + dx, cy = y + dy;
+    if (cx < 0 || cx >= width || cy < 0 || cy >= height) continue;
+    const cell = cells[cy][cx];
+    for (const resId of spatialResources) {
+      if (matchesTileResource(cell, resId)) {
+        claimedCells.add(`${cx},${cy}`);
+        break;
+      }
+    }
+  }
 }
 
 // Check if position (x,y) is within any warehouse's footprint
@@ -369,23 +396,25 @@ function pickWarehouseId() {
   return 'Warehouse1';
 }
 
-// Find all valid positions for a building, sorted by score
+// Find all valid positions for a building, sorted by score.
+// opts.claimedCells: Set of "cx,cy" strings — spatial tiles already used by prior buildings.
 function findBestPositions(buildingId, building, opts) {
   const { width, height } = state.island;
   const requireWarehouse = opts && opts.requireWarehouse;
+  const claimedCells = (opts && opts.claimedCells) || null;
   const candidates = [];
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       if (!canAutoPlace(buildingId, x, y)) continue;
       if (requireWarehouse && !isInWarehouseRange(x, y)) continue;
 
-      // Check tile resource inputs are satisfied
+      // Check tile resource inputs are satisfied (accounting for already-claimed tiles)
       let tileOk = true;
       if (building.inputs) {
         for (const [resId, needed] of Object.entries(building.inputs)) {
           if (!TILE_RESOURCE_IDS.has(resId)) continue;
           if (resId === 'river' && LOCATION_REQUIREMENTS[buildingId]) continue;
-          if (countTileResource(buildingId, x, y, resId) < needed) {
+          if (countTileResource(buildingId, x, y, resId, claimedCells) < needed) {
             tileOk = false;
             break;
           }
@@ -400,7 +429,7 @@ function findBestPositions(buildingId, building, opts) {
       if (building.inputs) {
         for (const [resId, needed] of Object.entries(building.inputs)) {
           if (!TILE_RESOURCE_IDS.has(resId)) continue;
-          score += Math.min(countTileResource(buildingId, x, y, resId), needed) * 2;
+          score += Math.min(countTileResource(buildingId, x, y, resId, claimedCells), needed) * 2;
         }
       }
 
@@ -454,7 +483,7 @@ function pickServiceProvider(serviceResId) {
   const producers = PP2DATA.getProducersOf(serviceResId);
   const candidates = producers
     .map(p => getBuildingData(p.id))
-    .filter(b => b && !b.isPopulation && FOOTPRINTS[b.id]);
+    .filter(b => b && !b.isPopulation && FOOTPRINTS[b.id] && FOOTPRINTS[b.id].length > 1);
 
   if (candidates.length === 0) {
     return SERVICE_PROVIDER_FALLBACK[serviceResId] || null;
@@ -469,7 +498,13 @@ function pickServiceProvider(serviceResId) {
   // Prefer buildings the player has unlocked in the palette
   const unlocked = candidates.filter(b => state.unlockedBuildings.has(b.id));
   const pool = unlocked.length > 0 ? unlocked : candidates;
-  pool.sort(byTier);
+  pool.sort((a, b) => {
+    const tierDiff = byTier(a, b);
+    if (tierDiff !== 0) return tierDiff;
+    const sizeA = (FOOTPRINTS[a.id]?.length || 0);
+    const sizeB = (FOOTPRINTS[b.id]?.length || 0);
+    return sizeB - sizeA;
+  });
   return pool[0].id;
 }
 
@@ -554,7 +589,7 @@ function emitAutoPopulateLog(log) {
   }
   if (phases.warehouses.coverage !== null) {
     const pct = (phases.warehouses.coverage * 100).toFixed(1);
-    const style = phases.warehouses.coverage >= 0.7 ? 'color:green' : 'color:orange';
+    const style = phases.warehouses.coverage >= 0.5 ? 'color:green' : 'color:orange';
     console.log(`%cLand coverage: ${pct}%`, style);
   }
   console.groupEnd();
@@ -567,6 +602,14 @@ function emitAutoPopulateLog(log) {
   phases.services.failed.forEach(f =>
     console.warn(`✗ ${f.name} — ${f.reason}`));
   console.groupEnd();
+
+  // Phase 1.5
+  if (phases.deposits.length > 0) {
+    console.group(`Phase 1.5 — Deposits (${phases.deposits.length} auto-placed)`);
+    phases.deposits.forEach(d =>
+      console.log(`+ ${d.name} deposit at (${d.x},${d.y})`));
+    console.groupEnd();
+  }
 
   // Phase 2
   const prodNeed = phases.production.placed.length + phases.production.failed.length;
@@ -649,6 +692,7 @@ function autoPopulate() {
     phases: {
       warehouses: { placed: [], coverage: null },
       services:   { placed: [], failed: [] },
+      deposits:   [],
       production: { placed: [], failed: [] },
       houses:     { placed: [], failed: [] },
       topup:      [],
@@ -661,6 +705,10 @@ function autoPopulate() {
   state.island.buildings.forEach(b => {
     placedCounts[b.id] = (placedCounts[b.id] || 0) + 1;
   });
+
+  // Tracks which spatial tile resource cells (e.g. grass) are already claimed by a placed
+  // building, so that subsequent buildings don't overlap on the same grass/deposit tiles.
+  const claimedCells = new Set();
 
   // === Gather what we need to place ===
 
@@ -720,9 +768,8 @@ function autoPopulate() {
 
   // Count how many production buildings we need to place total
   const totalProdNeeded = productionList.reduce((s, p) => s + p.count, 0);
-  // If many buildings, we may need additional warehouses to cover enough land
-  // Check what fraction of land cells are covered, add warehouses until 80%+ or no improvement
-  for (let attempt = 0; attempt < 5; attempt++) {
+  // Add up to 2 more warehouses (3 total) until 50%+ land coverage or no improvement
+  for (let attempt = 0; attempt < 2; attempt++) {
     // Count covered land cells
     let coveredLand = 0, totalLand = 0;
     for (let y = 0; y < height; y++) {
@@ -734,7 +781,7 @@ function autoPopulate() {
     }
     const coverage = totalLand > 0 ? coveredLand / totalLand : 1;
     runLog.phases.warehouses.coverage = coverage;
-    if (coverage >= 0.7 || totalProdNeeded <= 3) break;
+    if (coverage >= 0.5 || totalProdNeeded <= 3) break;
 
     // Place another warehouse where it covers the most uncovered land
     const whId = pickWarehouseId();
@@ -772,6 +819,54 @@ function autoPopulate() {
     }
   }
 
+  // === PHASE 1.5: Auto-place missing deposit tiles for production buildings ===
+  // If a building needs a deposit (apple_trees, hop_field, etc.) and the island doesn't
+  // have enough, place the deficit count on free grass cells — warehouse range first.
+  {
+    const depositTypeSet = new Set(DEPOSIT_TYPES.map(d => d.id));
+    for (const item of productionList) {
+      if (!item.building.inputs) continue;
+      for (const [resId, neededPerBuilding] of Object.entries(item.building.inputs)) {
+        if (!TILE_RESOURCE_IDS.has(resId)) continue;
+        if (!depositTypeSet.has(resId)) continue; // skip terrain resources (grass, forest, etc.)
+
+        const totalNeeded = Math.ceil(neededPerBuilding) * item.count;
+
+        // Count existing deposits of this type (not claimed)
+        let existing = 0;
+        for (let cy = 0; cy < height; cy++) {
+          for (let cx = 0; cx < width; cx++) {
+            if (state.island.cells[cy][cx].deposit === resId && !claimedCells.has(`${cx},${cy}`)) {
+              existing++;
+            }
+          }
+        }
+        const deficit = totalNeeded - existing;
+        if (deficit <= 0) continue;
+
+        // Place deposits on free unclaimed grass cells — warehouse range first, then anywhere
+        let placed_count = 0;
+        for (const requireWh of [true, false]) {
+          if (placed_count >= deficit) break;
+          for (let cy = 0; cy < height && placed_count < deficit; cy++) {
+            for (let cx = 0; cx < width && placed_count < deficit; cx++) {
+              const cell = state.island.cells[cy][cx];
+              if (cell.terrain !== 'grass') continue;
+              if (cell.deposit) continue;
+              if (cell.building) continue;
+              if (claimedCells.has(`${cx},${cy}`)) continue;
+              if (requireWh && !isInWarehouseRange(cx, cy)) continue;
+              cell.deposit = resId;
+              claimedCells.add(`${cx},${cy}`);
+              placed_count++;
+              runLog.phases.deposits.push({ resId, name: PP2DATA.getResourceName(resId), x: cx, y: cy });
+            }
+          }
+        }
+      }
+    }
+  }
+
   // === PHASE 2: Production buildings (most constrained first) ===
   productionList.sort((a, b) => {
     const constraintScore = (item) => {
@@ -798,18 +893,12 @@ function autoPopulate() {
 
   for (const item of productionList) {
     for (let i = 0; i < item.count; i++) {
-      // Try in warehouse range first
-      let positions = findBestPositions(item.id, item.building, { requireWarehouse: true });
-      let usedFallback = false;
-      if (positions.length === 0) {
-        // Fallback: anywhere
-        positions = findBestPositions(item.id, item.building, {});
-        usedFallback = positions.length > 0;
-      }
+      const positions = findBestPositions(item.id, item.building, { requireWarehouse: true, claimedCells });
       if (positions.length > 0) {
         autoPlaceBuilding(item.id, positions[0].x, positions[0].y);
+        claimTileResourceCells(item.id, positions[0].x, positions[0].y, claimedCells);
         placed.push({ id: item.id, x: positions[0].x, y: positions[0].y });
-        runLog.phases.production.placed.push({ name: item.building.name || item.id, x: positions[0].x, y: positions[0].y, usedFallback });
+        runLog.phases.production.placed.push({ name: item.building.name || item.id, x: positions[0].x, y: positions[0].y, usedFallback: false });
       } else {
         // Diagnose why
         const bld = item.building;
@@ -896,7 +985,7 @@ function autoPopulate() {
     const fp = FOOTPRINTS[providerId];
     if (!fp) continue;
 
-    for (let attempt = 0; attempt < 10; attempt++) {
+    for (let attempt = 0; attempt < 5; attempt++) {
       // Find all placed population houses that need this service but aren't covered
       const uncovered = state.island.buildings.filter(b => {
         const bld = getBuildingData(b.id);

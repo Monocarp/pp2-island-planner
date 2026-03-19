@@ -1187,6 +1187,20 @@ function pickServiceProvider(serviceResId) {
   return pool[0].id;
 }
 
+/** True if some valid anchor exists for the chosen service provider such that (hx, hy) lies in its coverage footprint. */
+function canBeCoveredBySvc(hx, hy, svcRes) {
+  const providerId = pickServiceProvider(svcRes);
+  if (!providerId) return false;
+  const fp = FOOTPRINTS[providerId];
+  if (!fp || fp.length === 0) return false;
+  for (const [dx, dy] of fp) {
+    const ax = hx - dx;
+    const ay = hy - dy;
+    if (canAutoPlace(providerId, ax, ay)) return true;
+  }
+  return false;
+}
+
 // ===== AUTO-POPULATE DIAGNOSTICS =====
 
 // Finds the best physically valid position for a building while ignoring tile
@@ -1865,9 +1879,15 @@ function autoPopulate() {
           }
 
           // Strongly prefer full service coverage
-          const svcScore = neededServices.length > 0
+          let svcScore = neededServices.length > 0
             ? (svcCovered / neededServices.length) * 100
             : 0;
+          // De-prioritize dead zones: no valid service provider anchor can ever cover this cell.
+          for (const svcRes of neededServices) {
+            if (!isInServiceCoverage(x, y, svcRes) && !canBeCoveredBySvc(x, y, svcRes)) {
+              svcScore -= 500;
+            }
+          }
 
           const cx = width / 2, cy = height / 2;
           const dist = Math.abs(x - cx) + Math.abs(y - cy);

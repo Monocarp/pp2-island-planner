@@ -304,30 +304,6 @@ function countTileResource(buildingId, x, y, resId) {
   return count;
 }
 
-// Score a position for a building — higher is better
-// Prefers central positions and positions near already-placed buildings
-function scorePosition(buildingId, x, y, building) {
-  const { width, height } = state.island;
-  let score = 0;
-
-  // Prefer positions closer to center of island
-  const cx = width / 2, cy = height / 2;
-  const dist = Math.abs(x - cx) + Math.abs(y - cy);
-  score -= dist * 0.1;
-
-  // For buildings with tile resource inputs, prefer positions with more matching tiles
-  if (building.inputs) {
-    for (const [resId, needed] of Object.entries(building.inputs)) {
-      if (!TILE_RESOURCE_IDS.has(resId)) continue;
-      const available = countTileResource(buildingId, x, y, resId);
-      // Bonus for having more than needed (less waste), penalty for exactly matching
-      score += Math.min(available, needed) * 2;
-    }
-  }
-
-  return score;
-}
-
 // Check if position (x,y) is within any warehouse's footprint
 function isInWarehouseRange(x, y) {
   const warehouseIds = ['Warehouse1', 'Warehouse2', 'Warehouse3'];
@@ -342,9 +318,48 @@ function isInWarehouseRange(x, y) {
   return false;
 }
 
+// Check if position (x,y) is covered by a specific service resource
+function isInServiceCoverage(x, y, serviceResId) {
+  const providerId = pickServiceProvider(serviceResId);
+  if (!providerId) return false;
+  for (const b of state.island.buildings) {
+    if (b.id !== providerId) continue;
+    const fp = FOOTPRINTS[b.id];
+    if (!fp) continue;
+    for (const [dx, dy] of fp) {
+      if (b.x + dx === x && b.y + dy === y) return true;
+    }
+  }
+  return false;
+}
+
+// Count uncovered land cells that a warehouse at (wx,wy) would newly cover
+function countNewWarehouseCoverage(whId, wx, wy) {
+  const { width, height, cells } = state.island;
+  const fp = FOOTPRINTS[whId];
+  if (!fp) return 0;
+  let newCells = 0;
+  for (const [dx, dy] of fp) {
+    const cx = wx + dx, cy = wy + dy;
+    if (cx < 0 || cx >= width || cy < 0 || cy >= height) continue;
+    const cell = cells[cy][cx];
+    if (cell.terrain === 'water') continue;
+    if (!isInWarehouseRange(cx, cy)) newCells++;
+  }
+  return newCells;
+}
+
+// Pick best warehouse tier based on what's unlocked
+function pickWarehouseId() {
+  if (state.unlockedBuildings.has('Warehouse3')) return 'Warehouse3';
+  if (state.unlockedBuildings.has('Warehouse2')) return 'Warehouse2';
+  return 'Warehouse1';
+}
+
 // Find all valid positions for a building, sorted by score
-function findBestPositions(buildingId, building, requireWarehouse) {
+function findBestPositions(buildingId, building, opts) {
   const { width, height } = state.island;
+  const requireWarehouse = opts && opts.requireWarehouse;
   const candidates = [];
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -365,7 +380,18 @@ function findBestPositions(buildingId, building, requireWarehouse) {
       }
       if (!tileOk) continue;
 
-      candidates.push({ x, y, score: scorePosition(buildingId, x, y, building) });
+      // Score: prefer central + tile resource richness
+      const cx = width / 2, cy = height / 2;
+      const dist = Math.abs(x - cx) + Math.abs(y - cy);
+      let score = -dist * 0.1;
+      if (building.inputs) {
+        for (const [resId, needed] of Object.entries(building.inputs)) {
+          if (!TILE_RESOURCE_IDS.has(resId)) continue;
+          score += Math.min(countTileResource(buildingId, x, y, resId), needed) * 2;
+        }
+      }
+
+      candidates.push({ x, y, score });
     }
   }
   candidates.sort((a, b) => b.score - a.score);
@@ -395,9 +421,7 @@ function getRequiredServices() {
 }
 
 // Map service resource to best provider building ID
-// Uses EXTRA_BUILDINGS service entries + data.js service producers
 function pickServiceProvider(serviceResId) {
-  // Preferred service providers mapped by resource
   const preferred = {
     'water': 'Well',
     'community': 'Tavern',
@@ -433,26 +457,26 @@ function autoPopulate() {
   const { buildings: chainBuildings } = resolveProductionChain(demand);
   const { width, height } = state.island;
 
-  // Build the placement list: [{ id, building, count }]
-  const placementList = [];
-
   // Already-placed counts (don't double-place)
   const placedCounts = {};
   state.island.buildings.forEach(b => {
     placedCounts[b.id] = (placedCounts[b.id] || 0) + 1;
   });
 
-  // 1. Gather production buildings from chain
+  // === Gather what we need to place ===
+
+  // Production buildings from chain
+  const productionList = [];
   for (const [bId, entry] of Object.entries(chainBuildings)) {
     const needed = Math.ceil(entry.count);
     const already = placedCounts[bId] || 0;
     const remaining = needed - already;
     if (remaining > 0) {
-      placementList.push({ id: bId, building: entry.building, count: remaining, category: 'production' });
+      productionList.push({ id: bId, building: entry.building, count: remaining });
     }
   }
 
-  // 2. Gather population houses
+  // Population houses
   const popList = [];
   POP_BUILDINGS.forEach(pb => {
     const count = parseInt(document.getElementById(`planner-${pb.id}`).value) || 0;
@@ -460,50 +484,95 @@ function autoPopulate() {
     const remaining = count - already;
     if (remaining > 0) {
       const building = getBuildingData(pb.id);
-      if (building) popList.push({ id: pb.id, building, count: remaining, category: 'population' });
+      if (building) popList.push({ id: pb.id, building, count: remaining });
     }
   });
 
-  // 3. Gather service buildings needed
+  // Service buildings
   const serviceList = [];
   const requiredServices = getRequiredServices();
   for (const svcRes of requiredServices) {
     const providerId = pickServiceProvider(svcRes);
     if (!providerId) continue;
     const already = placedCounts[providerId] || 0;
-    if (already > 0) continue; // already have one
+    if (already > 0) continue;
     const building = getBuildingData(providerId);
-    if (building) serviceList.push({ id: providerId, building, count: 1, category: 'service' });
+    if (building) serviceList.push({ id: providerId, building, count: 1, serviceRes: svcRes });
   }
 
-  // 4. Check if we need a warehouse (if none placed)
-  const warehouseIds = ['Warehouse1', 'Warehouse2', 'Warehouse3'];
-  const hasWarehouse = state.island.buildings.some(b => warehouseIds.includes(b.id));
-
-  // === PLACEMENT PHASE ===
   const placed = [];
   const failed = [];
 
-  // Phase 0: Place a warehouse if none exists (central position)
+  // === PHASE 0: Warehouses ===
+  // Place warehouse(s) to cover the island. Start with one central, add more if needed.
+  const warehouseIds = ['Warehouse1', 'Warehouse2', 'Warehouse3'];
+  const hasWarehouse = state.island.buildings.some(b => warehouseIds.includes(b.id));
+
   if (!hasWarehouse) {
-    const whId = 'Warehouse1';
-    const whBuilding = getBuildingData(whId);
-    const positions = findBestPositions(whId, whBuilding || {}, false);
+    const whId = pickWarehouseId();
+    const whBuilding = getBuildingData(whId) || {};
+    const positions = findBestPositions(whId, whBuilding, {});
     if (positions.length > 0) {
       autoPlaceBuilding(whId, positions[0].x, positions[0].y);
       placed.push({ id: whId, x: positions[0].x, y: positions[0].y });
-    } else {
-      failed.push({ id: whId, reason: 'No valid position' });
     }
   }
 
-  // Sort production buildings: most constrained first
-  // Constraint score: deposit-bound > river-bound > high grass needs > unconstrained
-  placementList.sort((a, b) => {
+  // Count how many production buildings we need to place total
+  const totalProdNeeded = productionList.reduce((s, p) => s + p.count, 0);
+  // If many buildings, we may need additional warehouses to cover enough land
+  // Check what fraction of land cells are covered, add warehouses until 80%+ or no improvement
+  for (let attempt = 0; attempt < 5; attempt++) {
+    // Count covered land cells
+    let coveredLand = 0, totalLand = 0;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (state.island.cells[y][x].terrain === 'water') continue;
+        totalLand++;
+        if (isInWarehouseRange(x, y)) coveredLand++;
+      }
+    }
+    const coverage = totalLand > 0 ? coveredLand / totalLand : 1;
+    if (coverage >= 0.7 || totalProdNeeded <= 3) break;
+
+    // Place another warehouse where it covers the most uncovered land
+    const whId = pickWarehouseId();
+    const whBuilding = getBuildingData(whId) || {};
+    let bestWh = null, bestNew = 0;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (!canAutoPlace(whId, x, y)) continue;
+        const newCov = countNewWarehouseCoverage(whId, x, y);
+        if (newCov > bestNew) { bestNew = newCov; bestWh = { x, y }; }
+      }
+    }
+    if (bestWh && bestNew > 0) {
+      autoPlaceBuilding(whId, bestWh.x, bestWh.y);
+      placed.push({ id: whId, x: bestWh.x, y: bestWh.y });
+    } else {
+      break;
+    }
+  }
+
+  // === PHASE 1: Services (before houses, so houses can target coverage) ===
+  // Place services centrally to maximize future house coverage
+  for (const item of serviceList) {
+    for (let i = 0; i < item.count; i++) {
+      const positions = findBestPositions(item.id, item.building, {});
+      if (positions.length > 0) {
+        autoPlaceBuilding(item.id, positions[0].x, positions[0].y);
+        placed.push({ id: item.id, x: positions[0].x, y: positions[0].y });
+      } else {
+        failed.push({ id: item.id, reason: 'no valid position for service' });
+      }
+    }
+  }
+
+  // === PHASE 2: Production buildings (most constrained first) ===
+  productionList.sort((a, b) => {
     const constraintScore = (item) => {
       let score = 0;
       const bld = item.building;
-      // Location requirement = highly constrained
       if (LOCATION_REQUIREMENTS[item.id]) {
         const req = LOCATION_REQUIREMENTS[item.id];
         if (req.type === 'straight_river') score += 100;
@@ -511,12 +580,11 @@ function autoPopulate() {
         else if (req.type === 'ocean_adjacent') score += 80;
         else if (req.type === 'river_adjacent') score += 70;
       }
-      // Deposit-dependent inputs
       if (bld.inputs) {
         for (const [resId, amt] of Object.entries(bld.inputs)) {
           if (!TILE_RESOURCE_IDS.has(resId)) continue;
           if (resId.includes('deposit') || resId === 'cliff') score += 200;
-          else if (resId === 'grass') score += amt; // more grass = more constrained
+          else if (resId === 'grass') score += amt;
         }
       }
       return score;
@@ -524,77 +592,68 @@ function autoPopulate() {
     return constraintScore(b) - constraintScore(a);
   });
 
-  // Phase 1: Place production buildings (most constrained first)
-  for (const item of placementList) {
+  for (const item of productionList) {
     for (let i = 0; i < item.count; i++) {
-      const positions = findBestPositions(item.id, item.building, true);
+      // Try in warehouse range first
+      let positions = findBestPositions(item.id, item.building, { requireWarehouse: true });
+      if (positions.length === 0) {
+        // Fallback: anywhere
+        positions = findBestPositions(item.id, item.building, {});
+      }
       if (positions.length > 0) {
         autoPlaceBuilding(item.id, positions[0].x, positions[0].y);
         placed.push({ id: item.id, x: positions[0].x, y: positions[0].y });
       } else {
-        // Try without warehouse constraint
-        const anyPos = findBestPositions(item.id, item.building, false);
-        if (anyPos.length > 0) {
-          autoPlaceBuilding(item.id, anyPos[0].x, anyPos[0].y);
-          placed.push({ id: item.id, x: anyPos[0].x, y: anyPos[0].y });
-        } else {
-          failed.push({ id: item.id, reason: 'No valid position' });
+        // Diagnose why
+        const bld = item.building;
+        let reason = 'no space';
+        if (bld.inputs) {
+          for (const [resId] of Object.entries(bld.inputs)) {
+            if (!TILE_RESOURCE_IDS.has(resId)) continue;
+            reason = `needs ${PP2DATA.getResourceName(resId)} tiles`;
+            break;
+          }
         }
+        if (LOCATION_REQUIREMENTS[item.id]) {
+          reason = LOCATION_REQUIREMENTS[item.id].label;
+        }
+        failed.push({ id: item.id, reason });
       }
     }
   }
 
-  // Phase 2: Place service buildings (central, to maximize house coverage later)
-  for (const item of serviceList) {
-    for (let i = 0; i < item.count; i++) {
-      const positions = findBestPositions(item.id, item.building, false);
-      if (positions.length > 0) {
-        autoPlaceBuilding(item.id, positions[0].x, positions[0].y);
-        placed.push({ id: item.id, x: positions[0].x, y: positions[0].y });
-      } else {
-        failed.push({ id: item.id, reason: 'No valid position' });
-      }
-    }
-  }
-
-  // Phase 3: Place population houses (prefer within service coverage)
+  // === PHASE 3: Population houses (must be within service coverage) ===
   for (const item of popList) {
-    for (let i = 0; i < item.count; i++) {
-      // Find positions that are covered by all required services
-      const building = item.building;
-      const neededServices = [];
-      if (building.consumePerMinute) {
-        for (const resId of Object.keys(building.consumePerMinute)) {
-          if (SERVICE_RESOURCES.has(resId)) neededServices.push(resId);
-        }
+    // Determine which services this house type needs
+    const neededServices = [];
+    if (item.building.consumePerMinute) {
+      for (const resId of Object.keys(item.building.consumePerMinute)) {
+        if (SERVICE_RESOURCES.has(resId)) neededServices.push(resId);
       }
+    }
 
-      const { width, height } = state.island;
+    for (let i = 0; i < item.count; i++) {
       let bestPos = null;
       let bestScore = -Infinity;
 
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           if (!canAutoPlace(item.id, x, y)) continue;
-          // Score: prefer positions covered by more required services
-          let svcCoverage = 0;
+
+          // Count how many required services cover this position
+          let svcCovered = 0;
           for (const svcRes of neededServices) {
-            const providerId = pickServiceProvider(svcRes);
-            if (!providerId) continue;
-            const svcBuildings = state.island.buildings.filter(b => b.id === providerId);
-            for (const sb of svcBuildings) {
-              const fp = FOOTPRINTS[sb.id];
-              if (!fp) continue;
-              if (fp.some(([dx, dy]) => sb.x + dx === x && sb.y + dy === y)) {
-                svcCoverage++;
-                break;
-              }
-            }
+            if (isInServiceCoverage(x, y, svcRes)) svcCovered++;
           }
+
+          // Strongly prefer full service coverage
+          const svcScore = neededServices.length > 0
+            ? (svcCovered / neededServices.length) * 100
+            : 0;
 
           const cx = width / 2, cy = height / 2;
           const dist = Math.abs(x - cx) + Math.abs(y - cy);
-          const score = svcCoverage * 10 - dist * 0.1;
+          const score = svcScore - dist * 0.1;
 
           if (score > bestScore) {
             bestScore = score;
@@ -607,7 +666,7 @@ function autoPopulate() {
         autoPlaceBuilding(item.id, bestPos.x, bestPos.y);
         placed.push({ id: item.id, x: bestPos.x, y: bestPos.y });
       } else {
-        failed.push({ id: item.id, reason: 'No valid position' });
+        failed.push({ id: item.id, reason: 'no space' });
       }
     }
   }
@@ -620,11 +679,18 @@ function autoPopulate() {
   // Show summary
   let msg = `Placed ${placed.length} building${placed.length !== 1 ? 's' : ''}.`;
   if (failed.length > 0) {
-    const failNames = failed.map(f => {
+    // Group failures by building name + reason
+    const failGroups = {};
+    for (const f of failed) {
       const b = getBuildingData(f.id);
-      return b ? b.name : f.id;
-    });
-    msg += `\nCould not place: ${failNames.join(', ')}`;
+      const name = b ? b.name : f.id;
+      const key = `${name} (${f.reason})`;
+      failGroups[key] = (failGroups[key] || 0) + 1;
+    }
+    const failParts = Object.entries(failGroups).map(([key, count]) =>
+      count > 1 ? `${count}× ${key}` : key
+    );
+    msg += `\nCould not place: ${failParts.join(', ')}`;
   }
   showAutoPopulateResult(msg, placed.length, failed.length);
 }

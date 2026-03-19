@@ -1869,6 +1869,73 @@ function autoPopulate() {
     }
   }
 
+  // === PHASE 2.75: Dead-zone rescue ===
+  // After production buildings are placed, some potential house sites have no valid service
+  // anchor remaining (production buildings blocked them). Greedily place service buildings
+  // to rescue those dead zones before Phase 3 houses are placed.
+  {
+    // Candidate house sites: land cells in warehouse range, not claimed, not painted.
+    const houseId = popList.length > 0 ? popList[0].id : 'PopulationPioneersHut';
+    const deadZoneCap = Math.max(6, totalPopHouses);
+    for (const svcRes of requiredServices) {
+      const providerIds = listServiceProviderIdsForResource(svcRes);
+      if (providerIds.length === 0) continue;
+
+      for (let attempt = 0; attempt < deadZoneCap; attempt++) {
+        // Collect potential house positions that are BOTH uncovered AND have no remaining service anchor
+        const deadZones = [];
+        for (let dy2 = 0; dy2 < height; dy2++) {
+          for (let dx2 = 0; dx2 < width; dx2++) {
+            if (!canAutoPlace(houseId, dx2, dy2)) continue;
+            if (!isInWarehouseRange(dx2, dy2)) continue;
+            if (claimedCells.has(`${dx2},${dy2}`)) continue;
+            if (paintedResourceCells.has(`${dx2},${dy2}`)) continue;
+            if (isInServiceCoverage(dx2, dy2, svcRes)) continue;
+            // Check if ANY provider can place an anchor that covers this cell
+            let coverable = false;
+            for (const pid of providerIds) {
+              const pfp = FOOTPRINTS[pid];
+              if (!pfp) continue;
+              for (const [ddx, ddy] of pfp) {
+                if (canAutoPlace(pid, dx2 - ddx, dy2 - ddy)) { coverable = true; break; }
+              }
+              if (coverable) break;
+            }
+            if (!coverable) deadZones.push({ x: dx2, y: dy2 });
+          }
+        }
+        if (deadZones.length === 0) break;
+
+        // Find the service anchor that covers the most dead zones
+        let bestDZ = null;
+        for (const providerId of providerIds) {
+          const pfp = FOOTPRINTS[providerId];
+          if (!pfp) continue;
+          for (let sy = 0; sy < height; sy++) {
+            for (let sx = 0; sx < width; sx++) {
+              if (!canAutoPlace(providerId, sx, sy)) continue;
+              let cnt = 0;
+              for (const dz of deadZones) {
+                if (pfp.some(([ddx, ddy]) => sx + ddx === dz.x && sy + ddy === dz.y)) cnt++;
+              }
+              if (cnt > 0 && (!bestDZ || cnt > bestDZ.count ||
+                  (cnt === bestDZ.count && pfp.length > FOOTPRINTS[bestDZ.providerId]?.length))) {
+                bestDZ = { count: cnt, x: sx, y: sy, providerId };
+              }
+            }
+          }
+        }
+        if (!bestDZ) break;
+
+        const pb = getBuildingData(bestDZ.providerId);
+        autoPlaceBuilding(bestDZ.providerId, bestDZ.x, bestDZ.y);
+        refreshApServiceCov();
+        placed.push({ id: bestDZ.providerId, x: bestDZ.x, y: bestDZ.y });
+        runLog.phases.services.placed.push({ name: (pb && pb.name) || bestDZ.providerId, x: bestDZ.x, y: bestDZ.y, serviceRes: svcRes });
+      }
+    }
+  }
+
   // === PHASE 3: Population houses (must be within service coverage) ===
   const houseAnchorOccupied = new Set(); // population anchors — block future service anchors here
   for (const item of popList) {

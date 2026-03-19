@@ -807,7 +807,7 @@ function autoPopulate() {
   // Save undo state
   pushUndo();
 
-  const { buildings: chainBuildings } = resolveProductionChain(demand);
+  const { buildings: chainBuildings, tileNeeds } = resolveProductionChain(demand);
   const { width, height } = state.island;
 
   const runLog = {
@@ -994,7 +994,15 @@ function autoPopulate() {
   // For each production building that needs a deposit (apple_trees, hop_field, etc.) or
   // paintable terrain (forest for Lumberjack), find a valid position first (ignoring those
   // requirements), then paint so Phase 2 can place the building there.
+  // For rate-based tiles (iterationTime > 1, e.g. apple_trees, forest) use the rate-based
+  // tileNeeds count rather than the building's `inputs` minimum.
   {
+    // Build resId -> rate-based total tile count for non-spatial tiles
+    const rateTileCountByRes = {};
+    for (const tn of Object.values(tileNeeds)) {
+      if (!tn.isSpatial) rateTileCountByRes[tn.producedResource] = tn.count;
+    }
+
     const depositTypeSet = DEPOSIT_TYPE_ID_SET;
     const reservedFootprints = []; // {x, y, id} — positions reserved for upcoming placements
     for (const item of productionList) {
@@ -1020,8 +1028,11 @@ function autoPopulate() {
 
         const pos = positions[0];
         const fp = FOOTPRINTS[item.id] || [[0, 0]];
-        for (const [resId, neededPerBuilding] of depositInputs) {
-          const needed = Math.ceil(neededPerBuilding);
+        for (const [resId, inputsPerBuilding] of depositInputs) {
+          const rateTotal = rateTileCountByRes[resId];
+          const needed = Math.ceil(
+            rateTotal != null ? rateTotal / item.count : inputsPerBuilding
+          );
           const have = countTileResource(item.id, pos.x, pos.y, resId, claimedCells);
           const deficit = needed - have;
           if (deficit <= 0) continue;
@@ -1041,9 +1052,12 @@ function autoPopulate() {
             runLog.phases.deposits.push({ kind: 'deposit', resId, name: PP2DATA.getResourceName(resId), x: cx, y: cy });
           }
         }
-        for (const [resId, neededPerBuilding] of terrainInputs) {
+        for (const [resId, inputsPerBuilding] of terrainInputs) {
           const ter = TERRAIN_PAINT_RESOURCES[resId];
-          const needed = Math.ceil(neededPerBuilding);
+          const rateTotal = rateTileCountByRes[resId];
+          const needed = Math.ceil(
+            rateTotal != null ? rateTotal / item.count : inputsPerBuilding
+          );
           const have = countTileResource(item.id, pos.x, pos.y, resId, claimedCells);
           const deficit = needed - have;
           if (deficit <= 0) continue;

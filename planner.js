@@ -308,7 +308,10 @@ function canAutoPlace(buildingId, x, y) {
 
   for (const [dx, dy] of fp) {
     const cx = x + dx, cy = y + dy;
-    if (cx < 0 || cx >= width || cy < 0 || cy >= height) return false;
+    if (cx < 0 || cx >= width || cy < 0 || cy >= height) {
+      if (!acceptsWaterInFootprint) return false;
+      continue; // OOB = ocean, valid water tile for water-accepting buildings
+    }
     const cell = cells[cy][cx];
     if (dx === 0 && dy === 0) {
       if (cell.building) return false;
@@ -396,6 +399,24 @@ function isInServiceCoverage(x, y, serviceResId) {
     }
   }
   return false;
+}
+
+// Count uncovered coastal cells (within 1 row/col of map edge) a warehouse at (wx,wy) would newly cover.
+// Used to find the best position for a dedicated coastal warehouse when water-tile buildings are needed.
+function countNewCoastalCoverage(whId, wx, wy) {
+  const { width, height, cells } = state.island;
+  const fp = FOOTPRINTS[whId];
+  if (!fp) return 0;
+  let count = 0;
+  for (const [dx, dy] of fp) {
+    const cx = wx + dx, cy = wy + dy;
+    if (cx < 0 || cx >= width || cy < 0 || cy >= height) continue;
+    const cell = cells[cy][cx];
+    if (cell.terrain === 'water') continue;
+    if (isInWarehouseRange(cx, cy)) continue;
+    if (Math.min(cx, width - 1 - cx, cy, height - 1 - cy) <= 1) count++;
+  }
+  return count;
 }
 
 // Count uncovered land cells that a warehouse at (wx,wy) would newly cover
@@ -573,7 +594,10 @@ function diagnosePlacementFailure(buildingId, building, opts) {
       let canPlace = true;
       for (const [dx, dy] of fp) {
         const nx = x + dx, ny = y + dy;
-        if (nx < 0 || nx >= width || ny < 0 || ny >= height) { canPlace = false; break; }
+        if (nx < 0 || nx >= width || ny < 0 || ny >= height) {
+          if (!acceptsWater) { canPlace = false; break; }
+          continue; // OOB = ocean, valid water tile
+        }
         const cell = cells[ny][nx];
         if (dx === 0 && dy === 0) {
           if (cell.building) { canPlace = false; break; }
@@ -829,7 +853,7 @@ function autoPopulate() {
     }
     const coverage = totalLand > 0 ? coveredLand / totalLand : 1;
     runLog.phases.warehouses.coverage = coverage;
-    if (coverage >= 0.55 || totalProdNeeded <= 3) break;
+    if (coverage >= 0.55 || totalProdNeeded <= 8) break;
 
     // Place another warehouse where it covers the most uncovered land
     const whId = pickWarehouseId();
@@ -849,6 +873,44 @@ function autoPopulate() {
       runLog.phases.warehouses.placed.push({ name: whBuilding.name || whId, x: bestWh.x, y: bestWh.y });
     } else {
       break;
+    }
+  }
+
+  // === PHASE 0.5: Coastal warehouse ===
+  // If any production building needs water_tile (e.g. Fisherman's Hut) and no warehouse
+  // footprint covers positions near the map edge, place a dedicated coastal warehouse so that
+  // fisher hut anchors on the border can deliver to it.
+  {
+    const needsCoastal = productionList.some(
+      item => item.building.inputs && 'water_tile' in item.building.inputs
+    );
+    if (needsCoastal) {
+      let coastalCovered = false;
+      outer:
+      for (let cy = 0; cy < height; cy++) {
+        for (let cx = 0; cx < width; cx++) {
+          if (Math.min(cx, width - 1 - cx, cy, height - 1 - cy) > 1) continue;
+          if (state.island.cells[cy][cx].terrain === 'water') continue;
+          if (isInWarehouseRange(cx, cy)) { coastalCovered = true; break outer; }
+        }
+      }
+      if (!coastalCovered) {
+        const whId = pickWarehouseId();
+        const whBuilding = getBuildingData(whId) || {};
+        let bestWh = null, bestCount = 0;
+        for (let cy = 0; cy < height; cy++) {
+          for (let cx = 0; cx < width; cx++) {
+            if (!canAutoPlace(whId, cx, cy)) continue;
+            const count = countNewCoastalCoverage(whId, cx, cy);
+            if (count > bestCount) { bestCount = count; bestWh = { x: cx, y: cy }; }
+          }
+        }
+        if (bestWh && bestCount > 0) {
+          autoPlaceBuilding(whId, bestWh.x, bestWh.y);
+          placed.push({ id: whId, x: bestWh.x, y: bestWh.y });
+          runLog.phases.warehouses.placed.push({ name: whBuilding.name || whId, x: bestWh.x, y: bestWh.y });
+        }
+      }
     }
   }
 
@@ -913,7 +975,6 @@ function autoPopulate() {
             if (cell.building) continue;
             if (claimedCells.has(`${cx},${cy}`)) continue;
             cell.deposit = resId;
-            claimedCells.add(`${cx},${cy}`);
             placedCount++;
             runLog.phases.deposits.push({ resId, name: PP2DATA.getResourceName(resId), x: cx, y: cy });
           }
@@ -928,7 +989,10 @@ function autoPopulate() {
 
   for (const item of productionList) {
     for (let i = 0; i < item.count; i++) {
-      const positions = findBestPositions(item.id, item.building, { requireWarehouse: true, claimedCells });
+      const positions = findBestPositions(item.id, item.building, {
+        requireWarehouse: true,
+        claimedCells,
+      });
       if (positions.length > 0) {
         autoPlaceBuilding(item.id, positions[0].x, positions[0].y);
         claimTileResourceCells(item.id, positions[0].x, positions[0].y, claimedCells);
@@ -949,7 +1013,10 @@ function autoPopulate() {
           reason = LOCATION_REQUIREMENTS[item.id].label;
         }
         failed.push({ id: item.id, reason });
-        const diagnosis = diagnosePlacementFailure(item.id, item.building, { requireWarehouse: true, claimedCells });
+        const diagnosis = diagnosePlacementFailure(item.id, item.building, {
+          requireWarehouse: true,
+          claimedCells,
+        });
         runLog.phases.production.failed.push({ name: item.building.name || item.id, reason, diagnosis });
       }
     }

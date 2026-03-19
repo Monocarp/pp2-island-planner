@@ -192,7 +192,9 @@ function checkMissingDeposits(chainBuildings) {
     for (const [resId, inputAmt] of Object.entries(b.inputs)) {
       if (!NATURAL_DEPOSIT_IDS.has(resId)) continue;
       const tilesNeeded = Math.ceil(entry.count * inputAmt);
-      const available = depositCounts[resId] || 0;
+      const available = COPPER_MINE_DEPOSIT_IDS.has(resId)
+        ? copperMineFamilyTileCount(depositCounts)
+        : (depositCounts[resId] || 0);
       if (available < tilesNeeded) {
         // Avoid duplicates for same deposit type
         const existing = problems.find(p => p.depId === resId);
@@ -790,11 +792,9 @@ function canAutoPlace(buildingId, x, y) {
     if (dx === 0 && dy === 0) {
       if (cell.building) return false;
       if (!canPlaceOnTerrain(buildingId, cell.terrain)) return false;
-      // Reject anchor on a natural deposit unless this building specifically uses it
+      // Reject anchor on a natural deposit unless this building gathers that deposit (copper variants are cross-validated)
       if (cell.deposit && NATURAL_DEPOSIT_IDS.has(cell.deposit)) {
-        const usesDeposit = building && building.inputs &&
-          Object.prototype.hasOwnProperty.call(building.inputs, cell.deposit);
-        if (!usesDeposit) return false;
+        if (!buildingGatheringUsesDeposit(building, cell.deposit)) return false;
       }
     } else {
       if (!acceptsWaterInFootprint && cell.terrain === 'water') return false;

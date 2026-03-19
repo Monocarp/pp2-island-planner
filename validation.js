@@ -246,6 +246,29 @@ function validateIsland() {
   }
 }
 
+/** Copper vein tiles — any member counts as satisfying spatial inputs of any other member (mine chain). */
+const COPPER_MINE_DEPOSIT_IDS = new Set([
+  'copper_deposit', 'copper_deposit_tropical', 'copper_pyrite_deposit',
+]);
+
+function copperMineFamilyTileCount(depositCounts) {
+  let n = 0;
+  for (const id of COPPER_MINE_DEPOSIT_IDS) n += depositCounts[id] || 0;
+  return n;
+}
+
+/** True if building spatial inputs include this deposit (or any copper-family input for copper-family anchors). */
+function buildingGatheringUsesDeposit(building, depositId) {
+  if (!building || !building.inputs || !depositId) return false;
+  if (Object.prototype.hasOwnProperty.call(building.inputs, depositId)) return true;
+  if (COPPER_MINE_DEPOSIT_IDS.has(depositId)) {
+    for (const k of Object.keys(building.inputs)) {
+      if (COPPER_MINE_DEPOSIT_IDS.has(k)) return true;
+    }
+  }
+  return false;
+}
+
 function matchesTileResource(cell, resId) {
   // Map resource IDs to terrain/deposit types
   // Some resource IDs can match multiple terrain types
@@ -267,6 +290,7 @@ function matchesTileResource(cell, resId) {
   if (terrainMultiMap[resId] && terrainMultiMap[resId].includes(cell.terrain)) return true;
   if (terrainMap[resId] && cell.terrain === terrainMap[resId]) return true;
   if (cell.deposit === resId) return true;
+  if (cell.deposit && COPPER_MINE_DEPOSIT_IDS.has(resId) && COPPER_MINE_DEPOSIT_IDS.has(cell.deposit)) return true;
   return false;
 }
 

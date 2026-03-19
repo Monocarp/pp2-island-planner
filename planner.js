@@ -164,28 +164,53 @@ function getRequiredNaturalDeposits(chainBuildings) {
   return needed;
 }
 
-/** Scan island cells and return the set of deposit types that exist. */
-function getIslandDepositTypes() {
-  if (!state.island) return new Set();
-  const found = new Set();
+/** Scan island cells and return a map of depositId → tile count. */
+function getIslandDepositCounts() {
+  if (!state.island) return {};
+  const counts = {};
   for (let y = 0; y < state.island.height; y++) {
     for (let x = 0; x < state.island.width; x++) {
       const d = state.island.cells[y][x].deposit;
-      if (d) found.add(d);
+      if (d) counts[d] = (counts[d] || 0) + 1;
     }
   }
-  return found;
+  return counts;
 }
 
-/** Return array of missing natural deposit IDs needed by the chain. */
+/**
+ * Return array of deposit problem objects:
+ *   { depId, needed, available, buildingId, buildingName }
+ * Covers both fully-absent deposits and deposits with insufficient tile count.
+ */
 function checkMissingDeposits(chainBuildings) {
-  const needed = getRequiredNaturalDeposits(chainBuildings);
-  const onIsland = getIslandDepositTypes();
-  const missing = [];
-  for (const depId of needed) {
-    if (!onIsland.has(depId)) missing.push(depId);
+  const depositCounts = getIslandDepositCounts();
+  const problems = [];
+
+  for (const [bId, entry] of Object.entries(chainBuildings)) {
+    const b = entry.building;
+    if (!b.inputs) continue;
+    for (const [resId, inputAmt] of Object.entries(b.inputs)) {
+      if (!NATURAL_DEPOSIT_IDS.has(resId)) continue;
+      const tilesNeeded = Math.ceil(entry.count * inputAmt);
+      const available = depositCounts[resId] || 0;
+      if (available < tilesNeeded) {
+        // Avoid duplicates for same deposit type
+        const existing = problems.find(p => p.depId === resId);
+        if (existing) {
+          existing.needed = Math.max(existing.needed, tilesNeeded);
+        } else {
+          problems.push({
+            depId: resId,
+            needed: tilesNeeded,
+            available,
+            buildingId: bId,
+            buildingName: b.name || bId,
+          });
+        }
+      }
+    }
   }
-  return missing;
+  return problems;
 }
 
 function populateCustomBuildingSelect(filterText) {
@@ -566,14 +591,17 @@ function calculateProduction() {
 
   let html = '';
 
-  // === Missing deposits warning ===
+  // === Missing / insufficient deposits warning ===
   if (missingDeposits.length > 0) {
     html += '<div class="planner-section" style="border:1px solid #e74c3c;padding:6px;border-radius:4px;margin-bottom:6px;">';
-    html += '<h5 style="color:#e74c3c;">Missing Deposits</h5>';
-    html += '<div style="font-size:0.7rem;color:#e74c3c;">These deposits are required but not found on the island. Add them manually or buildings that need them will fail to place:</div>';
-    for (const depId of missingDeposits) {
+    html += '<h5 style="color:#e74c3c;">Deposit Problems</h5>';
+    html += '<div style="font-size:0.7rem;color:#e74c3c;margin-bottom:4px;">Add these deposits manually or the relevant buildings will fail to place:</div>';
+    for (const p of missingDeposits) {
+      const label = p.available === 0
+        ? `${PP2DATA.getResourceName(p.depId)} — missing (need ${p.needed} tiles)`
+        : `${PP2DATA.getResourceName(p.depId)} — only ${p.available} tile${p.available !== 1 ? 's' : ''}, need ${p.needed}`;
       html += `<div class="planner-summary-row" style="color:#e74c3c;">
-        <span>${PP2DATA.getResourceName(depId)}</span>
+        <span>${label}</span>
       </div>`;
     }
     html += '</div>';
@@ -762,6 +790,12 @@ function canAutoPlace(buildingId, x, y) {
     if (dx === 0 && dy === 0) {
       if (cell.building) return false;
       if (!canPlaceOnTerrain(buildingId, cell.terrain)) return false;
+      // Reject anchor on a natural deposit unless this building specifically uses it
+      if (cell.deposit && NATURAL_DEPOSIT_IDS.has(cell.deposit)) {
+        const usesDeposit = building && building.inputs &&
+          Object.prototype.hasOwnProperty.call(building.inputs, cell.deposit);
+        if (!usesDeposit) return false;
+      }
     } else {
       if (!acceptsWaterInFootprint && cell.terrain === 'water') return false;
     }
@@ -1236,10 +1270,12 @@ function emitAutoPopulateLog(log) {
   }
 
   if (missingDeposits && missingDeposits.length > 0) {
-    console.warn(
-      `%c⚠ Missing deposits: ${missingDeposits.map(d => PP2DATA.getResourceName(d)).join(', ')}`,
-      'color:#e74c3c;font-weight:bold'
-    );
+    const depDesc = missingDeposits.map(p =>
+      p.available === 0
+        ? `${PP2DATA.getResourceName(p.depId)} (missing)`
+        : `${PP2DATA.getResourceName(p.depId)} (${p.available}/${p.needed} tiles)`
+    ).join(', ');
+    console.warn(`%c⚠ Deposit problems: ${depDesc}`, 'color:#e74c3c;font-weight:bold');
   }
 
   // Phase 0
@@ -1447,6 +1483,9 @@ function autoPopulate() {
   });
 
   // Service buildings — include services needed by inferred huts
+  // Pre-place enough services in Phase 1 to cover all houses (one per ~6 houses).
+  const totalPopHouses = popList.reduce((s, p) => s + p.count, 0);
+  const svcPerHouseRatio = 6; // conservative estimate of houses covered per service building
   const serviceList = [];
   const requiredServices = getRequiredServices();
   if (inferredHutCount > 0) {
@@ -1461,9 +1500,11 @@ function autoPopulate() {
     const providerId = pickServiceProvider(svcRes);
     if (!providerId) continue;
     const already = placedCounts[providerId] || 0;
-    if (already > 0) continue;
+    const wantCount = Math.max(1, Math.ceil(totalPopHouses / svcPerHouseRatio));
+    const remaining = wantCount - already;
+    if (remaining <= 0) continue;
     const building = getBuildingData(providerId);
-    if (building) serviceList.push({ id: providerId, building, count: 1, serviceRes: svcRes });
+    if (building) serviceList.push({ id: providerId, building, count: remaining, serviceRes: svcRes });
   }
 
   const placed = [];
@@ -1723,8 +1764,11 @@ function autoPopulate() {
         if (bld.inputs) {
           for (const [resId] of Object.entries(bld.inputs)) {
             if (!TILE_RESOURCE_IDS.has(resId)) continue;
-            if (NATURAL_DEPOSIT_IDS.has(resId) && missingDeposits.includes(resId)) {
-              reason = `missing ${PP2DATA.getResourceName(resId)} deposit on island`;
+            if (NATURAL_DEPOSIT_IDS.has(resId) && missingDeposits.some(p => p.depId === resId)) {
+              const p = missingDeposits.find(p => p.depId === resId);
+              reason = p.available === 0
+                ? `missing ${PP2DATA.getResourceName(resId)} deposit on island`
+                : `insufficient ${PP2DATA.getResourceName(resId)} tiles (${p.available}/${p.needed})`;
             } else {
               reason = `needs ${PP2DATA.getResourceName(resId)} tiles`;
             }
@@ -1805,7 +1849,9 @@ function autoPopulate() {
   // === PHASE 4: Service top-up — cover any houses left uncovered after Phase 3 ===
   // For each required service, greedily place additional service buildings at whichever
   // position covers the most currently-uncovered houses. Stops when all houses are
-  // covered or no valid position improves coverage (max 10 placements per service).
+  // covered or no valid position improves coverage.
+  // Attempt cap = total population houses (worst case: one service per house).
+  const phase4Cap = Math.max(10, totalPopHouses);
   for (const svcRes of requiredServices) {
     const providerId = pickServiceProvider(svcRes);
     if (!providerId) continue;
@@ -1814,7 +1860,7 @@ function autoPopulate() {
     const fp = FOOTPRINTS[providerId];
     if (!fp) continue;
 
-    for (let attempt = 0; attempt < 5; attempt++) {
+    for (let attempt = 0; attempt < phase4Cap; attempt++) {
       // Find all placed population houses that need this service but aren't covered
       const uncovered = state.island.buildings.filter(b => {
         const bld = getBuildingData(b.id);
@@ -1886,7 +1932,12 @@ function autoPopulate() {
     msg += `\nCould not place: ${failParts.join(', ')}`;
   }
   if (missingDeposits.length > 0) {
-    msg += `\nMissing deposits: ${missingDeposits.map(d => PP2DATA.getResourceName(d)).join(', ')}`;
+    const depDesc = missingDeposits.map(p =>
+      p.available === 0
+        ? `${PP2DATA.getResourceName(p.depId)} (missing)`
+        : `${PP2DATA.getResourceName(p.depId)} (${p.available}/${p.needed} tiles)`
+    ).join(', ');
+    msg += `\nDeposit problems: ${depDesc}`;
   }
   if (militiaInfo) {
     msg += `\n${inferredHutCount} Pioneer Huts auto-added for militia (${militiaInfo.militiaPerMin.toFixed(2)}/min)`;

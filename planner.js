@@ -363,35 +363,119 @@ function countTileResource(buildingId, x, y, resId, claimedCells) {
   return count;
 }
 
-// Mark all spatial tile resource cells in a building's footprint as claimed.
+// Mark spatial tile resource cells in a building's footprint as claimed, up to each input's cap.
 // Called after auto-placing a building so subsequent buildings won't overlap on grass/deposits.
 function claimTileResourceCells(buildingId, x, y, claimedCells) {
   const { width, height, cells } = state.island;
   const fp = FOOTPRINTS[buildingId] || [[0,0]];
   const building = getBuildingData(buildingId);
   if (!building || !building.inputs) return;
-  const spatialResources = new Set(
-    Object.keys(building.inputs).filter(r => TILE_RESOURCE_IDS.has(r))
-  );
-  if (spatialResources.size === 0) return;
+  const spatialResources = Object.keys(building.inputs).filter(r => TILE_RESOURCE_IDS.has(r));
+  if (spatialResources.length === 0) return;
+  const claimedCount = {};
+  for (const resId of spatialResources) {
+    claimedCount[resId] = 0;
+  }
   for (const [dx, dy] of fp) {
     const cx = x + dx, cy = y + dy;
     if (cx < 0 || cx >= width || cy < 0 || cy >= height) continue;
     const cell = cells[cy][cx];
     for (const resId of spatialResources) {
+      const raw = building.inputs[resId];
+      const cap = raw != null ? Math.ceil(raw) : Infinity;
+      if (claimedCount[resId] >= cap) continue;
       if (footprintCellCountsForGathering(cell, cx, cy, resId, x, y, width, height)) {
         claimedCells.add(`${cx},${cy}`);
+        claimedCount[resId]++;
         break;
       }
     }
   }
 }
 
+const WAREHOUSE_IDS = ['Warehouse1', 'Warehouse2', 'Warehouse3'];
+
+/** All cells ("x,y") covered by warehouse footprints — rebuilt during auto-populate for O(1) checks. */
+function buildWarehouseCoverageSet() {
+  const set = new Set();
+  if (!state.island) return set;
+  for (const b of state.island.buildings) {
+    if (!WAREHOUSE_IDS.includes(b.id)) continue;
+    const fp = FOOTPRINTS[b.id];
+    if (!fp) continue;
+    for (const [dx, dy] of fp) set.add(`${b.x + dx},${b.y + dy}`);
+  }
+  return set;
+}
+
+/** serviceResId -> Set of "x,y" cells in service building footprints — rebuilt during auto-populate. */
+function buildServiceCoverageMap() {
+  const map = new Map();
+  if (!state.island) return map;
+  for (const b of state.island.buildings) {
+    const bld = getBuildingData(b.id);
+    if (!bld || bld.isPopulation) continue;
+    const res = bld.produces;
+    if (!res) continue;
+    const fp = FOOTPRINTS[b.id];
+    if (!fp) continue;
+    if (!map.has(res)) map.set(res, new Set());
+    const cells = map.get(res);
+    for (const [dx, dy] of fp) cells.add(`${b.x + dx},${b.y + dy}`);
+  }
+  return map;
+}
+
+// During autoPopulate these are non-null for O(1) range/coverage checks; cleared at end.
+let _apWarehouseCov = null;
+let _apServiceCov = null;
+
+function refreshApWarehouseCov() {
+  _apWarehouseCov = state.island ? buildWarehouseCoverageSet() : null;
+}
+
+function refreshApServiceCov() {
+  _apServiceCov = state.island ? buildServiceCoverageMap() : null;
+}
+
+function beginAutoPopulateCoverage() {
+  refreshApWarehouseCov();
+  _apServiceCov = null;
+}
+
+function endAutoPopulateCoverage() {
+  _apWarehouseCov = null;
+  _apServiceCov = null;
+}
+
+/** Remove DEPOSIT_TYPES deposits not under any building footprint (Phase 1.5 orphan). */
+function cleanupOrphanDepositsAfterPhase2(width, height) {
+  const depositIds = new Set(DEPOSIT_TYPES.map(d => d.id));
+  for (let cy = 0; cy < height; cy++) {
+    for (let cx = 0; cx < width; cx++) {
+      const cell = state.island.cells[cy][cx];
+      if (!cell.deposit || !depositIds.has(cell.deposit)) continue;
+      let covered = false;
+      for (const b of state.island.buildings) {
+        const fp = FOOTPRINTS[b.id] || [[0, 0]];
+        for (const [dx, dy] of fp) {
+          if (b.x + dx === cx && b.y + dy === cy) {
+            covered = true;
+            break;
+          }
+        }
+        if (covered) break;
+      }
+      if (!covered) cell.deposit = null;
+    }
+  }
+}
+
 // Check if position (x,y) is within any warehouse's footprint
 function isInWarehouseRange(x, y) {
-  const warehouseIds = ['Warehouse1', 'Warehouse2', 'Warehouse3'];
+  if (_apWarehouseCov) return _apWarehouseCov.has(`${x},${y}`);
   for (const b of state.island.buildings) {
-    if (!warehouseIds.includes(b.id)) continue;
+    if (!WAREHOUSE_IDS.includes(b.id)) continue;
     const fp = FOOTPRINTS[b.id];
     if (!fp) continue;
     for (const [dx, dy] of fp) {
@@ -405,6 +489,7 @@ function isInWarehouseRange(x, y) {
 // the given service resource. Checks all providers (not just one canonical type)
 // so that e.g. HarborTavern and Tavern both count for 'community'.
 function isInServiceCoverage(x, y, serviceResId) {
+  if (_apServiceCov) return !!(_apServiceCov.get(serviceResId)?.has(`${x},${y}`));
   for (const b of state.island.buildings) {
     const bld = getBuildingData(b.id);
     if (!bld || bld.isPopulation) continue;
@@ -493,36 +578,36 @@ function countNewFishAnchorsForWarehouse(whId, wx, wy, fisherId, waterNeeded) {
   return Math.max(0, after - before);
 }
 
-// Find all valid positions for a building, sorted by score.
+// Find best position for a building (single top-scoring cell). Returns [ { x, y, score } ] or [].
 // opts.claimedCells: Set of "cx,cy" strings — spatial tiles already used by prior buildings.
-// opts.ignoreTileResources: Set of resIds to skip when checking tile requirements (e.g. to find
-//   a position where we will paint deposits before placing).
-// opts.reservedFootprints: [{x,y,id}] — positions reserved for upcoming placements (skip overlap).
+// opts.ignoreTileResources: Set of resIds to skip when checking tile requirements.
+// opts.reservedCells: Set of "cx,cy" — cells reserved for other footprints (Phase 1.5).
+// opts.penalizeServiceHotspots + opts.serviceHotspotSvcs: lower score where many services cover (save for houses).
+// opts.preferNearAnchors: [{x,y}] — bonus toward same-type anchors (deposit sharing).
 function findBestPositions(buildingId, building, opts) {
   const { width, height } = state.island;
   const requireWarehouse = opts && opts.requireWarehouse;
   const claimedCells = (opts && opts.claimedCells) || null;
   const ignoreTileResources = (opts && opts.ignoreTileResources) || null;
-  const reservedFootprints = (opts && opts.reservedFootprints) || [];
+  const reservedCells = (opts && opts.reservedCells) || null;
+  const penalizeHotspots = opts && opts.penalizeServiceHotspots;
+  const hotspotSvcs = (opts && opts.serviceHotspotSvcs) || [];
+  const preferNear = (opts && opts.preferNearAnchors) || [];
   const fp = FOOTPRINTS[buildingId] || [[0, 0]];
-  const candidates = [];
+  let best = null;
+  const gcX = width / 2, gcY = height / 2;
+
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       if (!canAutoPlace(buildingId, x, y)) continue;
       if (requireWarehouse && !isInWarehouseRange(x, y)) continue;
-      let overlapsReserved = false;
-      for (const r of reservedFootprints) {
-        const rfp = FOOTPRINTS[r.id] || [[0, 0]];
+      if (reservedCells) {
+        let overlapR = false;
         for (const [dx, dy] of fp) {
-          const cx = x + dx, cy = y + dy;
-          for (const [rdx, rdy] of rfp) {
-            if (r.x + rdx === cx && r.y + rdy === cy) { overlapsReserved = true; break; }
-          }
-          if (overlapsReserved) break;
+          if (reservedCells.has(`${x + dx},${y + dy}`)) { overlapR = true; break; }
         }
-        if (overlapsReserved) break;
+        if (overlapR) continue;
       }
-      if (overlapsReserved) continue;
 
       // Check tile resource inputs are satisfied (accounting for already-claimed tiles)
       let tileOk = true;
@@ -539,9 +624,7 @@ function findBestPositions(buildingId, building, opts) {
       }
       if (!tileOk) continue;
 
-      // Score: prefer central + tile resource richness
-      const cx = width / 2, cy = height / 2;
-      const dist = Math.abs(x - cx) + Math.abs(y - cy);
+      const dist = Math.abs(x - gcX) + Math.abs(y - gcY);
       let score = -dist * 0.1;
       if (building.inputs) {
         for (const [resId, needed] of Object.entries(building.inputs)) {
@@ -550,11 +633,28 @@ function findBestPositions(buildingId, building, opts) {
         }
       }
 
-      candidates.push({ x, y, score });
+      if (penalizeHotspots && _apServiceCov && hotspotSvcs.length > 0) {
+        let nSvc = 0;
+        for (const srv of hotspotSvcs) {
+          if (_apServiceCov.get(srv)?.has(`${x},${y}`)) nSvc++;
+        }
+        score -= nSvc * 12;
+      }
+
+      if (preferNear.length > 0) {
+        let md = Infinity;
+        for (const a of preferNear) {
+          md = Math.min(md, Math.abs(x - a.x) + Math.abs(y - a.y));
+        }
+        score += Math.max(0, 10 - md) * 0.35;
+      }
+
+      if (!best || score > best.score || (score === best.score && (x < best.x || (x === best.x && y < best.y)))) {
+        best = { x, y, score };
+      }
     }
   }
-  candidates.sort((a, b) => b.score - a.score);
-  return candidates;
+  return best ? [best] : [];
 }
 
 // Place building during auto-populate — same anchor-only marking as manual placement.
@@ -807,7 +907,7 @@ function autoPopulate() {
   // Save undo state
   pushUndo();
 
-  const { buildings: chainBuildings, tileNeeds } = resolveProductionChain(demand);
+  const { buildings: chainBuildings } = resolveProductionChain(demand);
   const { width, height } = state.island;
 
   const runLog = {
@@ -836,6 +936,8 @@ function autoPopulate() {
     claimTileResourceCells(b.id, b.x, b.y, claimedCells);
   }
 
+  beginAutoPopulateCoverage();
+
   // === Gather what we need to place ===
 
   // Production buildings from chain
@@ -845,7 +947,12 @@ function autoPopulate() {
     const already = placedCounts[bId] || 0;
     const remaining = needed - already;
     if (remaining > 0) {
-      productionList.push({ id: bId, building: entry.building, count: remaining });
+      productionList.push({
+        id: bId,
+        building: entry.building,
+        count: remaining,
+        chainFraction: entry.count,
+      });
     }
   }
 
@@ -887,6 +994,7 @@ function autoPopulate() {
     const positions = findBestPositions(whId, whBuilding, {});
     if (positions.length > 0) {
       autoPlaceBuilding(whId, positions[0].x, positions[0].y);
+      refreshApWarehouseCov();
       placed.push({ id: whId, x: positions[0].x, y: positions[0].y });
       runLog.phases.warehouses.placed.push({ name: whBuilding.name || whId, x: positions[0].x, y: positions[0].y });
     }
@@ -923,6 +1031,7 @@ function autoPopulate() {
     }
     if (bestWh && bestNew >= minNewLandCells) {
       autoPlaceBuilding(whId, bestWh.x, bestWh.y);
+      refreshApWarehouseCov();
       placed.push({ id: whId, x: bestWh.x, y: bestWh.y });
       runLog.phases.warehouses.placed.push({ name: whBuilding.name || whId, x: bestWh.x, y: bestWh.y });
     } else {
@@ -965,6 +1074,7 @@ function autoPopulate() {
         }
         if (!bestWh || bestNewFish <= 0) break;
         autoPlaceBuilding(whId, bestWh.x, bestWh.y);
+        refreshApWarehouseCov();
         placed.push({ id: whId, x: bestWh.x, y: bestWh.y });
         runLog.phases.warehouses.placed.push({ name: whBuilding.name || whId, x: bestWh.x, y: bestWh.y });
       }
@@ -972,10 +1082,10 @@ function autoPopulate() {
   }
 
   // === PHASE 1: Services (before houses, so houses can target coverage) ===
-  // Place services centrally to maximize future house coverage
+  // Place services centrally to maximize future house coverage; must stay in warehouse range.
   for (const item of serviceList) {
     for (let i = 0; i < item.count; i++) {
-      const positions = findBestPositions(item.id, item.building, {});
+      const positions = findBestPositions(item.id, item.building, { requireWarehouse: true });
       if (positions.length > 0) {
         autoPlaceBuilding(item.id, positions[0].x, positions[0].y);
         placed.push({ id: item.id, x: positions[0].x, y: positions[0].y });
@@ -987,6 +1097,8 @@ function autoPopulate() {
     }
   }
 
+  refreshApServiceCov();
+
   // Same ordering as Phase 2 so deposit painting prioritizes constrained buildings first
   sortProductionListByConstraint(productionList);
 
@@ -994,23 +1106,20 @@ function autoPopulate() {
   // For each production building that needs a deposit (apple_trees, hop_field, etc.) or
   // paintable terrain (forest for Lumberjack), find a valid position first (ignoring those
   // requirements), then paint so Phase 2 can place the building there.
-  // For rate-based tiles (iterationTime > 1, e.g. apple_trees, forest) compute needed tiles
-  // directly from consumePerMinute / tile.producePerMinute instead of building.inputs minimum.
+  // Rate-based tiles use chainFraction × consumePerMinute / tile producePerMinute.
   {
     const depositTypeSet = DEPOSIT_TYPE_ID_SET;
-    const reservedFootprints = []; // {x, y, id} — positions reserved for upcoming placements
+    const reservedCells = new Set();
 
-    // Helper: how many tiles of resId does each instance of buildingId really need?
-    // For rate-based tiles (iterationTime > 1) this is consumeRate / tileRate.
-    // For spatial tiles (iterationTime <= 1) this is just building.inputs[resId].
-    function tilesNeededPerBuilding(building, resId) {
+    function tilesNeededPerBuilding(building, resId, chainFraction) {
       const inputMin = building.inputs[resId] || 1;
       const consumeRate = (building.consumePerMinute || {})[resId];
       if (!consumeRate) return inputMin;
       const producers = PP2DATA.getProducersOf(resId) || [];
       const tile = producers.find(p => PP2DATA.getTile(p.id));
       if (!tile || !tile.producePerMinute || tile.iterationTime <= 1) return inputMin;
-      return Math.max(inputMin, Math.ceil(consumeRate / tile.producePerMinute));
+      const frac = chainFraction != null ? chainFraction : 1;
+      return Math.max(inputMin, Math.ceil(frac * consumeRate / tile.producePerMinute));
     }
 
     for (const item of productionList) {
@@ -1021,23 +1130,28 @@ function autoPopulate() {
         .filter(([r]) => TILE_RESOURCE_IDS.has(r) && TERRAIN_PAINT_RESOURCES[r]);
       if (depositInputs.length === 0 && terrainInputs.length === 0) continue;
 
+      const sameTypeAnchors = [];
+      const chainFrac = item.chainFraction != null ? item.chainFraction : item.count;
+
       for (let i = 0; i < item.count; i++) {
         const ignoreRes = new Set([
           ...depositInputs.map(([r]) => r),
           ...terrainInputs.map(([r]) => r),
         ]);
-        const positions = findBestPositions(item.id, item.building, {
+        const phase15Opts = {
           requireWarehouse: true,
           claimedCells,
           ignoreTileResources: ignoreRes,
-          reservedFootprints,
-        });
+          reservedCells,
+        };
+        if (sameTypeAnchors.length) phase15Opts.preferNearAnchors = sameTypeAnchors.slice();
+        const positions = findBestPositions(item.id, item.building, phase15Opts);
         if (positions.length === 0) continue;
 
         const pos = positions[0];
         const fp = FOOTPRINTS[item.id] || [[0, 0]];
         for (const [resId] of depositInputs) {
-          const needed = tilesNeededPerBuilding(item.building, resId);
+          const needed = tilesNeededPerBuilding(item.building, resId, chainFrac);
           const have = countTileResource(item.id, pos.x, pos.y, resId, claimedCells);
           const deficit = needed - have;
           if (deficit <= 0) continue;
@@ -1059,7 +1173,7 @@ function autoPopulate() {
         }
         for (const [resId] of terrainInputs) {
           const ter = TERRAIN_PAINT_RESOURCES[resId];
-          const needed = tilesNeededPerBuilding(item.building, resId);
+          const needed = tilesNeededPerBuilding(item.building, resId, chainFrac);
           const have = countTileResource(item.id, pos.x, pos.y, resId, claimedCells);
           const deficit = needed - have;
           if (deficit <= 0) continue;
@@ -1084,7 +1198,10 @@ function autoPopulate() {
             });
           }
         }
-        reservedFootprints.push({ x: pos.x, y: pos.y, id: item.id });
+        sameTypeAnchors.push({ x: pos.x, y: pos.y });
+        for (const [dx, dy] of fp) {
+          reservedCells.add(`${pos.x + dx},${pos.y + dy}`);
+        }
       }
     }
   }
@@ -1127,6 +1244,8 @@ function autoPopulate() {
     }
   }
 
+  cleanupOrphanDepositsAfterPhase2(width, height);
+
   // === PHASE 3: Population houses (must be within service coverage) ===
   for (const item of popList) {
     // Determine which services this house type needs
@@ -1145,6 +1264,7 @@ function autoPopulate() {
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           if (!canAutoPlace(item.id, x, y)) continue;
+          if (!isInWarehouseRange(x, y)) continue;
           if (claimedCells.has(`${x},${y}`)) continue; // don't place house anchor on claimed resource cell
 
           // Count how many required services cover this position
@@ -1218,6 +1338,7 @@ function autoPopulate() {
 
       if (!bestPos || bestCount === 0) break;
       autoPlaceBuilding(providerId, bestPos.x, bestPos.y);
+      refreshApServiceCov();
       placed.push({ id: providerId, x: bestPos.x, y: bestPos.y });
       runLog.phases.topup.push({ serviceRes: svcRes, providerName: providerBuilding.name || providerId, x: bestPos.x, y: bestPos.y, coveredCount: bestCount, uncoveredBefore: uncovered.length });
     }
@@ -1237,6 +1358,8 @@ function autoPopulate() {
     }).length;
     runLog.coverage[svcRes] = { covered, total };
   }
+
+  endAutoPopulateCoverage();
 
   emitAutoPopulateLog(runLog);
 

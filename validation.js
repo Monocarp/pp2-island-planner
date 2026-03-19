@@ -171,10 +171,8 @@ function validateIsland() {
           const fx = b.x + dx, fy = b.y + dy;
           if (fx >= 0 && fx < width && fy >= 0 && fy < height) {
             const fc = cells[fy][fx];
-            // Match terrain or deposit to resource
-            if (matchesTileResource(fc, resId)) tileCount++;
+            if (footprintCellCountsForGathering(fc, fx, fy, resId, b.x, b.y, width, height)) tileCount++;
           } else {
-            // Out-of-bounds counts as water
             if (resId === 'water_tile') tileCount++;
           }
         });
@@ -203,7 +201,8 @@ function validateIsland() {
       fp.forEach(([dx, dy]) => {
         const fx = b.x + dx, fy = b.y + dy;
         if (fx >= 0 && fx < width && fy >= 0 && fy < height) {
-          if (matchesTileResource(cells[fy][fx], resId)) matching.push(`${fx},${fy}`);
+          const c = cells[fy][fx];
+          if (footprintCellCountsForGathering(c, fx, fy, resId, b.x, b.y, width, height)) matching.push(`${fx},${fy}`);
         }
       });
       matching.forEach(key => {
@@ -269,4 +268,24 @@ function matchesTileResource(cell, resId) {
   if (terrainMap[resId] && cell.terrain === terrainMap[resId]) return true;
   if (cell.deposit === resId) return true;
   return false;
+}
+
+/** Open water / coastal terrain, or shoreline grass|forest (map edge = ocean) — fishable for water_tile counts. */
+function cellProvidesWaterTile(cell, cx, cy, width, height) {
+  if (!cell) return false;
+  if (matchesTileResource(cell, 'water_tile')) return true;
+  const onBorder = cx === 0 || cy === 0 || cx === width - 1 || cy === height - 1;
+  if (onBorder && typeof PLACEABLE_TERRAIN !== 'undefined' && PLACEABLE_TERRAIN.has(cell.terrain)) return true;
+  return false;
+}
+
+/**
+ * Whether (cx,cy) counts toward spatial resource resId for a building anchored at (ax,ay).
+ * Cells occupied by another building's anchor are excluded from gathering.
+ */
+function footprintCellCountsForGathering(cell, cx, cy, resId, ax, ay, width, height) {
+  if (!cell) return false;
+  if (cell.building && (cx !== ax || cy !== ay)) return false;
+  if (resId === 'water_tile') return cellProvidesWaterTile(cell, cx, cy, width, height);
+  return matchesTileResource(cell, resId);
 }

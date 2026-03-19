@@ -267,6 +267,31 @@ function calculateProduction() {
 
 // ===== AUTO-POPULATE =====
 
+function sortProductionListByConstraint(list) {
+  list.sort((a, b) => {
+    const constraintScore = (item) => {
+      let score = 0;
+      const bld = item.building;
+      if (LOCATION_REQUIREMENTS[item.id]) {
+        const req = LOCATION_REQUIREMENTS[item.id];
+        if (req.type === 'straight_river') score += 100;
+        else if (req.type === 'in_water_coastal') score += 90;
+        else if (req.type === 'ocean_adjacent') score += 80;
+        else if (req.type === 'river_adjacent') score += 70;
+      }
+      if (bld.inputs) {
+        for (const [resId, amt] of Object.entries(bld.inputs)) {
+          if (!TILE_RESOURCE_IDS.has(resId)) continue;
+          if (resId.includes('deposit') || resId === 'cliff') score += 200;
+          else if (resId === 'grass') score += amt;
+        }
+      }
+      return score;
+    };
+    return constraintScore(b) - constraintScore(a);
+  });
+}
+
 // Check if a building can be placed at (x, y) — footprint cells must be valid terrain;
 // only the anchor cell must be free (other buildings may overlap coverage areas).
 function canAutoPlace(buildingId, x, y) {
@@ -309,9 +334,10 @@ function countTileResource(buildingId, x, y, resId, claimedCells) {
     const cx = x + dx, cy = y + dy;
     if (cx >= 0 && cx < width && cy >= 0 && cy < height) {
       if (claimedCells && claimedCells.has(`${cx},${cy}`)) continue;
-      if (matchesTileResource(cells[cy][cx], resId)) count++;
+      const cell = cells[cy][cx];
+      if (footprintCellCountsForGathering(cell, cx, cy, resId, x, y, width, height)) count++;
     } else if (resId === 'water_tile') {
-      count++; // out-of-bounds = ocean
+      count++; // out-of-bounds = ocean (unused when canAutoPlace keeps footprint on-map)
     }
   }
   return count;
@@ -333,7 +359,7 @@ function claimTileResourceCells(buildingId, x, y, claimedCells) {
     if (cx < 0 || cx >= width || cy < 0 || cy >= height) continue;
     const cell = cells[cy][cx];
     for (const resId of spatialResources) {
-      if (matchesTileResource(cell, resId)) {
+      if (footprintCellCountsForGathering(cell, cx, cy, resId, x, y, width, height)) {
         claimedCells.add(`${cx},${cy}`);
         break;
       }
@@ -608,7 +634,7 @@ function emitAutoPopulateLog(log) {
   }
   if (phases.warehouses.coverage !== null) {
     const pct = (phases.warehouses.coverage * 100).toFixed(1);
-    const style = phases.warehouses.coverage >= 0.5 ? 'color:green' : 'color:orange';
+    const style = phases.warehouses.coverage >= 0.55 ? 'color:green' : 'color:orange';
     console.log(`%cLand coverage: ${pct}%`, style);
   }
   console.groupEnd();
@@ -790,8 +816,8 @@ function autoPopulate() {
 
   // Count how many production buildings we need to place total
   const totalProdNeeded = productionList.reduce((s, p) => s + p.count, 0);
-  // Add up to 2 more warehouses (3 total) until 50%+ land coverage or no improvement
-  for (let attempt = 0; attempt < 2; attempt++) {
+  // At most one extra warehouse after the first, and only while coverage is low
+  for (let attempt = 0; attempt < 1; attempt++) {
     // Count covered land cells
     let coveredLand = 0, totalLand = 0;
     for (let y = 0; y < height; y++) {
@@ -803,12 +829,13 @@ function autoPopulate() {
     }
     const coverage = totalLand > 0 ? coveredLand / totalLand : 1;
     runLog.phases.warehouses.coverage = coverage;
-    if (coverage >= 0.5 || totalProdNeeded <= 3) break;
+    if (coverage >= 0.55 || totalProdNeeded <= 3) break;
 
     // Place another warehouse where it covers the most uncovered land
     const whId = pickWarehouseId();
     const whBuilding = getBuildingData(whId) || {};
     let bestWh = null, bestNew = 0;
+    const minNewLandCells = Math.max(4, Math.floor(totalLand * 0.04));
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         if (!canAutoPlace(whId, x, y)) continue;
@@ -816,7 +843,7 @@ function autoPopulate() {
         if (newCov > bestNew) { bestNew = newCov; bestWh = { x, y }; }
       }
     }
-    if (bestWh && bestNew > 0) {
+    if (bestWh && bestNew >= minNewLandCells) {
       autoPlaceBuilding(whId, bestWh.x, bestWh.y);
       placed.push({ id: whId, x: bestWh.x, y: bestWh.y });
       runLog.phases.warehouses.placed.push({ name: whBuilding.name || whId, x: bestWh.x, y: bestWh.y });
@@ -840,6 +867,9 @@ function autoPopulate() {
       }
     }
   }
+
+  // Same ordering as Phase 2 so deposit painting prioritizes constrained buildings first
+  sortProductionListByConstraint(productionList);
 
   // === PHASE 1.5: Auto-place missing deposit tiles co-located with building footprints ===
   // For each production building that needs a deposit (apple_trees, hop_field, etc.), find a
@@ -894,28 +924,7 @@ function autoPopulate() {
   }
 
   // === PHASE 2: Production buildings (most constrained first) ===
-  productionList.sort((a, b) => {
-    const constraintScore = (item) => {
-      let score = 0;
-      const bld = item.building;
-      if (LOCATION_REQUIREMENTS[item.id]) {
-        const req = LOCATION_REQUIREMENTS[item.id];
-        if (req.type === 'straight_river') score += 100;
-        else if (req.type === 'in_water_coastal') score += 90;
-        else if (req.type === 'ocean_adjacent') score += 80;
-        else if (req.type === 'river_adjacent') score += 70;
-      }
-      if (bld.inputs) {
-        for (const [resId, amt] of Object.entries(bld.inputs)) {
-          if (!TILE_RESOURCE_IDS.has(resId)) continue;
-          if (resId.includes('deposit') || resId === 'cliff') score += 200;
-          else if (resId === 'grass') score += amt;
-        }
-      }
-      return score;
-    };
-    return constraintScore(b) - constraintScore(a);
-  });
+  sortProductionListByConstraint(productionList);
 
   for (const item of productionList) {
     for (let i = 0; i < item.count; i++) {
@@ -940,7 +949,7 @@ function autoPopulate() {
           reason = LOCATION_REQUIREMENTS[item.id].label;
         }
         failed.push({ id: item.id, reason });
-        const diagnosis = diagnosePlacementFailure(item.id, item.building, { requireWarehouse: false, claimedCells });
+        const diagnosis = diagnosePlacementFailure(item.id, item.building, { requireWarehouse: true, claimedCells });
         runLog.phases.production.failed.push({ name: item.building.name || item.id, reason, diagnosis });
       }
     }

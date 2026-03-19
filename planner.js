@@ -107,7 +107,7 @@ const NATURAL_DEPOSIT_IDS = new Set([
   'copper_deposit', 'copper_deposit_tropical', 'copper_pyrite_deposit',
   'coal_deposit', 'iron_deposit',
   'rock_salt_deposit', 'rock_salt_deposit_north',
-  'clay_deposit', 'cliff', 'marble_deposit', 'marble_deposit_north',
+  'clay_deposit', 'cliff', 'cliff_tropical', 'marble_deposit', 'marble_deposit_north',
   'gold_deposit', 'gemstone_deposit', 'lead_deposit', 'zinc_deposit',
 ]);
 
@@ -911,13 +911,15 @@ function endAutoPopulateCoverage() {
   _apServiceCov = null;
 }
 
-/** Remove DEPOSIT_TYPES deposits not under any building footprint (Phase 1.5 orphan). */
+/** Remove auto-painted field deposits not under any building footprint (Phase 1.5 orphans).
+ * Never removes natural geology (cliff, ore veins, etc.) — those are not "painted" in 1.5. */
 function cleanupOrphanDepositsAfterPhase2(width, height) {
   const depositIds = new Set(DEPOSIT_TYPES.map(d => d.id));
   for (let cy = 0; cy < height; cy++) {
     for (let cx = 0; cx < width; cx++) {
       const cell = state.island.cells[cy][cx];
       if (!cell.deposit || !depositIds.has(cell.deposit)) continue;
+      if (NATURAL_DEPOSIT_IDS.has(cell.deposit)) continue;
       let covered = false;
       for (const b of state.island.buildings) {
         const fp = FOOTPRINTS[b.id] || [[0, 0]];

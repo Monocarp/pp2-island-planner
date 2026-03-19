@@ -55,18 +55,74 @@ function handleCellAction(x, y, e) {
   }
 }
 
-// Returns the building entry whose footprint covers cell (x, y), or null.
-// Only anchor cells have cell.building set; non-anchor hits use footprint scan.
+/** @returns {{ anchor: object|null, coverage: object[] }} */
+function getCellBuildingLayers(x, y) {
+  if (!state.island) return { anchor: null, coverage: [] };
+  const { width, height } = state.island;
+  if (x < 0 || x >= width || y < 0 || y >= height) return { anchor: null, coverage: [] };
+  const anchor = state.island.buildings.find(b => b.x === x && b.y === y) || null;
+  const coverage = [];
+  for (const b of state.island.buildings) {
+    if (anchor && b.x === anchor.x && b.y === anchor.y) continue;
+    const fp = FOOTPRINTS[b.id] || [[0, 0]];
+    for (const [dx, dy] of fp) {
+      if (b.x + dx === x && b.y + dy === y) {
+        coverage.push(b);
+        break;
+      }
+    }
+  }
+  return { anchor, coverage };
+}
+
+function buildingEntryLabel(b) {
+  const d = getBuildingData(b.id);
+  return d ? d.name : b.id;
+}
+
+// Prefer anchor on this cell so e.g. a house under a warehouse footprint resolves correctly.
 function findBuildingAtCell(x, y) {
   if (!state.island) return null;
+  const { width, height } = state.island;
+  if (x < 0 || x >= width || y < 0 || y >= height) return null;
+  const byAnchor = state.island.buildings.find(b => b.x === x && b.y === y);
+  if (byAnchor) return byAnchor;
   for (const b of state.island.buildings) {
-    if (b.x === x && b.y === y) return b;
     const fp = FOOTPRINTS[b.id] || [[0, 0]];
     for (const [dx, dy] of fp) {
       if (b.x + dx === x && b.y + dy === y) return b;
     }
   }
   return null;
+}
+
+function hideBuildingHoverTooltip() {
+  const tip = document.getElementById('building-hover-tip');
+  if (tip) tip.style.display = 'none';
+}
+
+/** Follow-cursor tooltip listing anchor vs footprint coverage (mouse only). */
+function updateBuildingHoverTooltip(clientX, clientY, cellX, cellY) {
+  const tip = document.getElementById('building-hover-tip');
+  if (!tip || !state.island) return;
+  const { width, height } = state.island;
+  if (cellX < 0 || cellX >= width || cellY < 0 || cellY >= height) {
+    tip.style.display = 'none';
+    return;
+  }
+  const { anchor, coverage } = getCellBuildingLayers(cellX, cellY);
+  if (!anchor && coverage.length === 0) {
+    tip.style.display = 'none';
+    return;
+  }
+  const lines = [];
+  if (anchor) lines.push(`${buildingEntryLabel(anchor)} · anchor`);
+  for (const b of coverage) lines.push(`${buildingEntryLabel(b)} · footprint`);
+  tip.textContent = lines.join('\n');
+  tip.style.whiteSpace = 'pre-line';
+  tip.style.left = (clientX + 14) + 'px';
+  tip.style.top = (clientY + 14) + 'px';
+  tip.style.display = 'block';
 }
 
 function placeBuilding(buildingId, x, y) {
@@ -418,11 +474,15 @@ function updateCellInfo(x, y) {
     const dep = DEPOSIT_TYPES.find(d => d.id === cell.deposit);
     html += `<div class="info-row"><span class="info-label">Deposit:</span><span class="info-value">${dep ? dep.name : cell.deposit}</span></div>`;
   }
-  const infoB = findBuildingAtCell(x, y);
-  if (infoB) {
-    const b = getBuildingData(infoB.id);
-    html += `<div class="info-row"><span class="info-label">Building:</span><span class="info-value">${b ? b.name : infoB.id}</span></div>`;
+  const { anchor: infoAnchor, coverage: infoCov } = getCellBuildingLayers(x, y);
+  if (infoAnchor) {
+    const b = getBuildingData(infoAnchor.id);
+    html += `<div class="info-row"><span class="info-label">Building:</span><span class="info-value">${b ? b.name : infoAnchor.id} <span class="info-sub">(anchor)</span></span></div>`;
     if (b && b.produces) html += `<div class="info-row"><span class="info-label">Produces:</span><span class="info-value">${PP2DATA.getResourceName(b.produces)}</span></div>`;
+  }
+  for (const cov of infoCov) {
+    const b = getBuildingData(cov.id);
+    html += `<div class="info-row"><span class="info-label">Footprint:</span><span class="info-value">${b ? b.name : cov.id}</span></div>`;
   }
   el.innerHTML = html;
 }

@@ -274,6 +274,7 @@ canvas.addEventListener('mousedown', (e) => {
 
 canvas.addEventListener('mousemove', (e) => {
   if (state.isPanning) {
+    hideBuildingHoverTooltip();
     state.panX = e.clientX - state.dragStart.x;
     state.panY = e.clientY - state.dragStart.y;
     render();
@@ -293,6 +294,7 @@ canvas.addEventListener('mousemove', (e) => {
   }
 
   updateCellInfo(cell.x, cell.y);
+  updateBuildingHoverTooltip(e.clientX, e.clientY, cell.x, cell.y);
   render();
 });
 
@@ -308,6 +310,7 @@ canvas.addEventListener('mouseup', (e) => {
 
 canvas.addEventListener('mouseleave', () => {
   state.hoveredCell = null;
+  hideBuildingHoverTooltip();
   isMouseDown = false;
   state.isPanning = false;
   render();

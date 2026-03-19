@@ -149,6 +149,7 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
 .info-row { display: flex; justify-content: space-between; padding: 2px 0; }
 .info-label { color: #a0a0a0; }
 .info-value { color: #e0e0e0; font-weight: 600; }
+.info-sub { opacity: 0.7; font-size: 0.82em; font-weight: 500; }
 .error-text { color: #e74c3c; }
 .warning-text { color: #f39c12; }
 .ok-text { color: #2ecc71; }
@@ -253,6 +254,12 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
   pointer-events: none;
   display: none;
   max-width: 250px;
+}
+.building-hover-tooltip {
+  border-color: #3498db;
+  color: #e8f4fc;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  line-height: 1.35;
 }
 
 /* ===== PRODUCTION PLANNER ===== */
@@ -467,6 +474,7 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
 </div>
 
 <div class="tooltip" id="tooltip"></div>
+<div class="tooltip building-hover-tooltip" id="building-hover-tip" aria-live="polite"></div>
 <div class="context-menu" id="context-menu"></div>
 
 <!-- Load game data -->

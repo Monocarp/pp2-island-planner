@@ -1187,18 +1187,37 @@ function pickServiceProvider(serviceResId) {
   return pool[0].id;
 }
 
-/** True if some valid anchor exists for the chosen service provider such that (hx, hy) lies in its coverage footprint. */
-function canBeCoveredBySvc(hx, hy, svcRes) {
+/**
+ * Count distinct valid anchors for svcRes whose footprint contains (hx, hy).
+ * occupiedHouseAnchors: Set of "x,y" for population building anchors already placed in Phase 3
+ * (those cells can never host a service building anchor).
+ * Skips anchor === (hx, hy): the hut will occupy that cell, so it cannot also be the tavern/cistern anchor.
+ */
+function countValidServiceAnchorsForCell(hx, hy, svcRes, occupiedHouseAnchors) {
+  const occ = occupiedHouseAnchors || new Set();
   const providerId = pickServiceProvider(svcRes);
-  if (!providerId) return false;
+  if (!providerId) return 0;
   const fp = FOOTPRINTS[providerId];
-  if (!fp || fp.length === 0) return false;
+  if (!fp || fp.length === 0) return 0;
+  const seen = new Set();
+  let n = 0;
   for (const [dx, dy] of fp) {
     const ax = hx - dx;
     const ay = hy - dy;
-    if (canAutoPlace(providerId, ax, ay)) return true;
+    if (ax === hx && ay === hy) continue;
+    const key = `${ax},${ay}`;
+    if (occ.has(key)) continue;
+    if (seen.has(key)) continue;
+    if (!canAutoPlace(providerId, ax, ay)) continue;
+    seen.add(key);
+    n++;
   }
-  return false;
+  return n;
+}
+
+/** True if at least one valid service anchor exists (see countValidServiceAnchorsForCell). */
+function canBeCoveredBySvc(hx, hy, svcRes, occupiedHouseAnchors) {
+  return countValidServiceAnchorsForCell(hx, hy, svcRes, occupiedHouseAnchors) > 0;
 }
 
 // ===== AUTO-POPULATE DIAGNOSTICS =====
@@ -1851,6 +1870,7 @@ function autoPopulate() {
   }
 
   // === PHASE 3: Population houses (must be within service coverage) ===
+  const houseAnchorOccupied = new Set(); // population anchors — block future service anchors here
   for (const item of popList) {
     // Determine which services this house type needs
     const neededServices = [];
@@ -1882,11 +1902,13 @@ function autoPopulate() {
           let svcScore = neededServices.length > 0
             ? (svcCovered / neededServices.length) * 100
             : 0;
-          // De-prioritize dead zones: no valid service provider anchor can ever cover this cell.
+          // De-prioritize cells that cannot be covered after Phase 3: anchors blocked by houses already
+          // placed, or only a single remaining anchor (likely clobbered by a later house on that cell).
           for (const svcRes of neededServices) {
-            if (!isInServiceCoverage(x, y, svcRes) && !canBeCoveredBySvc(x, y, svcRes)) {
-              svcScore -= 500;
-            }
+            if (isInServiceCoverage(x, y, svcRes)) continue;
+            const anchorCount = countValidServiceAnchorsForCell(x, y, svcRes, houseAnchorOccupied);
+            if (anchorCount === 0) svcScore -= 500;
+            else if (anchorCount === 1) svcScore -= 250;
           }
 
           const cx = width / 2, cy = height / 2;
@@ -1903,6 +1925,7 @@ function autoPopulate() {
 
       if (bestPos) {
         autoPlaceBuilding(item.id, bestPos.x, bestPos.y);
+        houseAnchorOccupied.add(`${bestPos.x},${bestPos.y}`);
         placed.push({ id: item.id, x: bestPos.x, y: bestPos.y });
         runLog.phases.houses.placed.push({ name: item.building.name || item.id, x: bestPos.x, y: bestPos.y, svcCovered: bestSvcCovered, svcTotal: neededServices.length });
       } else {

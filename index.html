@@ -1514,20 +1514,13 @@ function buildBuildingList() {
   const tiers = ['Pioneers', 'Colonists', 'Townsmen', 'Merchants', 'Paragons',
                  'Farmers', 'Workers', 'Northern Islands'];
 
-  // Population labels without the "Population " prefix are used in the UI,
-  // so keep a set to avoid ambiguous names in tier building lists.
-  const populationDisplayNames = new Set(
-    PP2DATA.buildings
-      .filter(b => b.isPopulation)
-      .map(b => b.name.replace('Population ', ''))
-  );
-
   tiers.forEach(tier => {
     // Combine data.js buildings + extra infrastructure buildings for this tier
     // (dedupe IDs so Well/Cistern/Tavern/etc. don't appear twice)
     const extraBuildings = EXTRA_BUILDINGS.filter(b => b.tier === tier);
     const extraIds = new Set(extraBuildings.map(b => b.id));
-    const dataBuildings = PP2DATA.buildings.filter(b => b.tier === tier && !b.isPopulation && !extraIds.has(b.id));
+    // Filter out zero-production buildings (e.g. PioneersHut, FarmersShack) – they produce nothing and confuse users
+    const dataBuildings = PP2DATA.buildings.filter(b => b.tier === tier && !b.isPopulation && !extraIds.has(b.id) && b.producePerMinute !== 0);
     const buildings = [...extraBuildings, ...dataBuildings];
     if (buildings.length === 0) return;
 
@@ -1567,10 +1560,6 @@ function buildBuildingList() {
       // Mark infrastructure/service buildings
       const prefix = b.isInfrastructure ? '\uD83C\uDFE0 ' : b.isService ? '\u2764 ' : '';
       let displayName = b.name;
-      // Disambiguate buildings that share names with population houses (e.g. Pioneers Hut)
-      if (populationDisplayNames.has(displayName)) {
-        displayName += ' (Service)';
-      }
       btn.textContent = prefix + displayName;
       btn.dataset.buildingId = b.id;
       btn.addEventListener('click', () => {

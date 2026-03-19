@@ -920,8 +920,11 @@ function cleanupOrphanDepositsAfterPhase2(width, height) {
       const cell = state.island.cells[cy][cx];
       if (!cell.deposit || !depositIds.has(cell.deposit)) continue;
       if (NATURAL_DEPOSIT_IDS.has(cell.deposit)) continue;
+      const depositId = cell.deposit;
       let covered = false;
       for (const b of state.island.buildings) {
+        const bld = getBuildingData(b.id);
+        if (!bld || !bld.inputs || !bld.inputs[depositId]) continue; // must consume this deposit
         const fp = FOOTPRINTS[b.id] || [[0, 0]];
         for (const [dx, dy] of fp) {
           if (b.x + dx === cx && b.y + dy === cy) {
@@ -1976,6 +1979,26 @@ function autoPopulate() {
             const anchorCount = countValidServiceAnchorsForCell(x, y, svcRes, houseAnchorOccupied);
             if (anchorCount === 0) svcScore -= 500;
             else if (anchorCount === 1) svcScore -= 250;
+          }
+          // Mutual-stranding: placing a house at (x,y) blocks that cell as a future service anchor.
+          // Penalise if some other house site would then have zero valid anchors for an uncovered service.
+          for (const svcRes of neededServices) {
+            if (isInServiceCoverage(x, y, svcRes)) continue;
+            const providerId = pickServiceProvider(svcRes);
+            if (!providerId) continue;
+            const pfp = FOOTPRINTS[providerId];
+            if (!pfp) continue;
+            for (const [pdx, pdy] of pfp) {
+              const px = x + pdx;
+              const py = y + pdy;
+              if (px < 0 || px >= width || py < 0 || py >= height) continue;
+              if (isInServiceCoverage(px, py, svcRes)) continue;
+              const n = countValidServiceAnchorsForCell(px, py, svcRes, houseAnchorOccupied);
+              if (n !== 1) continue;
+              const occPlusThis = new Set(houseAnchorOccupied);
+              occPlusThis.add(`${x},${y}`);
+              if (countValidServiceAnchorsForCell(px, py, svcRes, occPlusThis) === 0) svcScore -= 500;
+            }
           }
 
           const cx = width / 2, cy = height / 2;

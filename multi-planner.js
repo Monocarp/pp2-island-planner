@@ -48,6 +48,57 @@ function computeIslandCapacityForProjectSlot(slotIndex, militaryEntries) {
   );
 }
 
+/** Safe text for inserting into innerHTML snippets. */
+function escapeHtmlForMultiPlanner(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function resourceDisplayName(resId) {
+  return typeof PP2DATA.getResourceName === 'function' ? PP2DATA.getResourceName(resId) || resId : resId;
+}
+
+/**
+ * Evaluate whether the full chain for resId at rate can be built on slotIndex
+ * without fertility-blocked tile inputs. When not ok, reasons are short UI strings.
+ * @returns {{ ok: boolean, reasons: string[] }}
+ */
+function getSlotProductionFeasibility(slotIndex, resId, rate) {
+  return withProjectSlotContext(slotIndex, () => {
+    const reasons = [];
+    const { buildings, tileNeeds } = resolveProductionChain({ [resId]: rate });
+    if (rate > 0 && Object.keys(buildings).length === 0 && Object.keys(tileNeeds).length === 0) {
+      reasons.push(
+        'No valid production chain for this good at this rate (unlock/building data or missing fertility).'
+      );
+      return { ok: false, reasons };
+    }
+    for (const tn of Object.values(tileNeeds)) {
+      const tr = tn.producedResource;
+      if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(tr)) {
+        reasons.push(`Blocked tile/fertility: ${resourceDisplayName(tr)}`);
+      }
+    }
+    for (const entry of Object.values(buildings)) {
+      const b = entry.building;
+      if (!b.inputs) continue;
+      for (const inputId of Object.keys(b.inputs)) {
+        if (TILE_RESOURCE_IDS.has(inputId)) {
+          if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(inputId)) {
+            reasons.push(`Blocked tile input: ${resourceDisplayName(inputId)}`);
+          }
+        } else if (typeof isFertilityIdBlocked === 'function' && isFertilityIdBlocked(inputId)) {
+          reasons.push(`Blocked fertility input: ${resourceDisplayName(inputId)}`);
+        }
+      }
+    }
+    return { ok: reasons.length === 0, reasons };
+  });
+}
+
 /** True if tile resource can be grown on this slot (climate + fertility checkbox). */
 function isTileResourceProducibleOnSlot(slot, tileResId) {
   if (!tileResId) return false;
@@ -68,34 +119,7 @@ function isTileResourceProducibleOnSlot(slot, tileResId) {
  * without fertility-blocked tile inputs.
  */
 function canSlotProduceResourceFully(slotIndex, resId, rate) {
-  return withProjectSlotContext(slotIndex, () => {
-    const { buildings, tileNeeds } = resolveProductionChain({ [resId]: rate });
-    // pickProducer can return null (e.g. cider on island without apple fertility) → empty chain;
-    // without this guard we would vacuously return true and skip cross-island routing.
-    if (
-      rate > 0 &&
-      Object.keys(buildings).length === 0 &&
-      Object.keys(tileNeeds).length === 0
-    ) {
-      return false;
-    }
-    for (const tn of Object.values(tileNeeds)) {
-      const tr = tn.producedResource;
-      if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(tr)) return false;
-    }
-    for (const entry of Object.values(buildings)) {
-      const b = entry.building;
-      if (!b.inputs) continue;
-      for (const inputId of Object.keys(b.inputs)) {
-        if (TILE_RESOURCE_IDS.has(inputId)) {
-          if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(inputId)) return false;
-        } else if (typeof isFertilityIdBlocked === 'function' && isFertilityIdBlocked(inputId)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  });
+  return getSlotProductionFeasibility(slotIndex, resId, rate).ok;
 }
 
 /** Sum footprint tiles × fractional building counts. */
@@ -397,9 +421,57 @@ function slotLabel(idx) {
 }
 
 /**
+ * @param {Array<{ code: string, homeIdx: number, resId: string, rate: number, sourceIdx?: number }>} failures
+ * @param {number[]} slotIndices
+ * @returns {{ failures: typeof failures, messages: string[] }}
+ */
+function buildMultiIslandEmptyOptionsDiagnostics(failures, slotIndices) {
+  const messages = [];
+  if (!failures.length) {
+    messages.push(
+      'No valid home island or shipping mix was found. Check demand, fertilities, and ships.'
+    );
+    return { failures, messages };
+  }
+
+  const seenShip = new Set();
+  const noSupplierByRes = new Map();
+  for (const f of failures) {
+    if (f.code === 'NO_SUPPLIER') noSupplierByRes.set(f.resId, f.rate);
+  }
+
+  for (const [resId, rate] of noSupplierByRes) {
+    const name = escapeHtmlForMultiPlanner(resourceDisplayName(resId));
+    const mergedReasons = new Set();
+    for (const i of slotIndices) {
+      const { reasons } = getSlotProductionFeasibility(i, resId, rate);
+      reasons.forEach(r => mergedReasons.add(r));
+    }
+    const hint = [...mergedReasons].map(r => escapeHtmlForMultiPlanner(r)).join('; ');
+    messages.push(
+      `<strong>No island can supply ${name}</strong> at ${rate.toFixed(3)}/min${hint ? `: ${hint}` : ''}.`
+    );
+  }
+
+  for (const f of failures) {
+    if (f.code !== 'NO_SHIP_CHAIN') continue;
+    const key = `${f.resId}:${f.sourceIdx}`;
+    if (seenShip.has(key)) continue;
+    seenShip.add(key);
+    const name = escapeHtmlForMultiPlanner(resourceDisplayName(f.resId));
+    const supLabel = escapeHtmlForMultiPlanner(slotLabel(f.sourceIdx));
+    messages.push(
+      `<strong>${name}</strong>: supplier island <strong>${supLabel}</strong> can produce the chain, but no shippable production stages were found (spatial/raw-only chain or planner edge case).`
+    );
+  }
+
+  return { failures, messages };
+}
+
+/**
  * @param {Object} houseCountsByPopId
  * @param {Object} shipCounts — state.projectShipCounts shape
- * @returns {{ options: object[], error?: string }}
+ * @returns {{ options: object[], error?: string, totalFleetCapacity?: number, diagnostics?: { failures: object[], messages: string[] } }}
  */
 function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
   const sc = shipCounts || state.projectShipCounts || {};
@@ -422,44 +494,20 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
   const totalCap = totalFleetThroughputCapacity(sc);
 
   const options = [];
+  const failures = [];
   const slotIndices = slots.map((_, i) => i);
-
-  // #region agent log
-  const _dbgNonService = Object.entries(demand).filter(([k, v]) => v > 0 && !SERVICE_RESOURCES.has(k));
-  console.warn('[PP2-MultiDebug] analyzeEntry', {
-    demandGoods: _dbgNonService.map(([id, r]) => id),
-    slotCount: slots.length,
-    activeSlotIdx: state.activeSlotIndex,
-    slotFerts: slots.map((s, i) => ({
-      i, label: slotLabel(i),
-      stored: Array.isArray(s.activeFertilities) ? s.activeFertilities.slice() : null,
-      effective: [...effectiveSlotFertilitySet(s)],
-    })),
-    liveActiveFert: state.activeFertilities ? [...state.activeFertilities] : null,
-    fleetCap: +totalCap.toFixed(6),
-  });
-  // #endregion
 
   for (const homeIdx of slotIndices) {
     const others = slotIndices.filter(i => i !== homeIdx);
 
     const crossChains = [];
     let impossible = false;
-    let impossibleGood = null;
-
-    // #region agent log
-    const _dbgPerGood = [];
-    // #endregion
 
     for (const [resId, rate] of Object.entries(demand)) {
       if (SERVICE_RESOURCES.has(resId)) continue;
       if (rate <= 0) continue;
 
       const homeCan = canSlotProduceResourceFully(homeIdx, resId, rate);
-      // #region agent log
-      const othersCan = others.map(o => ({ o, can: canSlotProduceResourceFully(o, resId, rate) }));
-      _dbgPerGood.push({ resId, homeCan, othersCan });
-      // #endregion
 
       if (homeCan) continue;
 
@@ -472,14 +520,25 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
       }
       if (sourceIdx < 0) {
         impossible = true;
-        impossibleGood = resId;
+        failures.push({
+          code: 'NO_SUPPLIER',
+          homeIdx,
+          resId,
+          rate,
+        });
         break;
       }
 
       const shipChoices = withProjectSlotContext(sourceIdx, () => traceChainShipCandidates(resId, rate));
       if (shipChoices.length === 0) {
         impossible = true;
-        impossibleGood = resId + ':noShipChoices';
+        failures.push({
+          code: 'NO_SHIP_CHAIN',
+          homeIdx,
+          resId,
+          rate,
+          sourceIdx,
+        });
         break;
       }
       crossChains.push({
@@ -489,16 +548,6 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
         shipChoices,
       });
     }
-
-    // #region agent log
-    console.warn('[PP2-MultiDebug] homeCandidate', {
-      homeIdx, homeLabel: slotLabel(homeIdx),
-      crossCount: crossChains.length,
-      crossGoods: crossChains.map(c => c.finalRes),
-      impossible, impossibleGood,
-      perGood: _dbgPerGood,
-    });
-    // #endregion
 
     if (impossible) continue;
 
@@ -570,7 +619,9 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
   }
 
   options.sort((a, b) => b.score - a.score);
-  return { options, totalFleetCapacity: totalCap };
+  const diagnostics =
+    options.length === 0 ? buildMultiIslandEmptyOptionsDiagnostics(failures, slotIndices) : undefined;
+  return { options, totalFleetCapacity: totalCap, diagnostics };
 }
 
 function buildPopListOverrideFromCounts(houseCountsByPopId) {
@@ -876,6 +927,7 @@ function showMultiIslandPlannerModal() {
     const options = analyzeResult.options;
     const error = analyzeResult.error;
     const totalFleetCapacity = analyzeResult.totalFleetCapacity;
+    const diagnostics = analyzeResult.diagnostics;
     const demand = getPopulationDemandFromHouseCounts(counts);
 
     if (error) {
@@ -884,7 +936,16 @@ function showMultiIslandPlannerModal() {
       return;
     }
     if (!options || options.length === 0) {
-      resultsEl.innerHTML = '<p style="color:#f39c12;">No valid options (check fertilities and demand).</p>';
+      const capLine =
+        totalFleetCapacity != null
+          ? `<p style="color:#888;">Fleet capacity (sum of slot throughputs): <strong>${Number(totalFleetCapacity).toFixed(3)}</strong> goods/min</p>`
+          : '';
+      const msgs = diagnostics && Array.isArray(diagnostics.messages) ? diagnostics.messages : [];
+      const bullets =
+        msgs.length > 0
+          ? `<ul style="margin:8px 0 0 18px;color:#e8d5b5;line-height:1.45;">${msgs.map(m => `<li>${m}</li>`).join('')}</ul>`
+          : '<p style="color:#f39c12;">No valid options (check fertilities and demand).</p>';
+      resultsEl.innerHTML = `${capLine}<p style="color:#f39c12;font-weight:600;">No valid distribution options</p>${bullets}`;
       overlay._multiOptions = null;
       return;
     }

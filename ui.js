@@ -388,6 +388,7 @@ function initIslandTypeBar() {
   bar.querySelectorAll('[data-type]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
+      if (typeof isMultiIslandProject === 'function' && isMultiIslandProject()) return;
       state.islandType = btn.dataset.type;
       if (typeof resetActiveFertilitiesToDefaults === 'function') resetActiveFertilitiesToDefaults();
       refreshIslandTypeDependentUI();
@@ -408,6 +409,56 @@ function refreshIslandTypeDependentUI() {
   if (typeof saveIslandType === 'function') saveIslandType();
   if (typeof saveFertilities === 'function') saveFertilities();
   if (typeof calculateProduction === 'function') calculateProduction();
+  if (typeof syncMultiIslandUI === 'function') syncMultiIslandUI();
+}
+
+/** Slot dropdown + show/hide type bar when using a multi-island project. */
+function buildSlotSelectorUI() {
+  const wrap = document.getElementById('slot-selector-wrap');
+  const sel = document.getElementById('slot-select');
+  if (!wrap || !sel) return;
+  if (typeof isMultiIslandProject !== 'function' || !isMultiIslandProject()) {
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = '';
+  let t = 0;
+  let tr = 0;
+  sel.innerHTML = '';
+  state.projectSlots.forEach((slot, idx) => {
+    let label;
+    if (slot.type === 'temperate') {
+      t += 1;
+      label = `Temperate ${t}`;
+    } else {
+      tr += 1;
+      label = `Tropical ${tr}`;
+    }
+    if (!slot.island) label += ' — no grid';
+    const opt = document.createElement('option');
+    opt.value = String(idx);
+    opt.textContent = label;
+    sel.appendChild(opt);
+  });
+  sel.value = String(state.activeSlotIndex);
+  if (!sel.dataset.wired) {
+    sel.dataset.wired = '1';
+    sel.addEventListener('change', () => {
+      const i = parseInt(sel.value, 10);
+      if (!isNaN(i) && typeof setActiveSlot === 'function') setActiveSlot(i);
+    });
+  }
+}
+
+function syncMultiIslandUI() {
+  if (typeof buildSlotSelectorUI === 'function') buildSlotSelectorUI();
+  const bar = document.getElementById('island-type-bar');
+  const fixedHint = document.getElementById('island-type-fixed-hint');
+  const layoutBtn = document.getElementById('btn-island-layout');
+  const multi = typeof isMultiIslandProject === 'function' && isMultiIslandProject();
+  if (bar) bar.style.display = multi ? 'none' : '';
+  if (fixedHint) fixedHint.style.display = multi ? 'block' : 'none';
+  if (layoutBtn) layoutBtn.style.display = multi ? 'inline-block' : 'none';
 }
 
 /** Renders temperate (etc.) fertility checkboxes under Island Type. */

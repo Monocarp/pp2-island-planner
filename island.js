@@ -133,6 +133,38 @@ function resetActiveFertilitiesToDefaults() {
   state.activeFertilities = new Set(getDefaultFertilityIds());
 }
 
+/** Default fertility id list for a fixed archetype (temperate / tropical), ignoring current state. */
+function getDefaultFertilityIdsForArchetype(archetype) {
+  const cfg = ISLAND_TYPE_TIERS[archetype];
+  if (cfg && cfg.fertilities && cfg.fertilities.length > 0) return cfg.fertilities.slice();
+  const list = FERTILITY_RESOURCES[archetype];
+  return (list || []).map(f => f.id);
+}
+
+const PROJECT_LAYOUT_VERSION = 1;
+
+function deepCloneIsland(island) {
+  return island ? JSON.parse(JSON.stringify(island)) : null;
+}
+
+/** True when using multi-island project mode (counts + slots from localStorage). */
+function isMultiIslandProject() {
+  return Array.isArray(state.projectSlots) && state.projectSlots.length > 0;
+}
+
+/** Whether a slot’s grid has anything worth confirming before delete. */
+function islandLayoutHasContent(island) {
+  if (!island || !island.cells) return false;
+  if (island.buildings && island.buildings.length > 0) return true;
+  for (const row of island.cells) {
+    for (const cell of row) {
+      if (cell.building || cell.deposit) return true;
+      if (cell.terrain && cell.terrain !== 'grass') return true;
+    }
+  }
+  return false;
+}
+
 /** Production / population tier sets allowed per island archetype. `magical` is reserved (null). */
 const ISLAND_TYPE_TIERS = {
   temperate: {
@@ -193,6 +225,12 @@ const state = {
   activeFertilities: new Set([
     'apples', 'wheat', 'hops', 'potatoes', 'strawberries', 'honey', 'roses', 'grapes',
   ]),
+  /** Multi-island project: counts from setup modal (redundant with slots.length but stored for UI). */
+  projectTemperateCount: 0,
+  projectTropicalCount: 0,
+  /** { type: 'temperate'|'tropical', island: object|null, activeFertilities: string[] }[] — temperate slots first. */
+  projectSlots: [],
+  activeSlotIndex: 0,
 };
 
 // Cell data: { terrain, deposit, building, buildingId (for placed buildings back-ref) }

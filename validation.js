@@ -1,7 +1,10 @@
 // ===== ISLAND STATS =====
 function updateStats() {
-  if (!state.island) return;
   const el = document.getElementById('stats-content');
+  if (!state.island) {
+    if (el) el.innerHTML = '<span style="color:#888">No island grid — pick a slot and use <strong>New Island</strong> if needed.</span>';
+    return;
+  }
   const { width, height, cells, buildings } = state.island;
 
   // Count terrain types
@@ -49,7 +52,7 @@ function updateStats() {
     }
   }
 
-  el.innerHTML = html;
+  if (el) el.innerHTML = html;
 
   // Auto-refresh planner if it has results
   if (state.plannerActive) calculateProduction();
@@ -64,7 +67,11 @@ const SERVICE_RESOURCES = new Set([
 ]);
 
 function validateIsland() {
-  if (!state.island) return;
+  if (!state.island) {
+    const vel = document.getElementById('validation-content');
+    if (vel) vel.innerHTML = '<span style="color:#888;font-size:0.75rem">No grid for this slot.</span>';
+    return;
+  }
   const issues = [];
   const { width, height, cells, buildings } = state.island;
 

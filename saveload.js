@@ -1,4 +1,161 @@
 // ===== SAVE / LOAD =====
+const PROJECT_STORAGE_KEY = 'pp2_island_layout_v1';
+
+function createEmptyProjectSlot(type) {
+  return {
+    type,
+    island: null,
+    activeFertilities: getDefaultFertilityIdsForArchetype(type),
+  };
+}
+
+/** Build slot array: temperate first, then tropical; merge from previousSlots by index when types match. */
+function rebuildProjectSlots(temperateCount, tropicalCount, previousSlots) {
+  const prev = previousSlots || [];
+  const slots = [];
+  for (let i = 0; i < temperateCount; i++) {
+    const old = prev[i] && prev[i].type === 'temperate' ? prev[i] : null;
+    if (old) {
+      slots.push({
+        type: 'temperate',
+        island: old.island ? deepCloneIsland(old.island) : null,
+        activeFertilities: Array.isArray(old.activeFertilities)
+          ? old.activeFertilities.slice()
+          : getDefaultFertilityIdsForArchetype('temperate'),
+      });
+    } else {
+      slots.push(createEmptyProjectSlot('temperate'));
+    }
+  }
+  for (let j = 0; j < tropicalCount; j++) {
+    const idx = temperateCount + j;
+    const old = prev[idx] && prev[idx].type === 'tropical' ? prev[idx] : null;
+    if (old) {
+      slots.push({
+        type: 'tropical',
+        island: old.island ? deepCloneIsland(old.island) : null,
+        activeFertilities: Array.isArray(old.activeFertilities)
+          ? old.activeFertilities.slice()
+          : getDefaultFertilityIdsForArchetype('tropical'),
+      });
+    } else {
+      slots.push(createEmptyProjectSlot('tropical'));
+    }
+  }
+  return slots;
+}
+
+/** Slots removed when shrinking counts (for data-loss confirm). */
+function getDroppedSlotsWhenResizingCounts(oldSlots, oldTemperate, oldTropical, newTemperate, newTropical) {
+  const dropped = [];
+  for (let i = 0; i < oldSlots.length; i++) {
+    let keep = false;
+    if (i < oldTemperate) keep = i < newTemperate;
+    else keep = i - oldTemperate < newTropical;
+    if (!keep) dropped.push(oldSlots[i]);
+  }
+  return dropped;
+}
+
+function saveProjectToStorage() {
+  if (!isMultiIslandProject()) return;
+  const payload = {
+    version: PROJECT_LAYOUT_VERSION,
+    temperateCount: state.projectTemperateCount,
+    tropicalCount: state.projectTropicalCount,
+    activeSlotIndex: state.activeSlotIndex,
+    slots: state.projectSlots.map(s => ({
+      type: s.type,
+      island: s.island,
+      activeFertilities: s.activeFertilities,
+    })),
+  };
+  localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(payload));
+}
+
+function loadProjectFromStorage() {
+  const raw = localStorage.getItem(PROJECT_STORAGE_KEY);
+  if (!raw) return false;
+  try {
+    const data = JSON.parse(raw);
+    if (!data || data.version !== PROJECT_LAYOUT_VERSION || !Array.isArray(data.slots)) return false;
+    const t = Math.max(0, parseInt(data.temperateCount, 10) || 0);
+    const tr = Math.max(0, parseInt(data.tropicalCount, 10) || 0);
+    if (t + tr < 1) return false;
+    state.projectTemperateCount = t;
+    state.projectTropicalCount = tr;
+    state.projectSlots = data.slots.map(s => ({
+      type: s.type === 'tropical' ? 'tropical' : 'temperate',
+      island: s.island || null,
+      activeFertilities: Array.isArray(s.activeFertilities)
+        ? s.activeFertilities
+        : getDefaultFertilityIdsForArchetype(s.type === 'tropical' ? 'tropical' : 'temperate'),
+    }));
+    if (state.projectSlots.length !== t + tr) {
+      state.projectSlots = rebuildProjectSlots(t, tr, data.slots);
+    }
+    state.activeSlotIndex = Math.min(
+      Math.max(0, parseInt(data.activeSlotIndex, 10) || 0),
+      state.projectSlots.length - 1
+    );
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
+ * Switch active island slot (multi-project mode). Commits current grid/fertilities to the previous slot unless skipCommit.
+ */
+function setActiveSlot(index, opts) {
+  const opt = opts || {};
+  if (!isMultiIslandProject()) return;
+  if (index < 0 || index >= state.projectSlots.length) return;
+
+  if (!opt.skipCommit && state.projectSlots[state.activeSlotIndex]) {
+    const cur = state.projectSlots[state.activeSlotIndex];
+    cur.island = deepCloneIsland(state.island);
+    cur.activeFertilities = state.activeFertilities ? [...state.activeFertilities] : [];
+  }
+
+  state.activeSlotIndex = index;
+  const slot = state.projectSlots[index];
+  state.islandType = slot.type;
+  state.island = deepCloneIsland(slot.island);
+  state.activeFertilities = new Set(
+    Array.isArray(slot.activeFertilities) && slot.activeFertilities.length
+      ? slot.activeFertilities
+      : getDefaultFertilityIdsForArchetype(slot.type)
+  );
+  state.undoStack = [];
+  state.redoStack = [];
+  state.selectedBuilding = null;
+  saveIslandType();
+  saveFertilities();
+  saveProjectToStorage();
+  if (typeof refreshIslandTypeDependentUI === 'function') refreshIslandTypeDependentUI();
+
+  if (state.island) {
+    centerView();
+    updateStats();
+    validateIsland();
+    render();
+  } else {
+    updateStats();
+    validateIsland();
+    render();
+  }
+}
+
+/** Persist current editor island into the active slot without switching. */
+function commitActiveSlotFromState() {
+  if (!isMultiIslandProject() || !state.projectSlots[state.activeSlotIndex]) return;
+  const cur = state.projectSlots[state.activeSlotIndex];
+  cur.island = deepCloneIsland(state.island);
+  cur.activeFertilities = state.activeFertilities ? [...state.activeFertilities] : [];
+  saveProjectToStorage();
+}
+
 /** Snapshot island type + fertilities from a save entry onto global state and refresh UI. */
 function applySaveArchetypeMetadata(snapshot) {
   if (!snapshot || typeof snapshot !== 'object') return;
@@ -27,17 +184,33 @@ function applySaveArchetypeMetadata(snapshot) {
 }
 
 function saveToLocalStorage() {
-  if (!state.island) return;
+  if (!isMultiIslandProject()) {
+    if (!state.island) return;
+  } else {
+    commitActiveSlotFromState();
+  }
   const saves = JSON.parse(localStorage.getItem('pp2_island_saves') || '[]');
-  const name = prompt('Save name:', `Island ${saves.length + 1}`);
+  const name = prompt('Save name:', `Layout ${saves.length + 1}`);
   if (!name) return;
-  saves.push({
+  const entry = {
     name,
     date: new Date().toISOString(),
     island: state.island,
     islandType: state.islandType,
     activeFertilities: state.activeFertilities ? [...state.activeFertilities] : [],
-  });
+  };
+  if (isMultiIslandProject()) {
+    entry.projectVersion = PROJECT_LAYOUT_VERSION;
+    entry.temperateCount = state.projectTemperateCount;
+    entry.tropicalCount = state.projectTropicalCount;
+    entry.activeSlotIndex = state.activeSlotIndex;
+    entry.projectSlots = state.projectSlots.map(s => ({
+      type: s.type,
+      island: s.island,
+      activeFertilities: s.activeFertilities,
+    }));
+  }
+  saves.push(entry);
   localStorage.setItem('pp2_island_saves', JSON.stringify(saves));
   alert('Saved!');
 }
@@ -54,15 +227,47 @@ function loadFromLocalStorage() {
   if (isNaN(idx) || idx < 0 || idx >= saves.length) return;
 
   const snap = saves[idx];
-  state.island = snap.island;
+  if (snap.projectVersion === PROJECT_LAYOUT_VERSION && Array.isArray(snap.projectSlots)) {
+    const t = Math.max(0, parseInt(snap.temperateCount, 10) || 0);
+    const tr = Math.max(0, parseInt(snap.tropicalCount, 10) || 0);
+    if (t + tr >= 1) {
+      state.projectTemperateCount = t;
+      state.projectTropicalCount = tr;
+      state.projectSlots = snap.projectSlots.map(s => ({
+        type: s.type === 'tropical' ? 'tropical' : 'temperate',
+        island: s.island || null,
+        activeFertilities: Array.isArray(s.activeFertilities)
+          ? s.activeFertilities
+          : getDefaultFertilityIdsForArchetype(s.type === 'tropical' ? 'tropical' : 'temperate'),
+      }));
+      if (state.projectSlots.length !== t + tr) {
+        state.projectSlots = rebuildProjectSlots(t, tr, snap.projectSlots);
+      }
+      state.activeSlotIndex = Math.min(
+        Math.max(0, parseInt(snap.activeSlotIndex, 10) || 0),
+        state.projectSlots.length - 1
+      );
+      saveProjectToStorage();
+      setActiveSlot(state.activeSlotIndex, { skipCommit: true });
+      return;
+    }
+  }
+  // Legacy named save (single island): migrate into one-slot project
   state.undoStack = [];
   state.redoStack = [];
   state.selectedBuilding = null;
-  applySaveArchetypeMetadata(snap);
-  centerView();
-  updateStats();
-  validateIsland();
-  render();
+  let legType = 'temperate';
+  if (typeof snap.islandType === 'string' && snap.islandType === 'tropical') legType = 'tropical';
+  state.projectTemperateCount = legType === 'temperate' ? 1 : 0;
+  state.projectTropicalCount = legType === 'tropical' ? 1 : 0;
+  state.projectSlots = rebuildProjectSlots(state.projectTemperateCount, state.projectTropicalCount, []);
+  state.projectSlots[0].island = deepCloneIsland(snap.island);
+  if (Array.isArray(snap.activeFertilities)) {
+    state.projectSlots[0].activeFertilities = snap.activeFertilities.slice();
+  }
+  state.activeSlotIndex = 0;
+  saveProjectToStorage();
+  setActiveSlot(0, { skipCommit: true });
 }
 
 document.getElementById('btn-save').addEventListener('click', saveToLocalStorage);
@@ -124,27 +329,99 @@ function loadFertilities() {
   resetActiveFertilitiesToDefaults();
 }
 
-// ===== NEW ISLAND MODAL =====
-document.getElementById('btn-new-island').addEventListener('click', showNewIslandModal);
+// ===== ISLAND SETUP & GRID SIZE MODALS =====
 
-function showNewIslandModal() {
+function showIslandSetupModal(options) {
+  const {
+    isFirstRun = false,
+    initialTemperate = 1,
+    initialTropical = 0,
+    onComplete,
+    onCancel,
+  } = options || {};
+
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.innerHTML = `
     <div class="modal">
-      <h2>New Island</h2>
+      <h2>Island layout</h2>
+      <p style="font-size:0.85rem;color:#a0a0a0;margin-bottom:12px;">How many islands of each type? You can change this later; removing a slot may delete its map.</p>
+      <label>Temperate island count</label>
+      <input type="number" id="setup-temperate" min="0" max="99" value="${initialTemperate}">
+      <label>Tropical island count</label>
+      <input type="number" id="setup-tropical" min="0" max="99" value="${initialTropical}">
+      <div class="modal-actions">
+        ${isFirstRun ? '' : '<button type="button" class="header-btn" id="setup-cancel">Cancel</button>'}
+        <button type="button" class="header-btn" id="setup-continue" style="background:#e94560;border-color:#e94560;">Continue</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  function remove() {
+    overlay.remove();
+  }
+
+  const cancelBtn = overlay.querySelector('#setup-cancel');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      remove();
+      if (onCancel) onCancel();
+    });
+  }
+
+  overlay.querySelector('#setup-continue').addEventListener('click', () => {
+    const t = Math.max(0, parseInt(overlay.querySelector('#setup-temperate').value, 10) || 0);
+    const tr = Math.max(0, parseInt(overlay.querySelector('#setup-tropical').value, 10) || 0);
+    if (t + tr < 1) {
+      alert('Need at least one island (temperate and/or tropical count).');
+      return;
+    }
+
+    if (isMultiIslandProject()) {
+      const oldT = state.projectTemperateCount;
+      const oldTr = state.projectTropicalCount;
+      const dropped = getDroppedSlotsWhenResizingCounts(state.projectSlots, oldT, oldTr, t, tr);
+      const hasLoss = dropped.some(s => islandLayoutHasContent(s.island));
+      if (hasLoss && !confirm('Reducing counts will remove at least one island that has terrain, deposits, or buildings. Continue?')) {
+        return;
+      }
+    }
+
+    const prevSlots = isMultiIslandProject() ? state.projectSlots : null;
+    state.projectTemperateCount = t;
+    state.projectTropicalCount = tr;
+    state.projectSlots = rebuildProjectSlots(t, tr, prevSlots);
+    if (state.activeSlotIndex >= state.projectSlots.length) {
+      state.activeSlotIndex = Math.max(0, state.projectSlots.length - 1);
+    }
+    saveProjectToStorage();
+    remove();
+    if (onComplete) onComplete(t, tr);
+  });
+}
+
+/** Create or replace the grid for the active slot. */
+function showIslandGridModal(opts) {
+  const options = opts || {};
+  const title = options.title || 'Island size';
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <h2>${title}</h2>
       <label>Width</label>
       <input type="number" id="modal-width" value="21" min="5" max="50">
       <label>Height</label>
       <input type="number" id="modal-height" value="21" min="5" max="50">
-      <label>Default Terrain</label>
+      <label>Default terrain</label>
       <select id="modal-terrain">
         <option value="grass">Grass</option>
         <option value="water">Water (blank slate)</option>
       </select>
       <div class="modal-actions">
-        <button class="header-btn" id="modal-cancel">Cancel</button>
-        <button class="header-btn" id="modal-create" style="background:#e94560;border-color:#e94560;">Create</button>
+        <button type="button" class="header-btn" id="modal-cancel">Cancel</button>
+        <button type="button" class="header-btn" id="modal-create" style="background:#e94560;border-color:#e94560;">Create</button>
       </div>
     </div>
   `;
@@ -152,20 +429,26 @@ function showNewIslandModal() {
 
   overlay.querySelector('#modal-cancel').addEventListener('click', () => overlay.remove());
   overlay.querySelector('#modal-create').addEventListener('click', () => {
-    const w = parseInt(overlay.querySelector('#modal-width').value) || 21;
-    const h = parseInt(overlay.querySelector('#modal-height').value) || 21;
-    const terrain = overlay.querySelector('#modal-terrain').value;
-    state.island = createIsland(
-      Math.max(5, Math.min(50, w)),
-      Math.max(5, Math.min(50, h))
-    );
-    if (terrain === 'water') {
-      // Set all cells to water initially (user will paint land)
-      state.island.cells.forEach(row => row.forEach(c => c.terrain = 'water'));
+    if (
+      isMultiIslandProject() &&
+      state.island &&
+      islandLayoutHasContent(state.island) &&
+      !confirm('Replace the current island map? This cannot be undone.')
+    ) {
+      return;
     }
+    const w = parseInt(overlay.querySelector('#modal-width').value, 10) || 21;
+    const h = parseInt(overlay.querySelector('#modal-height').value, 10) || 21;
+    const terrain = overlay.querySelector('#modal-terrain').value;
+    const isl = createIsland(Math.max(5, Math.min(50, w)), Math.max(5, Math.min(50, h)));
+    if (terrain === 'water') {
+      isl.cells.forEach(row => row.forEach(c => { c.terrain = 'water'; }));
+    }
+    state.island = isl;
     state.undoStack = [];
     state.redoStack = [];
     state.selectedBuilding = null;
+    commitActiveSlotFromState();
     centerView();
     updateStats();
     validateIsland();
@@ -173,6 +456,35 @@ function showNewIslandModal() {
     render();
   });
 }
+
+function showNewIslandModal() {
+  showIslandGridModal({ title: 'New / resize island grid' });
+}
+
+document.getElementById('btn-new-island').addEventListener('click', showNewIslandModal);
+
+const btnLayout = document.getElementById('btn-island-layout');
+if (btnLayout) {
+  btnLayout.addEventListener('click', () => {
+    if (!isMultiIslandProject()) return;
+    showIslandSetupModal({
+      isFirstRun: false,
+      initialTemperate: state.projectTemperateCount,
+      initialTropical: state.projectTropicalCount,
+      onComplete: () => {
+        setActiveSlot(state.activeSlotIndex, { skipCommit: true });
+        if (!state.island) showIslandGridModal({ title: 'Set island size' });
+      },
+    });
+  });
+}
+
+window.addEventListener('beforeunload', () => {
+  try {
+    if (!isMultiIslandProject()) return;
+    commitActiveSlotFromState();
+  } catch (_) { /* ignore */ }
+});
 
 function centerView() {
   if (!state.island) return;
@@ -184,21 +496,30 @@ function centerView() {
 }
 
 // ===== INITIALIZATION =====
-function init() {
-  loadUnlocks();
-  loadIslandType();
-  loadFertilities();
-  buildDepositTools();
+function finishInitAfterProject() {
+  setActiveSlot(state.activeSlotIndex, { skipCommit: true });
   initIslandTypeBar();
-  if (typeof buildFertilityPanel === 'function') buildFertilityPanel();
-  buildBuildingList();
-  buildPlannerInputs();
   resizeCanvas();
 
-  // Show new island modal on first load if no island
   if (!state.island) {
-    showNewIslandModal();
+    showIslandGridModal({ title: 'Set island size' });
+  } else {
+    render();
   }
+}
+
+function init() {
+  loadUnlocks();
+  if (!loadProjectFromStorage()) {
+    showIslandSetupModal({
+      isFirstRun: true,
+      initialTemperate: 1,
+      initialTropical: 0,
+      onComplete: () => finishInitAfterProject(),
+    });
+    return;
+  }
+  finishInitAfterProject();
 }
 
 window.addEventListener('resize', resizeCanvas);

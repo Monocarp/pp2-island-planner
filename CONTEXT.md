@@ -26,7 +26,7 @@ A browser-based island planning tool for the game **Paragon Pioneers 2** (PP2). 
 | `ui.js` | Building palette, deposit tools, fertility panel, `refreshIslandTypeDependentUI`, context menu, tooltips, undo/redo |
 | `validation.js` | Island stats, validation (warehouse/service coverage, tile resources, overlap) |
 | `planner.js` | Production chain solver, `NATURAL_DEPOSIT_IDS`, demand calculator, auto-populate |
-| `saveload.js` | LocalStorage persistence (including per-save archetype), modal dialogs, initialization |
+| `saveload.js` | LocalStorage persistence, **multi-island project** (`pp2_island_layout_v1`), setup/size modals, named saves, initialization |
 
 ### Script Load Order (matters — globals are shared)
 
@@ -35,6 +35,15 @@ data.js → buildings.js → island.js → renderer.js → ui.js → validation.
 ```
 
 Each file depends on globals from previous files. There is no module system.
+
+## Phase 1 multi-island project
+
+- On first visit (no **`pp2_island_layout_v1`**), the user sees **Island layout**: counts of **temperate** and **tropical** islands (at least one total). Order in memory: **all temperate slots first**, then tropical.
+- **`state.projectSlots`** — `{ type, island|null, activeFertilities: string[] }[]`. **`state.activeSlotIndex`** selects the slot edited on the canvas (`state.island` is the active grid mirror).
+- **Switch island slot** dropdown + **Island counts** (header): change counts (with confirm if removing a non-empty slot). Temperate/Tropical **type bar is hidden** in project mode; archetype comes from the slot.
+- **`setActiveSlot`**, **`saveProjectToStorage`**, **`loadProjectFromStorage`**, **`commitActiveSlotFromState`** (saveload.js); **`buildSlotSelectorUI`**, **`syncMultiIslandUI`** (ui.js). `beforeunload` commits the active grid into the slot.
+- **Named saves** may include a full **`projectSlots`** snapshot + **`activeSlotIndex`**; legacy single-island entries are **migrated** into a one-slot project on load.
+- Planner / validation still use **only the active slot’s** `state.island` (no cross-island trade in Phase 1).
 
 ## Island archetypes & fertilities
 
@@ -45,8 +54,9 @@ Each file depends on globals from previous files. There is no module system.
 
 ### Global vs per-save preferences
 
-- **`pp2_island_type`** / **`pp2_island_fertilities`** (localStorage) — **default session prefs** for new sessions and tools that run before a save is loaded.
-- **Each entry in `pp2_island_saves`** includes **`islandType`** and **`activeFertilities`** alongside `island` grid data. **`loadFromLocalStorage`** applies them via **`applySaveArchetypeMetadata`** and **`refreshIslandTypeDependentUI`**. Old saves without these fields keep the current global type/fertilities (backward compatible).
+- **`pp2_island_layout_v1`** — persisted **project** (counts, slots, grids, fertilities per slot, active index). Required for the app after the multi-island Phase 1 change.
+- **`pp2_island_type`** / **`pp2_island_fertilities`** — still updated when switching slots (compatibility).
+- **Each entry in `pp2_island_saves`** may store a full **multi-island** snapshot (`projectSlots`, `activeSlotIndex`) or a legacy single `island`; legacy loads are migrated into a one-slot project.
 
 ## Key Data Structures
 
@@ -74,7 +84,10 @@ Each file depends on globals from previous files. There is no module system.
   plannerActive: boolean,
   producerOverrides: {},     // resourceId → preferred producerId
   customBuildingEntries: [], // { id, count } for extra production + auto-place
-  militaryEntries: [] }      // { unitResId, ratePerHour } for military chain
+  militaryEntries: [],       // { unitResId, ratePerHour } for military chain
+  projectTemperateCount: 0, projectTropicalCount: 0,
+  projectSlots: [],         // multi-island slots (see Phase 1 above)
+  activeSlotIndex: 0 }
 ```
 
 ### Building (from data.js via `PP2DATA.getBuilding(id)`)

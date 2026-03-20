@@ -462,7 +462,8 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
   <header>
     <h1>PP2 Island Planner</h1>
     <div class="header-controls" id="header-controls">
-      <button class="header-btn" id="btn-new-island">New Island</button>
+      <button class="header-btn" id="btn-new-island" title="Set size for the current island slot">New Island</button>
+      <button class="header-btn" id="btn-island-layout" style="display:none" title="Change how many temperate/tropical islands">Island counts</button>
       <button class="header-btn" id="btn-save">Save</button>
       <button class="header-btn" id="btn-load">Load</button>
       <span style="color:#666">|</span>
@@ -498,8 +499,14 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
     </div>
 
     <div class="panel-section">
+      <h3>Current island</h3>
+      <div id="slot-selector-wrap" style="display:none;margin-bottom:8px;">
+        <label for="slot-select" style="font-size:0.72rem;color:#a0a0a0;display:block;margin-bottom:4px;">Switch island slot</label>
+        <select id="slot-select" style="width:100%;padding:6px;font-size:0.8rem;border:1px solid #0f3460;border-radius:4px;background:#1a1a2e;color:#e0e0e0;"></select>
+      </div>
       <h3>Island Type</h3>
       <p class="building-unlock-hint" style="margin-top:0;">Limits production tiers and population houses for this island.</p>
+      <p id="island-type-fixed-hint" class="building-unlock-hint" style="display:none;margin-top:0;">Type is fixed by the slot you selected (temperate vs tropical).</p>
       <div id="island-type-bar">
         <button type="button" data-type="temperate" title="Pioneers through Paragons">Temperate</button>
         <button type="button" data-type="tropical" title="Farmers and Workers">Tropical</button>

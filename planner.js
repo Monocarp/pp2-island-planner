@@ -710,6 +710,43 @@ function getPopulationDemandFromHouseCounts(houseCountsByPopId) {
   return demand;
 }
 
+/** Epsilon for Island Stats “production ≥ need” checks (goods/min). */
+const ISLAND_STATS_RATE_EPS = 1e-5;
+
+/** Count placed instances per population house building id (from grid only). */
+function countPlacedPopulationHousesByType() {
+  const counts = {};
+  if (!state.island || !state.island.buildings) return counts;
+  for (const inst of state.island.buildings) {
+    const building = PP2DATA.getBuilding(inst.id);
+    if (!building || !building.isPopulation) continue;
+    counts[inst.id] = (counts[inst.id] || 0) + 1;
+  }
+  return counts;
+}
+
+/** Goods demand (per min) from placed population houses only — same rules as getPopulationDemandFromHouseCounts. */
+function getPopulationDemandFromPlacedHouses() {
+  return getPopulationDemandFromHouseCounts(countPlacedPopulationHousesByType());
+}
+
+/**
+ * Sum nameplate output rates (goods/min) from placed non-population buildings, by resource.
+ * Skips service outputs; does not include regenerating map tiles that are not building instances.
+ */
+function aggregatePlacedProducerOutputRates() {
+  const out = {};
+  if (!state.island || !state.island.buildings) return out;
+  for (const inst of state.island.buildings) {
+    const bd = PP2DATA.getBuilding(inst.id);
+    if (!bd || bd.isPopulation) continue;
+    if (!bd.produces || bd.producePerMinute == null || bd.producePerMinute <= 0) continue;
+    if (SERVICE_RESOURCES.has(bd.produces)) continue;
+    out[bd.produces] = (out[bd.produces] || 0) + bd.producePerMinute;
+  }
+  return out;
+}
+
 function cycleProducer(resourceId, currentBuildingId) {
   const producers = (PP2DATA.getProducersOf(resourceId) || []).filter(p => PP2DATA.getBuilding(p.id));
   if (producers.length <= 1) return;

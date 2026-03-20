@@ -41,6 +41,54 @@ function updateStats() {
     }
   }
 
+  // Population supply vs nameplate production (placed houses / buildings only)
+  if (typeof countPlacedPopulationHousesByType === 'function' &&
+      typeof getPopulationDemandFromPlacedHouses === 'function' &&
+      typeof aggregatePlacedProducerOutputRates === 'function') {
+    const popCounts = countPlacedPopulationHousesByType();
+    const placedPopN = Object.values(popCounts).reduce((a, n) => a + n, 0);
+    if (placedPopN === 0) {
+      html += '<h4 style="margin-top:8px;font-size:0.85rem">Population supply</h4>';
+      html += '<p style="color:#888;font-size:0.72rem;margin:4px 0 0;line-height:1.35;">Place population houses to see goods demand vs production.</p>';
+    } else {
+      const demand = getPopulationDemandFromPlacedHouses();
+      const produced = aggregatePlacedProducerOutputRates();
+      const resIds = new Set([...Object.keys(demand), ...Object.keys(produced)]);
+      const rows = [...resIds].map(resId => ({
+        resId,
+        need: demand[resId] || 0,
+        prod: produced[resId] || 0,
+      }));
+      rows.sort((a, b) => {
+        if (b.need !== a.need) return b.need - a.need;
+        const na = typeof PP2DATA.getResourceName === 'function' ? PP2DATA.getResourceName(a.resId) : a.resId;
+        const nb = typeof PP2DATA.getResourceName === 'function' ? PP2DATA.getResourceName(b.resId) : b.resId;
+        return String(na).localeCompare(String(nb));
+      });
+      const eps = typeof ISLAND_STATS_RATE_EPS === 'number' ? ISLAND_STATS_RATE_EPS : 1e-5;
+      html += '<h4 style="margin-top:8px;font-size:0.85rem">Population supply (goods/min)</h4>';
+      html += '<p style="color:#666;font-size:0.65rem;margin:2px 0 6px;line-height:1.35;">Need from <strong>placed</strong> houses; produced = sum of nameplate rates from placed buildings (inputs assumed). Map tiles/regen not counted. Use Production Planner for full chains.</p>';
+      html += '<table style="width:100%;border-collapse:collapse;font-size:0.72rem;"><thead><tr style="color:#888;">'
+        + '<th align="left" style="font-weight:600;padding:2px 4px 2px 0;">Resource</th>'
+        + '<th align="right" style="font-weight:600;padding:2px 4px;">Need</th>'
+        + '<th align="right" style="font-weight:600;padding:2px 4px;">Produced</th>'
+        + '<th align="left" style="font-weight:600;padding:2px 0 2px 6px;">Status</th>'
+        + '</tr></thead><tbody>';
+      for (const { resId, need, prod } of rows) {
+        const ok = prod + eps >= need;
+        const st = ok ? '<span style="color:#2ecc71">OK</span>' : '<span style="color:#e74c3c">Short</span>';
+        const name = typeof PP2DATA.getResourceName === 'function' ? PP2DATA.getResourceName(resId) : resId;
+        html += `<tr>
+          <td style="padding:2px 6px 2px 0;">${name}</td>
+          <td style="padding:2px 4px;text-align:right;">${need.toFixed(3)}</td>
+          <td style="padding:2px 4px;text-align:right;">${prod.toFixed(3)}</td>
+          <td style="padding:2px 0 2px 6px;">${st}</td>
+        </tr>`;
+      }
+      html += '</tbody></table>';
+    }
+  }
+
   // Building summary
   if (buildings.length > 0) {
     html += '<h4 style="margin-top:6px">Buildings</h4>';

@@ -497,6 +497,8 @@ function syncMultiIslandUI() {
   if (layoutBtn) layoutBtn.style.display = multi ? 'inline-block' : 'none';
   const shipsBtn = document.getElementById('btn-enter-ships');
   if (shipsBtn) shipsBtn.style.display = multi ? 'inline-block' : 'none';
+  const planBtn = document.getElementById('btn-multi-island-plan');
+  if (planBtn) planBtn.style.display = multi ? 'inline-block' : 'none';
 }
 
 /** Modal: edit project-wide ship counts (multi-island only). */

@@ -10,7 +10,7 @@ A browser-based island planning tool for the game **Paragon Pioneers 2** (PP2). 
 ## Tech Stack
 
 - **Pure vanilla HTML/CSS/JS** — no framework, no build step, no npm dependencies
-- Single `index.html` (HTML + CSS) with 9 JS files loaded via `<script src>` tags
+- Single `index.html` (HTML + CSS) with 10 JS files loaded via `<script src>` tags
 - `data.js` is auto-generated game data (~3,400+ lines) — do not edit manually
 - Deployed as static files; works as a local file too (`file://` protocol)
 
@@ -22,16 +22,18 @@ A browser-based island planning tool for the game **Paragon Pioneers 2** (PP2). 
 | `data.js` | Game data: buildings, tiles, resources, producers (auto-generated) |
 | `buildings.js` | Footprint definitions, placement rules, terrain/location checks |
 | `island.js` | Application state, `DEPOSIT_TYPES`, `FERTILITY_RESOURCES`, `ISLAND_TYPE_TIERS`, `getDepositPaintStyle`, cell/island creation |
+| `ships.js` | Ship types, cargo, in-region travel; `state.projectShipCounts` (see Phase 1 multi-island) |
 | `renderer.js` | Canvas rendering, pan/zoom, mouse/touch input handling |
 | `ui.js` | Building palette, deposit tools, fertility panel, `refreshIslandTypeDependentUI`, context menu, tooltips, undo/redo |
 | `validation.js` | Island stats, validation (warehouse/service coverage, tile resources, overlap) |
-| `planner.js` | Production chain solver, `NATURAL_DEPOSIT_IDS`, demand calculator, auto-populate |
+| `planner.js` | Production chain solver, `NATURAL_DEPOSIT_IDS`, demand calculator, `resolveProductionChainWithImports`, `autoPopulateFromResolvedChain`, auto-populate |
+| `multi-planner.js` | **Plan islands** modal: cross-slot distribution, shipping cut-points, fleet capacity check, multi-slot auto-place |
 | `saveload.js` | LocalStorage persistence, **multi-island project** (`pp2_island_layout_v1`), setup/size modals, named saves, initialization |
 
 ### Script Load Order (matters — globals are shared)
 
 ```
-data.js → buildings.js → island.js → ships.js → renderer.js → ui.js → validation.js → planner.js → saveload.js
+data.js → buildings.js → island.js → ships.js → renderer.js → ui.js → validation.js → planner.js → multi-planner.js → saveload.js
 ```
 
 Each file depends on globals from previous files. There is no module system.
@@ -43,7 +45,8 @@ Each file depends on globals from previous files. There is no module system.
 - **Switch island slot** dropdown + optional **Island name** field + **Island counts** (header): change counts (with confirm if removing a non-empty slot). Temperate/Tropical **type bar is hidden** in project mode; archetype comes from the slot.
 - **`setActiveSlot`**, **`saveProjectToStorage`**, **`loadProjectFromStorage`**, **`commitActiveSlotFromState`** (saveload.js); **`buildSlotSelectorUI`**, **`syncMultiIslandUI`** (ui.js). `beforeunload` commits the active grid into the slot.
 - **Named saves** may include a full **`projectSlots`** snapshot + **`activeSlotIndex`**; legacy single-island entries are **migrated** into a one-slot project on load.
-- Planner / validation still use **only the active slot’s** `state.island` (no cross-island trade in Phase 1).
+- **Plan islands** (header): total population counts → **`analyzeMultiIslandPlan`** enumerates home island + which intermediate good to ship (e.g. wheat vs flour vs bread) using **`state.projectShipCounts`** throughput; **`executeMultiIslandPlan`** runs **`autoPopulateFromResolvedChain`** on source slot(s) then home. Requires ≥2 slots with grids.
+- **Planner / validation** still operate on **only the active slot’s** `state.island`; **`multi-planner.js`** is the entry point for explicit cross-slot production + notional shipping rates (not simulated on the canvas).
 
 ## Island archetypes & fertilities
 

@@ -611,6 +611,105 @@ function resolveProductionChain(demand) {
   return { buildings: result, tileNeeds };
 }
 
+/**
+ * Like resolveProductionChain, but resources listed in importRates (goods/min) are satisfied
+ * by imports up to that rate — no producers added for the satisfied portion.
+ */
+function resolveProductionChainWithImports(demand, importRates) {
+  const importRemaining = { ...importRates };
+  const result = {};
+  const tileNeeds = {};
+  const visited = new Set();
+  const spatialTileResources = new Set();
+  PP2DATA.tiles.forEach(t => { if (t.iterationTime <= 1) spatialTileResources.add(t.produces); });
+
+  function resolve(resourceId, rateNeeded) {
+    if (rateNeeded <= 0) return;
+    if (SERVICE_RESOURCES.has(resourceId)) return;
+
+    const imp = importRemaining[resourceId];
+    if (imp !== undefined && imp > 0) {
+      const fromImp = Math.min(rateNeeded, imp);
+      rateNeeded -= fromImp;
+      importRemaining[resourceId] = imp - fromImp;
+    }
+    if (rateNeeded <= 0) return;
+
+    if (spatialTileResources.has(resourceId)) return;
+
+    const producers = PP2DATA.getProducersOf(resourceId);
+    if (!producers || producers.length === 0) return;
+
+    if (TILE_RESOURCE_IDS.has(resourceId)) {
+      if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(resourceId)) return;
+      const tile = producers.find(p => PP2DATA.getTile(p.id)) || producers[0];
+      if (!tile || !tile.producePerMinute) return;
+      const countNeeded = rateNeeded / tile.producePerMinute;
+      if (tileNeeds[tile.id]) tileNeeds[tile.id].count += countNeeded;
+      else tileNeeds[tile.id] = { tile, count: countNeeded, producedResource: resourceId, isSpatial: false };
+      return;
+    }
+
+    const allBuildings = producers.filter(p => PP2DATA.getBuilding(p.id));
+    const producer = pickProducer(resourceId, producers);
+    if (!producer || !producer.producePerMinute) return;
+
+    const countNeeded = rateNeeded / producer.producePerMinute;
+
+    if (result[producer.id]) result[producer.id].count += countNeeded;
+    else {
+      result[producer.id] = {
+        building: producer,
+        count: countNeeded,
+        producedResource: resourceId,
+        alternatives: allBuildings.length > 1 ? allBuildings : null,
+      };
+    }
+
+    if (producer.consumePerMinute && !visited.has(producer.id + ':' + resourceId)) {
+      visited.add(producer.id + ':' + resourceId);
+      for (const [inputRes, inputRate] of Object.entries(producer.consumePerMinute)) {
+        resolve(inputRes, inputRate * countNeeded);
+      }
+    }
+  }
+
+  for (const [resId, rate] of Object.entries(demand)) resolve(resId, rate);
+
+  for (const entry of Object.values(result)) {
+    const b = entry.building;
+    if (!b.inputs) continue;
+    for (const [resId, amountPerIter] of Object.entries(b.inputs)) {
+      if (spatialTileResources.has(resId)) {
+        if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(resId)) continue;
+        const tile = (PP2DATA.getProducersOf(resId) || []).find(p => PP2DATA.getTile(p.id));
+        if (!tile) continue;
+        const totalTiles = entry.count * amountPerIter;
+        if (tileNeeds[tile.id]) tileNeeds[tile.id].count += totalTiles;
+        else tileNeeds[tile.id] = { tile, count: totalTiles, producedResource: resId, isSpatial: true };
+      }
+    }
+  }
+
+  return { buildings: result, tileNeeds };
+}
+
+/** Population demand from a map of house id → count (no DOM). */
+function getPopulationDemandFromHouseCounts(houseCountsByPopId) {
+  const demand = {};
+  for (const pb of POP_BUILDINGS) {
+    const count = houseCountsByPopId[pb.id] || 0;
+    if (count === 0) continue;
+    const building = PP2DATA.getBuilding(pb.id);
+    if (!building || !building.consumePerMinute) continue;
+    for (const [resId, rate] of Object.entries(building.consumePerMinute)) {
+      if (SERVICE_RESOURCES.has(resId)) continue;
+      demand[resId] = (demand[resId] || 0) + rate * count;
+    }
+  }
+  return demand;
+}
+
 function cycleProducer(resourceId, currentBuildingId) {
   const producers = (PP2DATA.getProducersOf(resourceId) || []).filter(p => PP2DATA.getBuilding(p.id));
   if (producers.length <= 1) return;
@@ -1254,6 +1353,21 @@ function getRequiredServices() {
   return needed;
 }
 
+/** Service resources required by a popList like autoPopulateFromResolvedChain uses. */
+function getRequiredServicesFromPopList(popList) {
+  const needed = new Set();
+  if (!popList || !popList.length) return needed;
+  for (const row of popList) {
+    const b = row.building || getBuildingData(row.id);
+    const n = row.count || 0;
+    if (n <= 0 || !b || !b.consumePerMinute) continue;
+    for (const resId of Object.keys(b.consumePerMinute)) {
+      if (SERVICE_RESOURCES.has(resId)) needed.add(resId);
+    }
+  }
+  return needed;
+}
+
 // Six service resources are consumed by population houses but have no dedicated
 // producer entry in data.js — the buildings that provide them are registered
 // under 'community' or another umbrella resource instead. This fallback map
@@ -1547,49 +1661,20 @@ function emitAutoPopulateLog(log) {
   console.groupEnd(); // [PP2 Auto-Populate]
 }
 
-// Main auto-populate function
-function autoPopulate() {
-  if (!state.island) return;
-
-  const popDemand = getPopulationDemand();
-  const extraDemand = getCustomBuildingExtraDemand();
-  const militaryDemand = getMilitaryDemand();
-  const demand = mergeDemand(popDemand, extraDemand, militaryDemand);
-  const hasHouses = hasAnyPopulationHouseRequested();
-  const hasCustom = (state.customBuildingEntries || []).some(e => (e.count || 0) > 0);
-  const hasMilitary = hasAnyMilitaryRequested();
-
-  if (!hasHouses && !hasCustom && !hasMilitary) {
-    alert('Set house counts, extra production buildings, and/or military targets before auto-populating.');
-    return;
-  }
-  if (Object.keys(demand).length === 0 && hasCustom) {
-    alert('Extra buildings must produce a good (have producePerMinute) to resolve a chain.');
-    return;
-  }
-  if (Object.keys(demand).length === 0 && hasMilitary) {
-    alert('Military targets need a positive rate per hour.');
-    return;
-  }
-
-  clearLockedProducerWarnings();
-
-  // Save undo state
-  pushUndo();
-
-  const chainResult = resolveProductionChain(demand);
-  let chainBuildings = chainResult.buildings;
+/**
+ * Phase auto-place from an already-resolved production chain (buildings map).
+ * @param {Object} chainBuildings - resolveProductionChain().buildings (after optional militia merge)
+ * @param {Object} [opts]
+ * @param {Object|null} [opts.militiaInfo]
+ * @param {number} [opts.inferredHutCount]
+ * @param {Array<{id:string,building:object,count:number}>} [opts.popListOverride] - if set, used instead of planner DOM for houses
+ */
+function autoPopulateFromResolvedChain(chainBuildings, opts) {
+  opts = opts || {};
+  const militiaInfo = opts.militiaInfo;
+  const inferredHutCount = opts.inferredHutCount || 0;
+  const popListOverride = opts.popListOverride;
   const { width, height } = state.island;
-
-  // Militia inference: training buildings consume militia → infer Pioneer Huts
-  const militiaInfo = inferMilitiaHuts(chainBuildings);
-  let inferredHutCount = 0;
-  if (militiaInfo) {
-    inferredHutCount = Math.ceil(militiaInfo.hutsNeeded);
-    const hutChain = resolveProductionChain(militiaInfo.hutDemand);
-    mergeChainResults(chainResult, hutChain);
-    chainBuildings = chainResult.buildings;
-  }
 
   // Missing deposit check
   const missingDeposits = checkMissingDeposits(chainBuildings);
@@ -1683,24 +1768,34 @@ function autoPopulate() {
     productionList.splice(i, 1);
   }
 
-  // Population houses (user-specified + militia-inferred)
+  // Population houses (user-specified + militia-inferred, or multi-island override)
   const popList = [];
-  getVisiblePopBuildings().forEach(pb => {
-    let count = parseInt(document.getElementById(`planner-${pb.id}`).value) || 0;
-    if (pb.id === 'PopulationPioneersHut') count += inferredHutCount;
-    const already = placedCounts[pb.id] || 0;
-    const remaining = count - already;
-    if (remaining > 0) {
-      const building = getBuildingData(pb.id);
-      if (building) popList.push({ id: pb.id, building, count: remaining });
+  if (popListOverride && popListOverride.length > 0) {
+    for (const row of popListOverride) {
+      const already = placedCounts[row.id] || 0;
+      const remaining = row.count - already;
+      if (remaining > 0) popList.push({ id: row.id, building: row.building, count: remaining });
     }
-  });
+  } else {
+    getVisiblePopBuildings().forEach(pb => {
+      let count = parseInt(document.getElementById(`planner-${pb.id}`).value) || 0;
+      if (pb.id === 'PopulationPioneersHut') count += inferredHutCount;
+      const already = placedCounts[pb.id] || 0;
+      const remaining = count - already;
+      if (remaining > 0) {
+        const building = getBuildingData(pb.id);
+        if (building) popList.push({ id: pb.id, building, count: remaining });
+      }
+    });
+  }
 
   // Service buildings — place exactly 1 of each required type in Phase 1 (near warehouse).
   // Phase 4 greedy top-up handles spreading additional services across the island.
   const totalPopHouses = popList.reduce((s, p) => s + p.count, 0);
   const serviceList = [];
-  const requiredServices = getRequiredServices();
+  let requiredServices = popListOverride !== undefined
+    ? getRequiredServicesFromPopList(popListOverride)
+    : getRequiredServices();
   if (inferredHutCount > 0) {
     const hutBuilding = PP2DATA.getBuilding('PopulationPioneersHut');
     if (hutBuilding && hutBuilding.consumePerMinute) {
@@ -2004,7 +2099,8 @@ function autoPopulate() {
   // Greedily spread service buildings across all land tiles BEFORE houses are placed.
   // This ensures Tavern/Cistern anchors aren't blocked by houses in Phase 3.
   // Target: enough services so ~every land tile has coverage (1 per ~6 houses needed).
-  {
+  // Skip when there are no population houses (e.g. multi-island production-only slot).
+  if (totalPopHouses > 0) {
     const spreadTarget = Math.max(2, Math.ceil(totalPopHouses / 6));
     for (const svcRes of requiredServices) {
       const providerId = pickServiceProvider(svcRes);
@@ -2047,7 +2143,7 @@ function autoPopulate() {
   // After production buildings are placed, some potential house sites have no valid service
   // anchor remaining (production buildings blocked them). Greedily place service buildings
   // to rescue those dead zones before Phase 3 houses are placed.
-  {
+  if (totalPopHouses > 0) {
     // Candidate house sites: land cells in warehouse range, not claimed, not painted.
     const houseId = popList.length > 0 ? popList[0].id : 'PopulationPioneersHut';
     const deadZoneCap = Math.max(6, totalPopHouses);
@@ -2202,7 +2298,7 @@ function autoPopulate() {
   // covered or no valid position improves coverage.
   // Attempt cap = total population houses (worst case: one service per house).
   const phase4Cap = Math.max(10, totalPopHouses);
-  for (const svcRes of requiredServices) {
+  if (totalPopHouses > 0) for (const svcRes of requiredServices) {
     const providerIds = listServiceProviderIdsForResource(svcRes);
     if (providerIds.length === 0) continue;
 
@@ -2257,7 +2353,7 @@ function autoPopulate() {
   }
 
   // === PHASE 5: Remove wasted services covering 0 houses ===
-  {
+  if (totalPopHouses > 0) {
     const popHouses = state.island.buildings.filter(b => {
       const bld = getBuildingData(b.id);
       return bld && bld.isPopulation;
@@ -2334,6 +2430,49 @@ function autoPopulate() {
     msg += `\n${inferredHutCount} Pioneer Huts auto-added for militia (${militiaInfo.militiaPerMin.toFixed(2)}/min)`;
   }
   showAutoPopulateResult(msg, placed.length, failed.length + missingDeposits.length);
+}
+
+/** Standard auto-place: demand from planner UI + optional militia chain. */
+function autoPopulate() {
+  if (!state.island) return;
+
+  const popDemand = getPopulationDemand();
+  const extraDemand = getCustomBuildingExtraDemand();
+  const militaryDemand = getMilitaryDemand();
+  const demand = mergeDemand(popDemand, extraDemand, militaryDemand);
+  const hasHouses = hasAnyPopulationHouseRequested();
+  const hasCustom = (state.customBuildingEntries || []).some(e => (e.count || 0) > 0);
+  const hasMilitary = hasAnyMilitaryRequested();
+
+  if (!hasHouses && !hasCustom && !hasMilitary) {
+    alert('Set house counts, extra production buildings, and/or military targets before auto-populating.');
+    return;
+  }
+  if (Object.keys(demand).length === 0 && hasCustom) {
+    alert('Extra buildings must produce a good (have producePerMinute) to resolve a chain.');
+    return;
+  }
+  if (Object.keys(demand).length === 0 && hasMilitary) {
+    alert('Military targets need a positive rate per hour.');
+    return;
+  }
+
+  clearLockedProducerWarnings();
+  pushUndo();
+
+  const chainResult = resolveProductionChain(demand);
+  let chainBuildings = chainResult.buildings;
+
+  const militiaInfo = inferMilitiaHuts(chainBuildings);
+  let inferredHutCount = 0;
+  if (militiaInfo) {
+    inferredHutCount = Math.ceil(militiaInfo.hutsNeeded);
+    const hutChain = resolveProductionChain(militiaInfo.hutDemand);
+    mergeChainResults(chainResult, hutChain);
+    chainBuildings = chainResult.buildings;
+  }
+
+  autoPopulateFromResolvedChain(chainResult.buildings, { militiaInfo, inferredHutCount });
 }
 
 function showAutoPopulateResult(msg, placedCount, failedCount) {

@@ -13,11 +13,7 @@ function withProjectSlotContext(slotIndex, fn) {
   const prevType = state.islandType;
   const prevFert = state.activeFertilities;
   state.islandType = slot.type;
-  state.activeFertilities = new Set(
-    Array.isArray(slot.activeFertilities) && slot.activeFertilities.length
-      ? slot.activeFertilities.slice()
-      : getDefaultFertilityIdsForArchetype(slot.type)
-  );
+  state.activeFertilities = effectiveSlotFertilitySet(slot);
   try {
     return fn();
   } finally {
@@ -401,6 +397,12 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
       goods: _dbgDemandGoods.map(([id, r]) => ({ id, rate: +r.toFixed(6) })),
       slotCount: slots.length,
       totalFleetCap: +totalCap.toFixed(6),
+      storedSlotFertilities: slots.map((s, i) => ({
+        i,
+        rawLen: Array.isArray(s.activeFertilities) ? s.activeFertilities.length : -1,
+        rawIds: Array.isArray(s.activeFertilities) ? s.activeFertilities.slice() : null,
+        effectiveSize: effectiveSlotFertilitySet(s).size,
+      })),
     },
   });
 

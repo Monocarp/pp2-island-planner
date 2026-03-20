@@ -141,6 +141,25 @@ function getDefaultFertilityIdsForArchetype(archetype) {
   return (list || []).map(f => f.id);
 }
 
+/**
+ * Active fertilities for a project slot as a Set (chain + placement logic).
+ * - Non-empty array: use exactly those ids (user configuration).
+ * - Empty array: none active — do NOT substitute archetype defaults (avoids "both islands self-sufficient"
+ *   in multi-island analyze when [] was stored or all unchecked).
+ * - Missing / non-array: full defaults for that slot type (new slot or legacy payload).
+ */
+function effectiveSlotFertilitySet(slot) {
+  if (!slot) return new Set();
+  const archetype = slot.type === 'tropical' ? 'tropical' : 'temperate';
+  let raw = slot.activeFertilities;
+  if (raw instanceof Set) raw = [...raw];
+  if (Array.isArray(raw)) {
+    if (raw.length > 0) return new Set(raw);
+    return new Set();
+  }
+  return new Set(getDefaultFertilityIdsForArchetype(archetype));
+}
+
 const PROJECT_LAYOUT_VERSION = 1;
 
 function deepCloneIsland(island) {

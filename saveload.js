@@ -160,11 +160,7 @@ function setActiveSlot(index, opts) {
   const slot = state.projectSlots[index];
   state.islandType = slot.type;
   state.island = deepCloneIsland(slot.island);
-  state.activeFertilities = new Set(
-    Array.isArray(slot.activeFertilities) && slot.activeFertilities.length
-      ? slot.activeFertilities
-      : getDefaultFertilityIdsForArchetype(slot.type)
-  );
+  state.activeFertilities = effectiveSlotFertilitySet(slot);
   state.undoStack = [];
   state.redoStack = [];
   state.selectedBuilding = null;

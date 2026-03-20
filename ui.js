@@ -322,6 +322,10 @@ document.querySelectorAll('[data-tool="eraser"],[data-tool="select"]').forEach(b
 // ===== BUILDING PALETTE =====
 function buildBuildingList() {
   const container = document.getElementById('building-list');
+  const openTiers = new Set();
+  container.querySelectorAll('.tier-buildings.open').forEach(el => {
+    if (el.dataset.tier) openTiers.add(el.dataset.tier);
+  });
   container.innerHTML = '';
   const hint = document.createElement('div');
   hint.className = 'building-unlock-hint';
@@ -379,6 +383,8 @@ function buildBuildingList() {
 
     const list = document.createElement('div');
     list.className = 'tier-buildings';
+    list.dataset.tier = tier;
+    if (openTiers.has(tier)) list.classList.add('open');
 
     buildings.forEach(b => {
       const btn = document.createElement('button');
@@ -430,6 +436,8 @@ function buildBuildingList() {
     group.appendChild(header);
     const list = document.createElement('div');
     list.className = 'tier-buildings';
+    list.dataset.tier = 'Population';
+    if (openTiers.has('Population')) list.classList.add('open');
     popBuildings.forEach(b => {
       const btn = document.createElement('button');
       btn.className = 'building-btn';

@@ -309,6 +309,35 @@ function buildCustomBuildingUI() {
 // Tier priority for default producer selection (lower index = preferred)
 const TIER_PRIORITY = ['Pioneers', 'Colonists', 'Townsmen', 'Farmers', 'Merchants', 'Workers', 'Paragons', 'Northern Islands'];
 
+/** Cleared before each full planner resolution; records when pickProducer falls back to a locked building. */
+let _lockedProducerFallbackWarnings = [];
+
+function clearLockedProducerWarnings() {
+  _lockedProducerFallbackWarnings = [];
+}
+
+function getLockedProducerWarnings() {
+  return _lockedProducerFallbackWarnings.slice();
+}
+
+function recordLockedProducerFallback(resourceId, producer) {
+  if (!producer || !producer.id) return;
+  if (_lockedProducerFallbackWarnings.some(w => w.resourceId === resourceId && w.buildingId === producer.id)) return;
+  _lockedProducerFallbackWarnings.push({
+    resourceId,
+    buildingId: producer.id,
+    buildingName: producer.name || producer.id,
+  });
+}
+
+function sortProducersByTier(buildings) {
+  buildings.sort((a, b) => {
+    const ta = TIER_PRIORITY.indexOf(a.tier);
+    const tb = TIER_PRIORITY.indexOf(b.tier);
+    return (ta === -1 ? 99 : ta) - (tb === -1 ? 99 : tb);
+  });
+}
+
 /** Production buildings the user may add for auto-place (unlocked, plannable). */
 function getCustomBuildingPickerList() {
   const popIds = new Set(POP_BUILDINGS.map(pb => pb.id));
@@ -329,7 +358,7 @@ function getCustomBuildingPickerList() {
 }
 
 function pickProducer(resourceId, producers) {
-  // Check user override first
+  // Check user override first (explicit choice — no unlock warning)
   if (state.producerOverrides[resourceId]) {
     const override = producers.find(p => p.id === state.producerOverrides[resourceId]);
     if (override) return override;
@@ -337,14 +366,20 @@ function pickProducer(resourceId, producers) {
   // Filter to only buildings (not tiles)
   const buildings = producers.filter(p => PP2DATA.getBuilding(p.id));
   if (buildings.length === 0) return producers[0];
-  if (buildings.length === 1) return buildings[0];
-  // Prefer lowest tier
-  buildings.sort((a, b) => {
-    const ta = TIER_PRIORITY.indexOf(a.tier);
-    const tb = TIER_PRIORITY.indexOf(b.tier);
-    return (ta === -1 ? 99 : ta) - (tb === -1 ? 99 : tb);
-  });
-  return buildings[0];
+  if (buildings.length === 1) {
+    const b = buildings[0];
+    if (!state.unlockedBuildings.has(b.id)) recordLockedProducerFallback(resourceId, b);
+    return b;
+  }
+  const unlocked = buildings.filter(b => state.unlockedBuildings.has(b.id));
+  if (unlocked.length > 0) {
+    sortProducersByTier(unlocked);
+    return unlocked[0];
+  }
+  sortProducersByTier(buildings);
+  const chosen = buildings[0];
+  recordLockedProducerFallback(resourceId, chosen);
+  return chosen;
 }
 
 /** Military training buildings consume militia to produce battalion units. */
@@ -563,11 +598,13 @@ function calculateProduction() {
   const hasMilitary = hasAnyMilitaryRequested();
 
   if (!hasHouses && !hasCustom && !hasMilitary) {
+    clearLockedProducerWarnings();
     el.innerHTML = '<span style="color:#666">Set houses, extra production, and/or military targets</span>';
     state.plannerActive = false;
     return;
   }
 
+  clearLockedProducerWarnings();
   state.plannerActive = true;
   const chainResult = resolveProductionChain(demand);
   const { buildings, tileNeeds } = chainResult;
@@ -605,6 +642,20 @@ function calculateProduction() {
         : `${PP2DATA.getResourceName(p.depId)} — only ${p.available} tile${p.available !== 1 ? 's' : ''}, need ${p.needed}`;
       html += `<div class="planner-summary-row" style="color:#e74c3c;">
         <span>${label}</span>
+      </div>`;
+    }
+    html += '</div>';
+  }
+
+  const lockedProducerWarnings = getLockedProducerWarnings();
+  if (lockedProducerWarnings.length > 0) {
+    html += '<div class="planner-section" style="border:1px solid #f39c12;padding:6px;border-radius:4px;margin-bottom:6px;">';
+    html += '<h5 style="color:#f39c12;">Locked producers in chain</h5>';
+    html += '<div style="font-size:0.7rem;color:#bbb;margin-bottom:4px;">No unlocked building produces these resources — counts below use a locked producer. Unlock a producer in the Buildings list (double-click) or use the ⇄ control to override. Auto-populate will not place locked buildings.</div>';
+    for (const w of lockedProducerWarnings) {
+      const resName = PP2DATA.getResourceName(w.resourceId);
+      html += `<div class="planner-summary-row" style="color:#f39c12;">
+        <span><strong>${w.buildingName}</strong> <span style="color:#888;font-size:0.65rem">for ${resName}</span></span>
       </div>`;
     }
     html += '</div>';
@@ -679,8 +730,11 @@ function calculateProduction() {
 
     const statusColor = placed >= rounded ? '#2ecc71' : placed > 0 ? '#f39c12' : '#e74c3c';
     const altHtml = alternatives ? ` <span class="producer-switch" title="Click to change producer" onclick="cycleProducer('${producedResource}','${building.id}')">\u21C5</span>` : '';
+    const lockedBadge = !state.unlockedBuildings.has(building.id)
+      ? ` <span style="color:#f39c12;font-size:0.6rem;font-weight:600;">(locked)</span>`
+      : '';
     html += `<div class="planner-building-row${isFractional ? ' fractional' : ''}">
-      <span>${building.name}${altHtml} <span style="color:#666;font-size:0.6rem">(${PP2DATA.getResourceName(producedResource)})</span></span>
+      <span>${building.name}${lockedBadge}${altHtml} <span style="color:#666;font-size:0.6rem">(${PP2DATA.getResourceName(producedResource)})</span></span>
       <span><span style="color:${statusColor}">${placed}</span>/<span class="count">${rounded}</span>${isFractional ? ` <span style="color:#666;font-size:0.6rem">(${count.toFixed(2)})</span>` : ''}</span>
     </div>`;
   }
@@ -1290,7 +1344,7 @@ function diagnosePlacementFailure(buildingId, building, opts) {
 
 // Emits a structured, collapsible console.group log for an auto-populate run.
 function emitAutoPopulateLog(log) {
-  const { islandSize, phases, coverage, militiaInfo, missingDeposits } = log;
+  const { islandSize, phases, coverage, militiaInfo, missingDeposits, lockedProducerWarnings } = log;
   const totalPlaced = phases.warehouses.placed.length +
     phases.services.placed.length +
     phases.production.placed.length +
@@ -1320,6 +1374,17 @@ function emitAutoPopulateLog(log) {
         : `${PP2DATA.getResourceName(p.depId)} (${p.available}/${p.needed} tiles)`
     ).join(', ');
     console.warn(`%c⚠ Deposit problems: ${depDesc}`, 'color:#e74c3c;font-weight:bold');
+  }
+
+  if (lockedProducerWarnings && lockedProducerWarnings.length > 0) {
+    const lines = lockedProducerWarnings.map(
+      w => `${w.buildingName} (${PP2DATA.getResourceName(w.resourceId)})`
+    );
+    console.warn(
+      `%c⚠ Chain uses locked producers (not placed by auto-populate):%c ${lines.join('; ')}`,
+      'color:#f39c12;font-weight:bold',
+      'color:#f39c12;font-weight:normal'
+    );
   }
 
   // Phase 0
@@ -1450,6 +1515,8 @@ function autoPopulate() {
     return;
   }
 
+  clearLockedProducerWarnings();
+
   // Save undo state
   pushUndo();
 
@@ -1487,6 +1554,7 @@ function autoPopulate() {
       inferredHuts: inferredHutCount,
     } : null,
     missingDeposits,
+    lockedProducerWarnings: getLockedProducerWarnings(),
   };
 
   // Already-placed counts (don't double-place)
@@ -1504,22 +1572,39 @@ function autoPopulate() {
 
   beginAutoPopulateCoverage();
 
+  const placed = [];
+  const failed = [];
+  const lockSkipReason = 'building is locked — double-click it in the Buildings list to unlock';
+
   // === Gather what we need to place ===
 
-  // Production buildings from chain
+  // Production buildings from chain (skip locked — never auto-place those)
   const productionList = [];
   for (const [bId, entry] of Object.entries(chainBuildings)) {
     const needed = Math.ceil(entry.count);
     const already = placedCounts[bId] || 0;
     const remaining = needed - already;
-    if (remaining > 0) {
-      productionList.push({
-        id: bId,
-        building: entry.building,
-        count: remaining,
-        chainFraction: entry.count,
-      });
+    if (remaining <= 0) continue;
+
+    if (!state.unlockedBuildings.has(bId)) {
+      const bname = entry.building.name || bId;
+      for (let n = 0; n < remaining; n++) {
+        failed.push({ id: bId, reason: lockSkipReason });
+        runLog.phases.production.failed.push({ name: bname, reason: lockSkipReason });
+      }
+      console.warn(
+        `%c[PP2 Auto-Populate]%c Skipping ${remaining}× %c${bname}%c (locked)`,
+        'font-weight:bold;color:#e94560', 'color:inherit', 'font-weight:bold;color:#f39c12', 'color:inherit'
+      );
+      continue;
     }
+
+    productionList.push({
+      id: bId,
+      building: entry.building,
+      count: remaining,
+      chainFraction: entry.count,
+    });
   }
 
   // Population houses (user-specified + militia-inferred)
@@ -1556,9 +1641,6 @@ function autoPopulate() {
     const building = getBuildingData(providerId);
     if (building) serviceList.push({ id: providerId, building, count: 1, serviceRes: svcRes });
   }
-
-  const placed = [];
-  const failed = [];
 
   // === PHASE 0: Warehouses ===
   // Place warehouse(s) to cover the island. Start with one central, add more if needed.

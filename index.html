@@ -117,7 +117,19 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
 }
 .building-btn:hover { background: #1a1a2e; border-color: #0f3460; }
 .building-btn.active { background: #e94560; color: #fff; }
-.building-btn.locked { opacity: 0.35; }
+.building-unlock-hint {
+  font-size: 0.65rem;
+  color: #888;
+  margin-bottom: 8px;
+  line-height: 1.35;
+}
+.tier-unlock-count { font-size: 0.68rem; color: #aaa; white-space: nowrap; }
+.building-btn.locked {
+  opacity: 0.55;
+  color: #999;
+  border-left: 3px solid #c0392b;
+  padding-left: 6px;
+}
 
 /* ===== CANVAS AREA ===== */
 #canvas-area {

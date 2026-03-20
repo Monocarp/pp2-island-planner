@@ -323,6 +323,11 @@ document.querySelectorAll('[data-tool="eraser"],[data-tool="select"]').forEach(b
 function buildBuildingList() {
   const container = document.getElementById('building-list');
   container.innerHTML = '';
+  const hint = document.createElement('div');
+  hint.className = 'building-unlock-hint';
+  hint.textContent = 'Double-click a building to toggle whether it is unlocked for the planner and auto-populate.';
+  container.appendChild(hint);
+
   const tiers = ['Pioneers', 'Colonists', 'Townsmen', 'Merchants', 'Paragons',
                  'Farmers', 'Workers', 'Northern Islands'];
 
@@ -341,11 +346,21 @@ function buildBuildingList() {
 
     const header = document.createElement('div');
     header.className = 'tier-header';
-    // Add tier unlock toggle
     const tierBuildingIds = buildings.map(b => b.id);
-    const allUnlocked = tierBuildingIds.every(id => state.unlockedBuildings.has(id));
-    header.innerHTML = `<span>${tier}</span><span><button class="tier-unlock-btn" title="Toggle unlock all ${tier} buildings" style="background:none;border:1px solid #0f3460;color:${allUnlocked ? '#2ecc71' : '#666'};border-radius:3px;padding:1px 6px;font-size:0.7rem;cursor:pointer;margin-right:4px">${allUnlocked ? '\u2713' : '\u2610'}</button>${buildings.length}</span>`;
+    const nUnlocked = tierBuildingIds.filter(id => state.unlockedBuildings.has(id)).length;
+    const nTotal = tierBuildingIds.length;
+    const allUnlocked = nUnlocked === nTotal;
+    const noneUnlocked = nUnlocked === 0;
+    const btnGlyph = allUnlocked ? '\u2713' : noneUnlocked ? '\u2610' : '\u2013';
+    const btnColor = allUnlocked ? '#2ecc71' : noneUnlocked ? '#666' : '#f1c40f';
+    let tierBtnTitle = `Toggle all ${tier} buildings`;
+    if (allUnlocked) tierBtnTitle = `All ${nTotal} unlocked — click to lock all`;
+    else if (noneUnlocked) tierBtnTitle = `None unlocked — click to unlock all`;
+    else tierBtnTitle = `${nUnlocked}/${nTotal} unlocked — click to unlock all, again to lock all`;
+
+    header.innerHTML = `<span>${tier}</span><span style="display:flex;align-items:center;gap:6px;"><button type="button" class="tier-unlock-btn" style="background:none;border:1px solid #0f3460;color:${btnColor};border-radius:3px;padding:1px 6px;font-size:0.7rem;cursor:pointer;min-width:1.4em;line-height:1.2;">${btnGlyph}</button><span class="tier-unlock-count">${nUnlocked}/${nTotal}</span></span>`;
     const unlockBtn = header.querySelector('.tier-unlock-btn');
+    unlockBtn.title = tierBtnTitle;
     unlockBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const shouldUnlock = !tierBuildingIds.every(id => state.unlockedBuildings.has(id));
@@ -369,10 +384,11 @@ function buildBuildingList() {
       const btn = document.createElement('button');
       btn.className = 'building-btn';
       if (!state.unlockedBuildings.has(b.id)) btn.classList.add('locked');
+      const lockPrefix = !state.unlockedBuildings.has(b.id) ? '\uD83D\uDD12 ' : '';
       // Mark infrastructure/service buildings
       const prefix = b.isInfrastructure ? '\uD83C\uDFE0 ' : b.isService ? '\u2764 ' : '';
       let displayName = b.name;
-      btn.textContent = prefix + displayName;
+      btn.textContent = lockPrefix + prefix + displayName;
       btn.dataset.buildingId = b.id;
       btn.addEventListener('click', () => {
         clearToolSelection();
@@ -382,16 +398,16 @@ function buildBuildingList() {
         const bData = getBuildingData(b.id);
         if (bData) showBuildingPreview(bData);
       });
-      btn.addEventListener('dblclick', () => {
-        // Toggle unlock
+      btn.addEventListener('dblclick', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
         if (state.unlockedBuildings.has(b.id)) {
           state.unlockedBuildings.delete(b.id);
-          btn.classList.add('locked');
         } else {
           state.unlockedBuildings.add(b.id);
-          btn.classList.remove('locked');
         }
         saveUnlocks();
+        buildBuildingList();
       });
       list.appendChild(btn);
     });

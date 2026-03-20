@@ -13,7 +13,16 @@ function withProjectSlotContext(slotIndex, fn) {
   const prevType = state.islandType;
   const prevFert = state.activeFertilities;
   state.islandType = slot.type;
-  state.activeFertilities = effectiveSlotFertilitySet(slot);
+  // Active slot: use live checkbox Set so analysis never lags behind projectSlots[active] (save/UI race).
+  // Other slots: use persisted slot.activeFertilities via effectiveSlotFertilitySet.
+  const useLiveFert =
+    typeof isMultiIslandProject === 'function' &&
+    isMultiIslandProject() &&
+    slotIndex === state.activeSlotIndex &&
+    state.activeFertilities instanceof Set;
+  state.activeFertilities = useLiveFert
+    ? new Set(state.activeFertilities)
+    : effectiveSlotFertilitySet(slot);
   try {
     return fn();
   } finally {

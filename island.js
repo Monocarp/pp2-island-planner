@@ -33,6 +33,16 @@ const DEPOSIT_TYPES = [
   { id: 'sugar_beet_field', name: 'Sugar Beet', color: '#8d6e63' },
   { id: 'sperm_whale_swarm', name: 'Whale Swarm', color: '#4a697b' },
   { id: 'weir', name: 'Weir', color: '#00897b' },
+  // Tropical field / tree tiles (fertility-gated on tropical islands)
+  { id: 'tea_field', name: 'Tea Field', color: '#558b2f' },
+  { id: 'sugar_cane_field', name: 'Sugar Cane Field', color: '#9ccc65' },
+  { id: 'coffee_bean_field', name: 'Coffee Bean Field', color: '#6d4c41' },
+  { id: 'tobacco_field', name: 'Tobacco Field', color: '#bcaaa4' },
+  { id: 'cacao_field', name: 'Cacao Field', color: '#5d4037' },
+  { id: 'coconut_palm', name: 'Coconut Palm', color: '#2e7d32' },
+  { id: 'mahogany_trees', name: 'Mahogany Trees', color: '#8d4a3c' },
+  { id: 'indigo_field', name: 'Indigo Field', color: '#283593' },
+  { id: 'mulberry_trees', name: 'Mulberry Trees', color: '#ad1457' },
 ];
 
 // ===== TILE RESOURCE IDs (terrain tiles that buildings need within footprint) =====
@@ -40,8 +50,8 @@ const TILE_RESOURCE_IDS = new Set();
 PP2DATA.tiles.forEach(t => TILE_RESOURCE_IDS.add(t.produces));
 
 /**
- * Temperate island fertilities: each gates tile resources that cannot be grown / auto-painted when off.
- * Other island types: populate when tier data is added (see `fertilities` on ISLAND_TYPE_TIERS).
+ * Per-island-type fertilities: each gates tile resources that cannot be grown / auto-painted when off.
+ * See `fertilities` on ISLAND_TYPE_TIERS for default id lists.
  */
 const FERTILITY_RESOURCES = {
   temperate: [
@@ -54,7 +64,17 @@ const FERTILITY_RESOURCES = {
     { id: 'roses', label: 'Roses', tileResources: ['rose_field'] },
     { id: 'grapes', label: 'Grapes', tileResources: ['vineyard'] },
   ],
-  tropical: [],
+  tropical: [
+    { id: 'tea', label: 'Tea', tileResources: ['tea_field'] },
+    { id: 'sugar_cane', label: 'Sugar cane', tileResources: ['sugar_cane_field'] },
+    { id: 'coffee', label: 'Coffee', tileResources: ['coffee_bean_field'] },
+    { id: 'tobacco', label: 'Tobacco', tileResources: ['tobacco_field'] },
+    { id: 'cocoa', label: 'Cocoa', tileResources: ['cacao_field'] },
+    { id: 'coconuts', label: 'Coconuts', tileResources: ['coconut_palm'] },
+    { id: 'mahogany', label: 'Mahogany', tileResources: ['mahogany_trees'] },
+    { id: 'indigo', label: 'Indigo', tileResources: ['indigo_field'] },
+    { id: 'silk', label: 'Silk', tileResources: ['mulberry_trees'] },
+  ],
   northern: [],
   magical: [],
 };
@@ -92,7 +112,9 @@ const ISLAND_TYPE_TIERS = {
   tropical: {
     prodTiers: ['Farmers', 'Workers'],
     popTiers: ['Farmers', 'Workers'],
-    fertilities: [],
+    fertilities: [
+      'tea', 'sugar_cane', 'coffee', 'tobacco', 'cocoa', 'coconuts', 'mahogany', 'indigo', 'silk',
+    ],
   },
   northern: {
     prodTiers: ['Northern Islands'],

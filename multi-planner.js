@@ -378,11 +378,17 @@ function executeMultiIslandPlan(option) {
     const homeIdx = option.homeIdx;
     if (typeof setActiveSlot === 'function') setActiveSlot(homeIdx, { skipCommit: false });
 
-    const homeBuildings = withProjectSlotContext(homeIdx, () =>
-      resolveProductionChainWithImports(
-        getPopulationDemandFromHouseCounts(option.houseCountsByPopId),
-        option.importRates
-      ).buildings);
+    // Use the same building map as Analyze — re-calling resolveProductionChainWithImports here can
+    // diverge (pickProducer FlourMill vs FlourWindmill, float slop on import rates) and wrongly add
+    // e.g. wheat farms on an apple-only home when bread was planned as imported.
+    let homeBuildings = option.homeChain;
+    if (!homeBuildings || typeof homeBuildings !== 'object') {
+      homeBuildings = withProjectSlotContext(homeIdx, () =>
+        resolveProductionChainWithImports(
+          getPopulationDemandFromHouseCounts(option.houseCountsByPopId),
+          option.importRates || {}
+        ).buildings);
+    }
 
     const popList = buildPopListOverrideFromCounts(option.houseCountsByPopId);
 

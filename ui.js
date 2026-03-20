@@ -613,6 +613,10 @@ function buildFertilityPanel() {
       if (!state.activeFertilities) state.activeFertilities = new Set();
       if (inp.checked) state.activeFertilities.add(inp.dataset.fertility);
       else state.activeFertilities.delete(inp.dataset.fertility);
+      if (typeof isMultiIslandProject === 'function' && isMultiIslandProject() && state.projectSlots[state.activeSlotIndex]) {
+        state.projectSlots[state.activeSlotIndex].activeFertilities = [...state.activeFertilities];
+        if (typeof saveProjectToStorage === 'function') saveProjectToStorage();
+      }
       if (typeof saveFertilities === 'function') saveFertilities();
       if (typeof calculateProduction === 'function') calculateProduction();
       buildDepositTools();

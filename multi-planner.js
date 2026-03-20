@@ -363,9 +363,8 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
     return { error: 'Need at least two islands to analyze distribution.', options: [] };
   }
 
-  // Fertility checkboxes only update state.activeFertilities until slot switch/commit.
-  // Flush the visible island into projectSlots so analysis uses current UI, not stale slot arrays.
-  if (typeof commitActiveSlotFromState === 'function') commitActiveSlotFromState();
+  // Fertility checkboxes update state.activeFertilities; ensure projectSlots[active] matches before we read each slot.
+  if (typeof commitActiveFertilitiesToActiveSlot === 'function') commitActiveFertilitiesToActiveSlot();
 
   const demand = getPopulationDemandFromHouseCounts(houseCountsByPopId);
   const demandKeys = Object.keys(demand).filter(k => (demand[k] || 0) > 0);
@@ -528,7 +527,7 @@ function executeMultiIslandPlan(option) {
     return;
   }
 
-  if (typeof commitActiveSlotFromState === 'function') commitActiveSlotFromState();
+  if (typeof commitActiveFertilitiesToActiveSlot === 'function') commitActiveFertilitiesToActiveSlot();
 
   const startActive = state.activeSlotIndex;
   if (typeof pushUndo === 'function') pushUndo();
@@ -598,6 +597,8 @@ function executeMultiIslandPlan(option) {
 
 function showMultiIslandPlannerModal() {
   if (typeof isMultiIslandProject !== 'function' || !isMultiIslandProject()) return;
+
+  if (typeof commitActiveFertilitiesToActiveSlot === 'function') commitActiveFertilitiesToActiveSlot();
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';

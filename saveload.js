@@ -195,6 +195,17 @@ function commitActiveSlotFromState() {
 }
 
 /**
+ * Multi-island: copy fertility checkboxes into the active slot only (no island clone).
+ * Plan islands reads projectSlots[].activeFertilities — keep it aligned with state.activeFertilities.
+ */
+function commitActiveFertilitiesToActiveSlot() {
+  if (!isMultiIslandProject() || !state.projectSlots[state.activeSlotIndex]) return;
+  const cur = state.projectSlots[state.activeSlotIndex];
+  cur.activeFertilities = state.activeFertilities ? [...state.activeFertilities] : [];
+  saveProjectToStorage();
+}
+
+/**
  * Remove one project slot by index (any position). Keeps temperate+tropical ordering in array.
  * At least one island must remain. Persists and refreshes the active slot.
  */

@@ -1069,6 +1069,7 @@ function findBestPositions(buildingId, building, opts) {
     for (let x = 0; x < width; x++) {
       if (!canAutoPlace(buildingId, x, y)) continue;
       if (requireWarehouse && !isInWarehouseRange(x, y)) continue;
+      if (claimedCells && claimedCells.has(`${x},${y}`)) continue;
       if (reservedCells) {
         let overlapR = false;
         for (const [dx, dy] of fp) {
@@ -1293,7 +1294,8 @@ function emitAutoPopulateLog(log) {
     phases.services.placed.length +
     phases.production.placed.length +
     phases.houses.placed.length +
-    phases.topup.length;
+    phases.topup.length -
+    phases.cleanup.length;
   const totalFailed = phases.services.failed.length +
     phases.production.failed.length +
     phases.houses.failed.length;
@@ -1398,6 +1400,14 @@ function emitAutoPopulateLog(log) {
     console.log('Phase 4 — No service top-up needed');
   }
 
+  // Phase 5 cleanup log
+  if (phases.cleanup && phases.cleanup.length > 0) {
+    console.group(`Phase 5 — Removed ${phases.cleanup.length} wasted service(s)`);
+    phases.cleanup.forEach(c =>
+      console.log(`✗ ${c.name} at (${c.x},${c.y}) — covered 0 houses`));
+    console.groupEnd();
+  }
+
   // Coverage summary
   if (Object.keys(coverage).length > 0) {
     console.group('Coverage summary');
@@ -1468,6 +1478,7 @@ function autoPopulate() {
       production: { placed: [], failed: [] },
       houses:     { placed: [], failed: [] },
       topup:      [],
+      cleanup:    [],
     },
     coverage: {},
     militiaInfo: militiaInfo ? {
@@ -2083,6 +2094,32 @@ function autoPopulate() {
         uncoveredBefore: uncovered.length,
       });
     }
+  }
+
+  // === PHASE 5: Remove wasted services covering 0 houses ===
+  {
+    const popHouses = state.island.buildings.filter(b => {
+      const bld = getBuildingData(b.id);
+      return bld && bld.isPopulation;
+    });
+    const serviceBuildings = state.island.buildings.filter(b => {
+      const bld = getBuildingData(b.id);
+      return bld && !bld.isPopulation && bld.produces && SERVICE_RESOURCES.has(bld.produces);
+    });
+    for (const svc of serviceBuildings) {
+      const svcBld = getBuildingData(svc.id);
+      const fp = FOOTPRINTS[svc.id];
+      if (!fp || !svcBld) continue;
+      let covers = 0;
+      for (const h of popHouses) {
+        if (fp.some(([dx, dy]) => svc.x + dx === h.x && svc.y + dy === h.y)) { covers++; break; }
+      }
+      if (covers === 0) {
+        removeBuildingAt(svc.x, svc.y);
+        runLog.phases.cleanup.push({ name: svcBld.name || svc.id, x: svc.x, y: svc.y });
+      }
+    }
+    refreshApServiceCov();
   }
 
   // Build coverage summary for logging

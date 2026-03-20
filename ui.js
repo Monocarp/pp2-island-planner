@@ -16,6 +16,12 @@ function handleCellAction(x, y, e) {
     updateStats();
     render();
   } else if (state.tool === 'deposit' && state.depositType) {
+    if (TILE_RESOURCE_IDS.has(state.depositType) &&
+        typeof isTileResourceFertilityBlocked === 'function' &&
+        isTileResourceFertilityBlocked(state.depositType)) {
+      showTooltipMessage(x, y, 'Fertility off for this resource — enable it under Island Type or plan for imports.');
+      return;
+    }
     pushUndo();
     cell.deposit = state.depositType;
     updateStats();
@@ -290,15 +296,54 @@ document.getElementById('terrain-tools').addEventListener('click', (e) => {
   state.buildingId = null;
 });
 
-// Deposit tools (built dynamically)
+// Deposit tools (built dynamically; rebuilt when island type / fertilities change)
+function syncDepositToolSelectionAfterRebuild() {
+  const container = document.getElementById('deposit-tools');
+  if (!container) return;
+  if (state.tool === 'deposit' && state.depositType) {
+    const blocked = TILE_RESOURCE_IDS.has(state.depositType) &&
+      typeof isTileResourceFertilityBlocked === 'function' &&
+      isTileResourceFertilityBlocked(state.depositType);
+    if (blocked) {
+      state.depositType = null;
+      state.tool = 'select';
+      clearToolSelection();
+      const selBtn = document.querySelector('#left-panel [data-tool="select"]');
+      if (selBtn) selBtn.classList.add('active');
+      return;
+    }
+    const btn = [...container.querySelectorAll('button.tool-btn[data-deposit-id]')].find(
+      b => b.dataset.depositId === state.depositType
+    );
+    if (btn && !btn.disabled) {
+      clearToolSelection();
+      btn.classList.add('active');
+    }
+  }
+}
+
 function buildDepositTools() {
   const container = document.getElementById('deposit-tools');
+  if (!container) return;
+  container.innerHTML = '';
   DEPOSIT_TYPES.forEach(dep => {
     const btn = document.createElement('button');
     btn.className = 'tool-btn';
+    btn.type = 'button';
+    btn.dataset.depositId = dep.id;
     btn.textContent = dep.name;
     btn.style.borderLeft = `4px solid ${dep.color}`;
+    const blocked = TILE_RESOURCE_IDS.has(dep.id) &&
+      typeof isTileResourceFertilityBlocked === 'function' &&
+      isTileResourceFertilityBlocked(dep.id);
+    if (blocked) {
+      btn.disabled = true;
+      btn.title = 'This deposit requires an active island fertility — enable it under Island Type.';
+      btn.style.opacity = '0.45';
+      btn.style.cursor = 'not-allowed';
+    }
     btn.addEventListener('click', () => {
+      if (btn.disabled) return;
       clearToolSelection();
       btn.classList.add('active');
       state.tool = 'deposit';
@@ -307,6 +352,7 @@ function buildDepositTools() {
     });
     container.appendChild(btn);
   });
+  syncDepositToolSelectionAfterRebuild();
 }
 
 // Eraser / Select
@@ -335,6 +381,7 @@ function initIslandTypeBar() {
   if (_islandTypeBarInited) {
     syncIslandTypeBar();
     if (typeof buildFertilityPanel === 'function') buildFertilityPanel();
+    buildDepositTools();
     return;
   }
   _islandTypeBarInited = true;
@@ -350,10 +397,12 @@ function initIslandTypeBar() {
       if (typeof buildBuildingList === 'function') buildBuildingList();
       if (typeof buildPlannerInputs === 'function') buildPlannerInputs();
       if (typeof calculateProduction === 'function') calculateProduction();
+      buildDepositTools();
     });
   });
   syncIslandTypeBar();
   if (typeof buildFertilityPanel === 'function') buildFertilityPanel();
+  buildDepositTools();
 }
 
 /** Renders temperate (etc.) fertility checkboxes under Island Type. */
@@ -363,6 +412,7 @@ function buildFertilityPanel() {
   const list = typeof FERTILITY_RESOURCES !== 'undefined' ? FERTILITY_RESOURCES[state.islandType] : null;
   if (!list || list.length === 0) {
     el.innerHTML = '<span class="fertility-panel-empty">No fertility options for this island type.</span>';
+    buildDepositTools();
     return;
   }
   el.innerHTML = list.map(f => {
@@ -377,8 +427,10 @@ function buildFertilityPanel() {
       else state.activeFertilities.delete(inp.dataset.fertility);
       if (typeof saveFertilities === 'function') saveFertilities();
       if (typeof calculateProduction === 'function') calculateProduction();
+      buildDepositTools();
     });
   });
+  buildDepositTools();
 }
 
 // Stable order for production tiers in the palette (subset filtered by island type).

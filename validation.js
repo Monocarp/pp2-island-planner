@@ -41,6 +41,29 @@ function updateStats() {
     }
   }
 
+  // Island capacity (theoretical max houses per tier from terrain + production chain)
+  if (typeof computeIslandCapacity === 'function') {
+    const cap = computeIslandCapacity();
+    const b = cap.terrainBudget || {};
+    html += '<h4 style="margin-top:8px;font-size:0.85rem">Island capacity (estimated max houses)</h4>';
+    html += `<p style="color:#666;font-size:0.62rem;margin:2px 0 4px;line-height:1.35;">Per tier if <strong>only</strong> that house type existed, with current terrain, fertilities, and unlocked producers. Assumes all goods produced locally (no imports). Bottleneck = tightest constraint.</p>`;
+    html += `<div class="info-row" style="font-size:0.68rem;color:#888;"><span class="info-label">Slots:</span><span class="info-value">river ${b.straight_river ?? 0} · ocean-adj ${b.ocean_adjacent ?? 0} · river-adj ${b.river_adjacent ?? 0} · water build ${b.in_water_coastal ?? 0} · free land ${b.land ?? 0}</span></div>`;
+    html += '<table style="width:100%;border-collapse:collapse;font-size:0.72rem;margin-top:4px;"><thead><tr style="color:#888;">'
+      + '<th align="left" style="font-weight:600;padding:2px 4px 2px 0;">Tier</th>'
+      + '<th align="right" style="font-weight:600;padding:2px 4px;">Max</th>'
+      + '<th align="left" style="font-weight:600;padding:2px 0 2px 6px;">Bottleneck</th>'
+      + '</tr></thead><tbody>';
+    for (const t of cap.tiers || []) {
+      const rowStyle = t.unlocked ? '' : 'color:#666;';
+      const maxStr = t.unlocked && t.maxHouses != null ? String(t.maxHouses) : '—';
+      const bot = t.bottleneck || '—';
+      html += `<tr style="${rowStyle}"><td style="padding:2px 4px 2px 0;">${t.label}</td>`
+        + `<td align="right" style="padding:2px 4px;">${maxStr}</td>`
+        + `<td style="padding:2px 0 2px 6px;font-size:0.65rem;color:#aaa;">${bot}</td></tr>`;
+    }
+    html += '</tbody></table>';
+  }
+
   // Population supply vs nameplate production (placed houses / buildings only)
   if (typeof countPlacedPopulationHousesByType === 'function' &&
       typeof getPopulationDemandFromPlacedHouses === 'function' &&

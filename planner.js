@@ -769,6 +769,170 @@ function getPopulationChainGoodDemandFromPlacedHouses() {
   return need;
 }
 
+/**
+ * Count placement slots for location-constrained building types (unoccupied cells only).
+ * Used by Island Capacity estimates.
+ */
+function computeTerrainBudget() {
+  const empty = {
+    straight_river: 0,
+    ocean_adjacent: 0,
+    river_adjacent: 0,
+    in_water_coastal: 0,
+    land: 0,
+  };
+  if (!state.island || !state.island.cells) return empty;
+  const { width, height, cells } = state.island;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const cell = cells[y][x];
+      if (cell.building) continue;
+      const terrain = cell.terrain;
+      const neighbors = getAdjacentCells(x, y, width, height);
+      if (typeof PLACEABLE_TERRAIN !== 'undefined' && PLACEABLE_TERRAIN.has(terrain)) {
+        empty.land++;
+        const hasOcean = neighbors.some(n => {
+          const t = getTerrainAt(n.x, n.y);
+          return t === 'water' || t === 'coastal';
+        });
+        if (hasOcean) empty.ocean_adjacent++;
+        const hasRiverN = neighbors.some(n => getTerrainAt(n.x, n.y) === 'river');
+        if (hasRiverN) empty.river_adjacent++;
+      }
+      if (terrain === 'river' && typeof isRiverStraight === 'function' && isRiverStraight(x, y)) {
+        empty.straight_river++;
+      }
+      if ((terrain === 'water' || terrain === 'coastal')) {
+        const hasLand = neighbors.some(n => {
+          const t = getTerrainAt(n.x, n.y);
+          return t !== 'water';
+        });
+        if (hasLand) empty.in_water_coastal++;
+      }
+    }
+  }
+  return empty;
+}
+
+const ISLAND_CAPACITY_LOC_TYPES = ['straight_river', 'ocean_adjacent', 'river_adjacent', 'in_water_coastal'];
+
+/**
+ * Estimated max population houses per tier from terrain + resolveProductionChain (1 house demand).
+ * Each tier is computed in isolation. Respects unlocks and producer overrides like the planner.
+ * @returns {{ terrainBudget: object, tiers: Array<{ id: string, label: string, tier: string, unlocked: boolean, maxHouses: number|null, bottleneck: string, constraints: Array<{ maxHouses: number, label: string, type: string }> }> }}
+ */
+function computeIslandCapacity() {
+  const terrainBudget = computeTerrainBudget();
+  const tiersOut = [];
+  if (!state.island) {
+    return { terrainBudget, tiers: tiersOut };
+  }
+  const visible = typeof getVisiblePopBuildings === 'function' ? getVisiblePopBuildings() : POP_BUILDINGS;
+  for (const pb of visible) {
+    const popBld = PP2DATA.getBuilding(pb.id);
+    const unlocked = state.unlockedBuildings && state.unlockedBuildings.has(pb.id);
+    if (!popBld || !popBld.consumePerMinute) {
+      tiersOut.push({
+        id: pb.id,
+        label: pb.label,
+        tier: pb.tier,
+        unlocked: !!unlocked,
+        maxHouses: null,
+        bottleneck: 'No house data',
+        constraints: [],
+      });
+      continue;
+    }
+    if (!unlocked) {
+      tiersOut.push({
+        id: pb.id,
+        label: pb.label,
+        tier: pb.tier,
+        unlocked: false,
+        maxHouses: null,
+        bottleneck: 'Unlock population house in Buildings list',
+        constraints: [],
+      });
+      continue;
+    }
+    const demand = getPopulationDemandFromHouseCounts({ [pb.id]: 1 });
+    const chain = resolveProductionChain(demand);
+    const constraintRows = [];
+    for (const lt of ISLAND_CAPACITY_LOC_TYPES) {
+      let sum = 0;
+      const names = new Set();
+      let reqLabel = '';
+      for (const e of Object.values(chain.buildings || {})) {
+        const req = typeof LOCATION_REQUIREMENTS !== 'undefined' ? LOCATION_REQUIREMENTS[e.building.id] : null;
+        if (!req || req.type !== lt) continue;
+        sum += e.count || 0;
+        names.add(e.building.name);
+        if (!reqLabel) reqLabel = req.label;
+      }
+      if (sum > 1e-9) {
+        const avail = terrainBudget[lt] || 0;
+        const maxH = avail / sum;
+        const namePart = [...names].slice(0, 4).join(', ');
+        const suffix = names.size > 4 ? '…' : '';
+        constraintRows.push({
+          maxHouses: maxH,
+          label: `${reqLabel} (${namePart}${suffix})`,
+          type: lt,
+        });
+      }
+    }
+    let productionSum = 0;
+    for (const e of Object.values(chain.buildings || {})) {
+      productionSum += e.count || 0;
+    }
+    let serviceAnchorEst = 0;
+    for (const resId of Object.keys(popBld.consumePerMinute || {})) {
+      if (SERVICE_RESOURCES.has(resId)) serviceAnchorEst += 1;
+    }
+    const warehouseEst = 1;
+    const landPerHouse = 1 + productionSum + serviceAnchorEst + warehouseEst;
+    if (landPerHouse > 1e-9) {
+      constraintRows.push({
+        maxHouses: terrainBudget.land / landPerHouse,
+        label: 'Land area (1 house + production chain + service buildings est. + 1 warehouse)',
+        type: 'land',
+      });
+    }
+    if (constraintRows.length === 0) {
+      tiersOut.push({
+        id: pb.id,
+        label: pb.label,
+        tier: pb.tier,
+        unlocked: true,
+        maxHouses: 0,
+        bottleneck: 'No production chain resolved',
+        constraints: [],
+      });
+      continue;
+    }
+    let minH = Infinity;
+    let bottleneck = '';
+    for (const c of constraintRows) {
+      const v = c.maxHouses;
+      if (v < minH) {
+        minH = v;
+        bottleneck = c.label;
+      }
+    }
+    if (!Number.isFinite(minH)) minH = 0;
+    tiersOut.push({
+      id: pb.id,
+      label: pb.label,
+      tier: pb.tier,
+      unlocked: true,
+      maxHouses: Math.max(0, Math.floor(minH)),
+      bottleneck,
+      constraints: constraintRows,
+    });
+  }
+  return { terrainBudget, tiers: tiersOut };
+}
+
 function cycleProducer(resourceId, currentBuildingId) {
   const producers = (PP2DATA.getProducersOf(resourceId) || []).filter(p => PP2DATA.getBuilding(p.id));
   if (producers.length <= 1) return;

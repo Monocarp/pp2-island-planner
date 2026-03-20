@@ -535,10 +535,6 @@ function resolveProductionChain(demand) {
     if (rateNeeded <= 0) return;
     if (SERVICE_RESOURCES.has(resourceId)) return;
 
-    // #region agent log
-    if (resourceId === 'wool' || resourceId === 'thread') console.log('[DBG71]', 'resolve-entry', {resourceId, rateNeeded});
-    // #endregion
-
     // Spatial tile resources — skip rate resolution, counted per-building below
     if (spatialTileResources.has(resourceId)) return;
 
@@ -548,9 +544,6 @@ function resolveProductionChain(demand) {
 
     // Check if this is a regenerating tile resource (apple_trees, forest, fields)
     if (TILE_RESOURCE_IDS.has(resourceId)) {
-      // #region agent log
-      if (resourceId === 'wool') console.log('[DBG71]', 'wool-is-TILE_RESOURCE_ID!');
-      // #endregion
       if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(resourceId)) return;
       const tile = producers.find(p => PP2DATA.getTile(p.id)) || producers[0];
       if (!tile || !tile.producePerMinute) return;
@@ -567,9 +560,6 @@ function resolveProductionChain(demand) {
     const allBuildings = producers.filter(p => PP2DATA.getBuilding(p.id));
     const producer = pickProducer(resourceId, producers);
 
-    // #region agent log
-    if (resourceId === 'wool' || resourceId === 'thread') console.log('[DBG71]', 'pickProducer result', {resourceId, producerId:producer&&producer.id, producerInputs:producer&&producer.inputs, blocked:producer?buildingUsesBlockedFertilityTile(producer):null});
-    // #endregion
 
     if (!producer || !producer.producePerMinute) return;
 
@@ -589,9 +579,6 @@ function resolveProductionChain(demand) {
     // Recurse into this producer's inputs
     if (producer.consumePerMinute && !visited.has(producer.id + ':' + resourceId)) {
       visited.add(producer.id + ':' + resourceId);
-      // #region agent log
-      if (producer.id === 'SpinningMill') console.log('[DBG71]', 'SpinningMill inputs', producer.consumePerMinute);
-      // #endregion
       for (const [inputRes, inputRate] of Object.entries(producer.consumePerMinute)) {
         resolve(inputRes, inputRate * countNeeded);
       }

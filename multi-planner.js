@@ -66,14 +66,25 @@ function canSlotProduceResourceFully(slotIndex, resId, rate) {
       const tr = tn.producedResource;
       if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(tr)) return false;
     }
+    // #region agent log
+    const _dbgInputs = [];
+    // #endregion
     for (const entry of Object.values(buildings)) {
       const b = entry.building;
       if (!b.inputs) continue;
       for (const inputId of Object.keys(b.inputs)) {
+        // #region agent log
+        const inTileSet = TILE_RESOURCE_IDS.has(inputId);
+        _dbgInputs.push({ bld: b.id, inputId, inTileSet });
+        // #endregion
         if (!TILE_RESOURCE_IDS.has(inputId)) continue;
         if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(inputId)) return false;
       }
     }
+    // #region agent log
+    fetch('http://127.0.0.1:7893/ingest/59264f09-9a93-4ffa-929f-ee9c08408ac4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'71cbb6'},body:JSON.stringify({sessionId:'71cbb6',runId:'r5',hypothesisId:'H1',location:'multi-planner.js:canSlotProduceResourceFully',message:'canSlotCheck',data:{slotIndex,resId,buildingKeys:Object.keys(buildings),tileNeedKeys:Object.keys(tileNeeds),inputs:_dbgInputs,activeFert:[...state.activeFertilities]},timestamp:Date.now()})}).catch(()=>{});
+    console.warn('[PP2-MultiDebug] canSlotCheck', {slotIndex, resId, buildingKeys: Object.keys(buildings), tileNeedKeys: Object.keys(tileNeeds), inputs: _dbgInputs, activeFert: [...state.activeFertilities]});
+    // #endregion
     return true;
   });
 }

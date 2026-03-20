@@ -352,6 +352,21 @@ function slotLabel(idx) {
   return name ? `${name} (${base})` : base;
 }
 
+/** Multi-island analyze debug: POST to ingest when available + always console (session 71cbb6). */
+function _pp2MultiIslandDbg(payload) {
+  const body = Object.assign({ sessionId: '71cbb6', timestamp: Date.now() }, payload);
+  // #region agent log
+  fetch('http://127.0.0.1:7893/ingest/59264f09-9a93-4ffa-929f-ee9c08408ac4', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '71cbb6' },
+    body: JSON.stringify(body),
+  }).catch(() => {});
+  try {
+    console.warn('[PP2-MultiDebug]', body);
+  } catch (_) { /* ignore */ }
+  // #endregion
+}
+
 /**
  * @param {Object} houseCountsByPopId
  * @param {Object} shipCounts — state.projectShipCounts shape
@@ -377,17 +392,33 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
   const options = [];
   const slotIndices = slots.map((_, i) => i);
 
+  const _dbgDemandGoods = Object.entries(demand).filter(([k, v]) => v > 0 && !SERVICE_RESOURCES.has(k));
+  _pp2MultiIslandDbg({
+    hypothesisId: 'H3',
+    location: 'multi-planner.js:analyzeMultiIslandPlan:entry',
+    message: 'Non-service demand for multi-island analyze',
+    data: {
+      goods: _dbgDemandGoods.map(([id, r]) => ({ id, rate: +r.toFixed(6) })),
+      slotCount: slots.length,
+      totalFleetCap: +totalCap.toFixed(6),
+    },
+  });
+
   for (const homeIdx of slotIndices) {
     const others = slotIndices.filter(i => i !== homeIdx);
 
     const crossChains = [];
+    const deemedLocalOnHome = [];
     let impossible = false;
 
     for (const [resId, rate] of Object.entries(demand)) {
       if (SERVICE_RESOURCES.has(resId)) continue;
       if (rate <= 0) continue;
 
-      if (canSlotProduceResourceFully(homeIdx, resId, rate)) continue;
+      if (canSlotProduceResourceFully(homeIdx, resId, rate)) {
+        deemedLocalOnHome.push({ resId, rate });
+        continue;
+      }
 
       let sourceIdx = -1;
       for (const o of others) {
@@ -415,6 +446,39 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
     }
 
     if (impossible) continue;
+
+    _pp2MultiIslandDbg({
+      hypothesisId: 'H1',
+      location: 'multi-planner.js:analyzeMultiIslandPlan:homeBranch',
+      message: 'Per-home deemed-local vs cross-island goods',
+      data: {
+        homeIdx,
+        homeLabel: slotLabel(homeIdx),
+        deemedLocalGoods: deemedLocalOnHome.map(x => ({ id: x.resId, rate: +x.rate.toFixed(6) })),
+        crossIslandFinalGoods: crossChains.map(c => c.finalRes),
+        crossChainCount: crossChains.length,
+      },
+    });
+
+    if (crossChains.length === 0) {
+      const otherSlotChecks = others.map(oi => ({
+        otherIdx: oi,
+        otherLabel: slotLabel(oi),
+        canFullyProduceAll: _dbgDemandGoods.every(([resId, rate]) => canSlotProduceResourceFully(oi, resId, rate)),
+        perGood: _dbgDemandGoods.map(([resId, rate]) => ({
+          resId,
+          rate: +rate.toFixed(6),
+          homeCan: canSlotProduceResourceFully(homeIdx, resId, rate),
+          otherCan: canSlotProduceResourceFully(oi, resId, rate),
+        })),
+      }));
+      _pp2MultiIslandDbg({
+        hypothesisId: 'H2',
+        location: 'multi-planner.js:analyzeMultiIslandPlan:noShipsBranch',
+        message: 'Zero crossChains: planner treats home as fully self-sufficient; other-slot canProduce matrix',
+        data: { homeIdx, homeLabel: slotLabel(homeIdx), otherSlotChecks },
+      });
+    }
 
     const combos = cartesianChoices(crossChains);
     for (const combo of combos) {
@@ -479,6 +543,19 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
         margin,
         score,
         houseCountsByPopId: { ...houseCountsByPopId },
+      });
+      _pp2MultiIslandDbg({
+        hypothesisId: 'H4',
+        location: 'multi-planner.js:analyzeMultiIslandPlan:optionPushed',
+        message: 'Ranked option snapshot',
+        data: {
+          homeIdx,
+          homeLabel: slotLabel(homeIdx),
+          routesCount: routes.length,
+          shipRateSum: +shipRateSum.toFixed(6),
+          fleetFeasible,
+          score: +score.toFixed(4),
+        },
       });
     }
   }

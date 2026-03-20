@@ -385,17 +385,44 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
   const options = [];
   const slotIndices = slots.map((_, i) => i);
 
+  // #region agent log
+  const _dbgNonService = Object.entries(demand).filter(([k, v]) => v > 0 && !SERVICE_RESOURCES.has(k));
+  console.warn('[PP2-MultiDebug] analyzeEntry', {
+    demandGoods: _dbgNonService.map(([id, r]) => id),
+    slotCount: slots.length,
+    activeSlotIdx: state.activeSlotIndex,
+    slotFerts: slots.map((s, i) => ({
+      i, label: slotLabel(i),
+      stored: Array.isArray(s.activeFertilities) ? s.activeFertilities.slice() : null,
+      effective: [...effectiveSlotFertilitySet(s)],
+    })),
+    liveActiveFert: state.activeFertilities ? [...state.activeFertilities] : null,
+    fleetCap: +totalCap.toFixed(6),
+  });
+  // #endregion
+
   for (const homeIdx of slotIndices) {
     const others = slotIndices.filter(i => i !== homeIdx);
 
     const crossChains = [];
     let impossible = false;
+    let impossibleGood = null;
+
+    // #region agent log
+    const _dbgPerGood = [];
+    // #endregion
 
     for (const [resId, rate] of Object.entries(demand)) {
       if (SERVICE_RESOURCES.has(resId)) continue;
       if (rate <= 0) continue;
 
-      if (canSlotProduceResourceFully(homeIdx, resId, rate)) continue;
+      const homeCan = canSlotProduceResourceFully(homeIdx, resId, rate);
+      // #region agent log
+      const othersCan = others.map(o => ({ o, can: canSlotProduceResourceFully(o, resId, rate) }));
+      _dbgPerGood.push({ resId, homeCan, othersCan });
+      // #endregion
+
+      if (homeCan) continue;
 
       let sourceIdx = -1;
       for (const o of others) {
@@ -406,12 +433,14 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
       }
       if (sourceIdx < 0) {
         impossible = true;
+        impossibleGood = resId;
         break;
       }
 
       const shipChoices = withProjectSlotContext(sourceIdx, () => traceChainShipCandidates(resId, rate));
       if (shipChoices.length === 0) {
         impossible = true;
+        impossibleGood = resId + ':noShipChoices';
         break;
       }
       crossChains.push({
@@ -421,6 +450,16 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
         shipChoices,
       });
     }
+
+    // #region agent log
+    console.warn('[PP2-MultiDebug] homeCandidate', {
+      homeIdx, homeLabel: slotLabel(homeIdx),
+      crossCount: crossChains.length,
+      crossGoods: crossChains.map(c => c.finalRes),
+      impossible, impossibleGood,
+      perGood: _dbgPerGood,
+    });
+    // #endregion
 
     if (impossible) continue;
 

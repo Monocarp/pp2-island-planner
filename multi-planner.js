@@ -132,6 +132,22 @@ function aggregateOutputRatesFromChainBuildings(buildings) {
   return out;
 }
 
+/**
+ * Sum of max(0, local home output − population need) per non-service good (imports ignored).
+ * Used to compare plans by on-island overproduction headroom.
+ */
+function computeHomeLocalSurplus(option, demand) {
+  const homeAgg = aggregateOutputRatesFromChainBuildings(option && option.homeChain);
+  let sum = 0;
+  for (const [resId, need] of Object.entries(demand || {})) {
+    if (!need || need <= 0 || SERVICE_RESOURCES.has(resId)) continue;
+    const local = homeAgg[resId] || 0;
+    const over = local - need;
+    if (over > MULTI_ISLAND_RATE_EPS) sum += over;
+  }
+  return sum;
+}
+
 function _sortMultiChainEntries(chainBuildings) {
   return Object.values(chainBuildings || {}).sort((a, b) => {
     const ta = _MULTI_TIER_ORDER.indexOf(a.building.tier);
@@ -744,6 +760,14 @@ function showMultiIslandPlannerModal() {
     }
 
     let html = `<p style="color:#888;">Fleet capacity (sum of slot throughputs): <strong>${(totalFleetCapacity != null ? totalFleetCapacity : 0).toFixed(3)}</strong> goods/min</p>`;
+    html += `<p style="color:#666;font-size:0.72rem;line-height:1.35;margin:6px 0 8px;">Plans are sorted by fleet feasibility, then spare fleet capacity, then slightly lower total footprint. <strong style="color:#aaa;">Badges</strong> mark the lowest total footprint and the highest home local surplus (sum of local output above need, imports ignored) among <em>fleet-feasible</em> plans; if none are feasible, badges use all plans.</p>`;
+
+    const feasiblePool = options.filter(o => o.fleetFeasible);
+    const badgePool = feasiblePool.length > 0 ? feasiblePool : options;
+    const minTotalFp = Math.min(...badgePool.map(o => o.totalFootprintTiles));
+    const surpluses = badgePool.map(o => computeHomeLocalSurplus(o, demand));
+    const maxSurplus = surpluses.length ? Math.max(...surpluses) : 0;
+
     html += '<div style="display:flex;flex-direction:column;gap:10px;">';
 
     options.slice(0, 12).forEach((opt, i) => {
@@ -759,9 +783,26 @@ function showMultiIslandPlannerModal() {
       const supplyHtml = formatMultiIslandSupplyVsDemandHtml(opt, demand);
       const chainHtml = formatMultiIslandChainBuildingsHtml(opt);
 
+      const inBadgePool = feasiblePool.length > 0 ? opt.fleetFeasible : true;
+      const optSurplus = computeHomeLocalSurplus(opt, demand);
+      const badgeFootprint =
+        inBadgePool && Math.abs(opt.totalFootprintTiles - minTotalFp) < 1e-3;
+      const badgeSurplus =
+        inBadgePool && Math.abs(optSurplus - maxSurplus) < 1e-4;
+      const badgeStyle =
+        'display:inline-block;margin-left:6px;padding:2px 6px;border-radius:4px;font-size:0.65rem;font-weight:600;vertical-align:middle;';
+      const badgesHtml = [
+        badgeFootprint
+          ? `<span style="${badgeStyle}background:#1e3a2f;color:#2ecc71;" title="~${opt.totalFootprintTiles.toFixed(0)} total tiles (home + supply islands)">Lowest footprint</span>`
+          : '',
+        badgeSurplus
+          ? `<span style="${badgeStyle}background:#3a2a1e;color:#f4d03f;" title="+${optSurplus.toFixed(3)} goods/min home local surplus vs need">Most local surplus</span>`
+          : '',
+      ].join('');
+
       html += `
         <div style="border:1px solid #0f3460;border-radius:6px;padding:10px;background:#16213e;">
-          <strong style="color:#e94560;">#${i + 1} Home: ${opt.homeLabel}</strong>
+          <strong style="color:#e94560;">#${i + 1} Home: ${opt.homeLabel}</strong>${badgesHtml}
           <span style="color:${opt.fleetFeasible ? '#2ecc71' : '#e74c3c'};float:right;">
             Ship total ${opt.shipRateSum.toFixed(3)}/min ${opt.fleetFeasible ? '≤ fleet' : 'EXCEEDS fleet'}
           </span>

@@ -83,6 +83,180 @@ function sumChainFootprintTiles(chainBuildings) {
   return n;
 }
 
+/** Numeric tolerance for rate balance checks (goods/min). */
+const MULTI_ISLAND_RATE_EPS = 1e-5;
+
+const _MULTI_TIER_ORDER = ['Pioneers', 'Colonists', 'Townsmen', 'Farmers', 'Merchants', 'Workers', 'Paragons', 'Northern Islands'];
+
+/**
+ * Sum output rates (goods/min) from a resolved chain building map.
+ * @param {Object} buildings chainBuildings from resolveProductionChain*
+ * @returns {Record<string, number>}
+ */
+function aggregateOutputRatesFromChainBuildings(buildings) {
+  const out = {};
+  if (!buildings || typeof buildings !== 'object') return out;
+  for (const entry of Object.values(buildings)) {
+    const b = entry && entry.building;
+    const resId = entry && entry.producedResource;
+    if (!b || !resId || !b.producePerMinute) continue;
+    const rate = (entry.count || 0) * b.producePerMinute;
+    if (rate === 0) continue;
+    out[resId] = (out[resId] || 0) + rate;
+  }
+  return out;
+}
+
+function _sortMultiChainEntries(chainBuildings) {
+  return Object.values(chainBuildings || {}).sort((a, b) => {
+    const ta = _MULTI_TIER_ORDER.indexOf(a.building.tier);
+    const tb = _MULTI_TIER_ORDER.indexOf(b.building.tier);
+    if (ta !== tb) return (ta < 0 ? 99 : ta) - (tb < 0 ? 99 : tb);
+    return String(a.building.name).localeCompare(String(b.building.name));
+  });
+}
+
+/**
+ * HTML: supply vs population demand + remote output vs ship requirements.
+ */
+function formatMultiIslandSupplyVsDemandHtml(option, demand) {
+  const homeAgg = aggregateOutputRatesFromChainBuildings(option.homeChain);
+  const demandEntries = Object.entries(demand || {}).filter(
+    ([resId, rate]) => rate > 0 && !SERVICE_RESOURCES.has(resId)
+  ).sort((a, b) => b[1] - a[1]);
+
+  let homeRows = '';
+  for (const [resId, need] of demandEntries) {
+    const imported = (option.importRates && option.importRates[resId]) || 0;
+    const local = homeAgg[resId] || 0;
+    const total = imported + local;
+    const ok = total + MULTI_ISLAND_RATE_EPS >= need;
+    const name = typeof PP2DATA.getResourceName === 'function' ? PP2DATA.getResourceName(resId) : resId;
+    const st = ok ? '<span style="color:#2ecc71">OK</span>' : '<span style="color:#e74c3c">Short</span>';
+    homeRows += `<tr>
+      <td style="padding:2px 6px 2px 0;">${name}</td>
+      <td style="padding:2px 4px;text-align:right;">${need.toFixed(3)}</td>
+      <td style="padding:2px 4px;text-align:right;">${imported.toFixed(3)}</td>
+      <td style="padding:2px 4px;text-align:right;">${local.toFixed(3)}</td>
+      <td style="padding:2px 4px;text-align:right;">${total.toFixed(3)}</td>
+      <td style="padding:2px 0 2px 6px;">${st}</td>
+    </tr>`;
+  }
+
+  let remoteRows = '';
+  for (const sIdxStr of Object.keys(option.remoteDemandBySlot || {})) {
+    const sIdx = parseInt(sIdxStr, 10);
+    const rd = option.remoteDemandBySlot[sIdx];
+    const ch = option.remoteChains && option.remoteChains[sIdx];
+    const agg = aggregateOutputRatesFromChainBuildings(ch && ch.buildings ? ch.buildings : {});
+    const slotNm = slotLabel(sIdx);
+    for (const [good, shipRate] of Object.entries(rd || {})) {
+      const prod = agg[good] || 0;
+      const ok = prod + MULTI_ISLAND_RATE_EPS >= shipRate;
+      const gname = typeof PP2DATA.getResourceName === 'function' ? PP2DATA.getResourceName(good) : good;
+      const st = ok ? '<span style="color:#2ecc71">OK</span>' : '<span style="color:#e74c3c">Short</span>';
+      remoteRows += `<tr>
+        <td style="padding:2px 6px 2px 0;">${slotNm} — ${gname}</td>
+        <td style="padding:2px 4px;text-align:right;">${shipRate.toFixed(3)}</td>
+        <td style="padding:2px 4px;text-align:right;">${prod.toFixed(3)}</td>
+        <td style="padding:2px 0 2px 6px;">${st}</td>
+      </tr>`;
+    }
+  }
+
+  let html = '<div style="margin-top:8px;font-size:0.72rem;">';
+  html += '<strong style="color:#85c1e9;">Supply vs need (home, goods/min)</strong>';
+  html += '<div style="color:#666;font-size:0.65rem;margin:2px 0 4px;">Imported + produced on home should cover population need.</div>';
+  if (demandEntries.length === 0) {
+    html += '<div style="color:#888;">(no non-service goods demand)</div>';
+  } else {
+    html += '<table style="width:100%;border-collapse:collapse;"><thead><tr style="color:#888;">'
+      + '<th align="left" style="font-weight:600;">Resource</th>'
+      + '<th align="right" style="font-weight:600;">Need</th>'
+      + '<th align="right" style="font-weight:600;">Import</th>'
+      + '<th align="right" style="font-weight:600;">Local</th>'
+      + '<th align="right" style="font-weight:600;">Total</th>'
+      + '<th align="left" style="font-weight:600;"> </th>'
+      + '</tr></thead><tbody>' + homeRows + '</tbody></table>';
+  }
+
+  if (remoteRows) {
+    html += '<strong style="color:#85c1e9;display:block;margin-top:10px;">Remote production vs ship rate</strong>';
+    html += '<div style="color:#666;font-size:0.65rem;margin:2px 0 4px;">Island output should meet each shipped good rate.</div>';
+    html += '<table style="width:100%;border-collapse:collapse;"><thead><tr style="color:#888;">'
+      + '<th align="left" style="font-weight:600;">Slot / good</th>'
+      + '<th align="right" style="font-weight:600;">Ship</th>'
+      + '<th align="right" style="font-weight:600;">Remote out</th>'
+      + '<th align="left" style="font-weight:600;"> </th>'
+      + '</tr></thead><tbody>' + remoteRows + '</tbody></table>';
+  }
+  html += '</div>';
+  return html;
+}
+
+/** HTML: building rows with producer switch for multi-island modal. */
+function formatMultiIslandChainBuildingsHtml(option) {
+  let html = '<div style="margin-top:8px;font-size:0.72rem;">';
+
+  const home = option.homeChain || {};
+  if (Object.keys(home).length) {
+    html += `<strong style="color:#aaa;">Home — ${option.homeLabel || 'home'}</strong>`;
+    let currentTier = '';
+    for (const entry of _sortMultiChainEntries(home)) {
+      const { building, count, producedResource, alternatives } = entry;
+      const rounded = Math.ceil(count);
+      const isFractional = count % 1 > 0.01 && count % 1 < 0.99;
+      if (building.tier !== currentTier) {
+        currentTier = building.tier;
+        html += `<div style="color:#3498db;font-size:0.68rem;margin-top:4px;">${currentTier}</div>`;
+      }
+      const resName = typeof PP2DATA.getResourceName === 'function' ? PP2DATA.getResourceName(producedResource) : producedResource;
+      const lockedBadge = state.unlockedBuildings && !state.unlockedBuildings.has(building.id)
+        ? ' <span style="color:#f39c12;font-size:0.6rem;font-weight:600;">(locked)</span>'
+        : '';
+      const altHtml = alternatives
+        ? ` <span class="producer-switch multi-producer-switch" title="Change producer (re-analyze)" data-resource="${encodeURIComponent(producedResource)}" data-building="${encodeURIComponent(building.id)}">\u21C5</span>`
+        : '';
+      html += `<div class="planner-building-row${isFractional ? ' fractional' : ''}" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        <span>${building.name}${lockedBadge}${altHtml} <span style="color:#666;font-size:0.6rem;">(${resName})</span></span>
+        <span><span class="count">${rounded}</span>${isFractional ? ` <span style="color:#666;font-size:0.6rem;">(${count.toFixed(2)})</span>` : ''}</span>
+      </div>`;
+    }
+  }
+
+  for (const sIdxStr of Object.keys(option.remoteChains || {}).sort((a, b) => parseInt(a, 10) - parseInt(b, 10))) {
+    const sIdx = parseInt(sIdxStr, 10);
+    const ch = option.remoteChains[sIdx];
+    const bm = ch && ch.buildings ? ch.buildings : {};
+    if (!Object.keys(bm).length) continue;
+    html += `<strong style="color:#aaa;display:block;margin-top:8px;">${slotLabel(sIdx)} (supply)</strong>`;
+    let currentTier = '';
+    for (const entry of _sortMultiChainEntries(bm)) {
+      const { building, count, producedResource, alternatives } = entry;
+      const rounded = Math.ceil(count);
+      const isFractional = count % 1 > 0.01 && count % 1 < 0.99;
+      if (building.tier !== currentTier) {
+        currentTier = building.tier;
+        html += `<div style="color:#3498db;font-size:0.68rem;margin-top:4px;">${currentTier}</div>`;
+      }
+      const resName = typeof PP2DATA.getResourceName === 'function' ? PP2DATA.getResourceName(producedResource) : producedResource;
+      const lockedBadge = state.unlockedBuildings && !state.unlockedBuildings.has(building.id)
+        ? ' <span style="color:#f39c12;font-size:0.6rem;font-weight:600;">(locked)</span>'
+        : '';
+      const altHtml = alternatives
+        ? ` <span class="producer-switch multi-producer-switch" title="Change producer (re-analyze)" data-resource="${encodeURIComponent(producedResource)}" data-building="${encodeURIComponent(building.id)}">\u21C5</span>`
+        : '';
+      html += `<div class="planner-building-row${isFractional ? ' fractional' : ''}" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        <span>${building.name}${lockedBadge}${altHtml} <span style="color:#666;font-size:0.6rem;">(${resName})</span></span>
+        <span><span class="count">${rounded}</span>${isFractional ? ` <span style="color:#666;font-size:0.6rem;">(${count.toFixed(2)})</span>` : ''}</span>
+      </div>`;
+    }
+  }
+
+  html += '</div>';
+  return html;
+}
+
 /** Per-cargo-slot throughput (goods/min) for round trips; one good type per slot per trip. */
 function fleetSlotThroughputsSorted(shipCounts) {
   const slots = [];
@@ -357,6 +531,11 @@ function executeMultiIslandPlan(option) {
   const startActive = state.activeSlotIndex;
   if (typeof pushUndo === 'function') pushUndo();
 
+  const prodBackup = { ...state.producerOverrides };
+  if (option._execProducerOverrides && typeof option._execProducerOverrides === 'object') {
+    state.producerOverrides = { ...option._execProducerOverrides };
+  }
+
   const remoteIndices = Object.keys(option.remoteDemandBySlot || {}).map(s => parseInt(s, 10));
   remoteIndices.sort((a, b) => a - b);
 
@@ -410,6 +589,8 @@ function executeMultiIslandPlan(option) {
     try {
       if (typeof setActiveSlot === 'function') setActiveSlot(startActive, { skipCommit: true });
     } catch (_) { /* ignore */ }
+  } finally {
+    state.producerOverrides = prodBackup;
   }
 }
 
@@ -419,20 +600,24 @@ function showMultiIslandPlannerModal() {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.innerHTML = `
-    <div class="modal" style="max-width:520px;max-height:90vh;display:flex;flex-direction:column;">
+    <div class="modal" style="max-width:720px;max-height:90vh;display:flex;flex-direction:column;">
       <h2>Plan across islands</h2>
       <p style="font-size:0.8rem;color:#aaa;margin-bottom:10px;">
         Enter total population to place on <strong>one</strong> home island. Other islands may supply fertility‑gated chains (e.g. wheat vs apples). Production-only slots get no houses.
+        Use <strong>⇄</strong> on a building row to cycle producers (same as main planner); analysis refreshes.
       </p>
       <div id="multi-planner-inputs" style="overflow-y:auto;flex:1;padding-right:4px;"></div>
       <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
         <button type="button" class="header-btn" id="multi-planner-analyze" style="background:#e94560;border-color:#e94560;">Analyze</button>
         <button type="button" class="header-btn" id="multi-planner-close">Close</button>
       </div>
-      <div id="multi-planner-results" style="margin-top:12px;max-height:40vh;overflow-y:auto;font-size:0.78rem;"></div>
+      <div id="multi-planner-results" style="margin-top:12px;max-height:45vh;overflow-y:auto;font-size:0.78rem;"></div>
     </div>
   `;
   document.body.appendChild(overlay);
+
+  overlay._multiProducerOverrides = { ...state.producerOverrides };
+  window.__pp2MultiPlannerOverlayRef = overlay;
 
   const inputsEl = overlay.querySelector('#multi-planner-inputs');
   const resultsEl = overlay.querySelector('#multi-planner-results');
@@ -451,7 +636,10 @@ function showMultiIslandPlannerModal() {
     if (el) el.value = v;
   });
 
-  const close = () => overlay.remove();
+  const close = () => {
+    if (window.__pp2MultiPlannerOverlayRef === overlay) window.__pp2MultiPlannerOverlayRef = null;
+    overlay.remove();
+  };
   overlay.querySelector('#multi-planner-close').addEventListener('click', close);
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
 
@@ -464,20 +652,24 @@ function showMultiIslandPlannerModal() {
     return m;
   }
 
-  overlay.querySelector('#multi-planner-analyze').addEventListener('click', () => {
-    const counts = readHouseCounts();
-    const shipCounts = state.projectShipCounts || {};
-    const { options, error, totalFleetCapacity } = analyzeMultiIslandPlan(counts, shipCounts);
+  function renderMultiResults(counts, analyzeResult) {
+    const options = analyzeResult.options;
+    const error = analyzeResult.error;
+    const totalFleetCapacity = analyzeResult.totalFleetCapacity;
+    const demand = getPopulationDemandFromHouseCounts(counts);
+
     if (error) {
       resultsEl.innerHTML = `<p style="color:#e74c3c;">${error}</p>`;
+      overlay._multiOptions = null;
       return;
     }
-    if (options.length === 0) {
+    if (!options || options.length === 0) {
       resultsEl.innerHTML = '<p style="color:#f39c12;">No valid options (check fertilities and demand).</p>';
+      overlay._multiOptions = null;
       return;
     }
 
-    let html = `<p style="color:#888;">Fleet capacity (sum of slot throughputs): <strong>${totalFleetCapacity.toFixed(3)}</strong> goods/min</p>`;
+    let html = `<p style="color:#888;">Fleet capacity (sum of slot throughputs): <strong>${(totalFleetCapacity != null ? totalFleetCapacity : 0).toFixed(3)}</strong> goods/min</p>`;
     html += '<div style="display:flex;flex-direction:column;gap:10px;">';
 
     options.slice(0, 12).forEach((opt, i) => {
@@ -490,6 +682,9 @@ function showMultiIslandPlannerModal() {
           ` · ${slotLabel(parseInt(si, 10))} ~${v.toFixed(0)}`
         ).join('');
 
+      const supplyHtml = formatMultiIslandSupplyVsDemandHtml(opt, demand);
+      const chainHtml = formatMultiIslandChainBuildingsHtml(opt);
+
       html += `
         <div style="border:1px solid #0f3460;border-radius:6px;padding:10px;background:#16213e;">
           <strong style="color:#e94560;">#${i + 1} Home: ${opt.homeLabel}</strong>
@@ -498,6 +693,8 @@ function showMultiIslandPlannerModal() {
           </span>
           <div style="margin-top:6px;color:#ccc;">${routeStr || 'No cross-island goods'}</div>
           <div style="margin-top:4px;color:#888;">${fpStr}</div>
+          ${supplyHtml}
+          ${chainHtml}
           <button type="button" class="header-btn multi-opt-exec" data-opt-index="${i}" style="margin-top:8px;font-size:0.75rem;">
             Execute this plan
           </button>
@@ -519,8 +716,57 @@ function showMultiIslandPlannerModal() {
         close();
       });
     });
+  }
+
+  overlay._runMultiAnalyze = function runMultiAnalyze() {
+    const counts = readHouseCounts();
+    const shipCounts = state.projectShipCounts || {};
+    const backup = { ...state.producerOverrides };
+    const effective = { ...backup, ...overlay._multiProducerOverrides };
+    state.producerOverrides = effective;
+    let analyzeResult;
+    try {
+      analyzeResult = analyzeMultiIslandPlan(counts, shipCounts);
+    } finally {
+      state.producerOverrides = backup;
+    }
+    if (analyzeResult.options && analyzeResult.options.length) {
+      analyzeResult.options.forEach(o => {
+        o._execProducerOverrides = { ...effective };
+      });
+    }
+    renderMultiResults(counts, analyzeResult);
+  };
+
+  resultsEl.addEventListener('click', e => {
+    const sw = e.target.closest('.multi-producer-switch');
+    if (!sw || !resultsEl.contains(sw)) return;
+    e.preventDefault();
+    const resourceId = decodeURIComponent(sw.getAttribute('data-resource') || '');
+    const buildingId = decodeURIComponent(sw.getAttribute('data-building') || '');
+    cycleProducerMulti(resourceId, buildingId);
   });
+
+  overlay.querySelector('#multi-planner-analyze').addEventListener('click', () => overlay._runMultiAnalyze());
 }
+
+/**
+ * Cycle producer for multi-island modal (updates modal override map and re-runs Analyze).
+ * Also available as window.cycleProducerMulti for parity with cycleProducer.
+ */
+function cycleProducerMulti(resourceId, currentBuildingId) {
+  const overlay = window.__pp2MultiPlannerOverlayRef;
+  if (!overlay || typeof overlay._runMultiAnalyze !== 'function') return;
+  const producers = (PP2DATA.getProducersOf(resourceId) || []).filter(p => PP2DATA.getBuilding(p.id));
+  if (producers.length <= 1) return;
+  const idx = producers.findIndex(p => p.id === currentBuildingId);
+  if (idx < 0) return;
+  const next = producers[(idx + 1) % producers.length];
+  if (!overlay._multiProducerOverrides) overlay._multiProducerOverrides = {};
+  overlay._multiProducerOverrides[resourceId] = next.id;
+  overlay._runMultiAnalyze();
+}
+window.cycleProducerMulti = cycleProducerMulti;
 
 (function initMultiIslandPlannerButton() {
   const btn = document.getElementById('btn-multi-island-plan');

@@ -363,6 +363,10 @@ function analyzeMultiIslandPlan(houseCountsByPopId, shipCounts) {
     return { error: 'Need at least two islands to analyze distribution.', options: [] };
   }
 
+  // Fertility checkboxes only update state.activeFertilities until slot switch/commit.
+  // Flush the visible island into projectSlots so analysis uses current UI, not stale slot arrays.
+  if (typeof commitActiveSlotFromState === 'function') commitActiveSlotFromState();
+
   const demand = getPopulationDemandFromHouseCounts(houseCountsByPopId);
   const demandKeys = Object.keys(demand).filter(k => (demand[k] || 0) > 0);
   if (demandKeys.length === 0) {
@@ -523,6 +527,8 @@ function executeMultiIslandPlan(option) {
     alert('Create island grids first for: ' + missingGrid.join(', '));
     return;
   }
+
+  if (typeof commitActiveSlotFromState === 'function') commitActiveSlotFromState();
 
   const startActive = state.activeSlotIndex;
   if (typeof pushUndo === 'function') pushUndo();

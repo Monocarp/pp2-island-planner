@@ -48,6 +48,15 @@ function isTileResourceProducibleOnSlot(slot, tileResId) {
 function canSlotProduceResourceFully(slotIndex, resId, rate) {
   return withProjectSlotContext(slotIndex, () => {
     const { buildings, tileNeeds } = resolveProductionChain({ [resId]: rate });
+    // pickProducer can return null (e.g. cider on island without apple fertility) → empty chain;
+    // without this guard we would vacuously return true and skip cross-island routing.
+    if (
+      rate > 0 &&
+      Object.keys(buildings).length === 0 &&
+      Object.keys(tileNeeds).length === 0
+    ) {
+      return false;
+    }
     for (const tn of Object.values(tileNeeds)) {
       const tr = tn.producedResource;
       if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(tr)) return false;

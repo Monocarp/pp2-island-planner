@@ -31,6 +31,23 @@ function withProjectSlotContext(slotIndex, fn) {
   }
 }
 
+/**
+ * Estimated max houses per tier for one project slot’s grid and fertilities.
+ * Does not change state.island; uses slot.island for terrain scan.
+ */
+function computeIslandCapacityForProjectSlot(slotIndex, militaryEntries) {
+  const slot = state.projectSlots && state.projectSlots[slotIndex];
+  if (!slot || typeof computeIslandCapacity !== 'function') {
+    return { terrainBudget: typeof computeTerrainBudget === 'function' ? computeTerrainBudget(null) : {}, tiers: [] };
+  }
+  return withProjectSlotContext(slotIndex, () =>
+    computeIslandCapacity({
+      island: slot.island || null,
+      militaryEntries,
+    })
+  );
+}
+
 /** True if tile resource can be grown on this slot (climate + fertility checkbox). */
 function isTileResourceProducibleOnSlot(slot, tileResId) {
   if (!tileResId) return false;
@@ -66,34 +83,17 @@ function canSlotProduceResourceFully(slotIndex, resId, rate) {
       const tr = tn.producedResource;
       if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(tr)) return false;
     }
-    // #region agent log
-    const _dbgInputs = [];
-    let _dbgFertIdBlocked = null;
-    // #endregion
     for (const entry of Object.values(buildings)) {
       const b = entry.building;
       if (!b.inputs) continue;
       for (const inputId of Object.keys(b.inputs)) {
-        // #region agent log
-        const inTileSet = TILE_RESOURCE_IDS.has(inputId);
-        const fertIdBlk = typeof isFertilityIdBlocked === 'function' ? isFertilityIdBlocked(inputId) : false;
-        _dbgInputs.push({ bld: b.id, inputId, inTileSet, fertIdBlk });
-        // #endregion
         if (TILE_RESOURCE_IDS.has(inputId)) {
           if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(inputId)) return false;
         } else if (typeof isFertilityIdBlocked === 'function' && isFertilityIdBlocked(inputId)) {
-          // #region agent log
-          _dbgFertIdBlocked = { bld: b.id, inputId };
-          console.warn('[PP2-MultiDebug] canSlotCheck BLOCKED by fertilityId', {slotIndex, resId, bld: b.id, inputId, activeFert: [...state.activeFertilities]});
-          // #endregion
           return false;
         }
       }
     }
-    // #region agent log
-    fetch('http://127.0.0.1:7893/ingest/59264f09-9a93-4ffa-929f-ee9c08408ac4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'71cbb6'},body:JSON.stringify({sessionId:'71cbb6',runId:'post-fix',hypothesisId:'H1',location:'multi-planner.js:canSlotProduceResourceFully',message:'canSlotCheck',data:{slotIndex,resId,buildingKeys:Object.keys(buildings),tileNeedKeys:Object.keys(tileNeeds),inputs:_dbgInputs,activeFert:[...state.activeFertilities],fertIdBlocked:_dbgFertIdBlocked},timestamp:Date.now()})}).catch(()=>{});
-    console.warn('[PP2-MultiDebug] canSlotCheck', {slotIndex, resId, buildingKeys: Object.keys(buildings), tileNeedKeys: Object.keys(tileNeeds), inputs: _dbgInputs, activeFert: [...state.activeFertilities]});
-    // #endregion
     return true;
   });
 }
@@ -682,6 +682,74 @@ function executeMultiIslandPlan(option) {
   }
 }
 
+function populateMultiPlannerMilitarySelect(overlay) {
+  const sel = overlay.querySelector('#multi-planner-mil-sel');
+  if (!sel) return;
+  const opts = typeof getMilitaryUnitSelectOptions === 'function' ? getMilitaryUnitSelectOptions() : [];
+  sel.innerHTML = opts.length === 0
+    ? '<option value="">(unlock training buildings)</option>'
+    : opts.map(o => `<option value="${o.resId}">${o.label}</option>`).join('');
+}
+
+function renderMultiPlannerMilitaryList(overlay) {
+  const listEl = overlay.querySelector('#multi-planner-mil-list');
+  if (!listEl) return;
+  const entries = overlay._multiMilitaryEntries || [];
+  if (entries.length === 0) {
+    listEl.innerHTML = '<span style="color:#666;font-size:0.65rem;">No military targets — capacity ignores battalion overhead.</span>';
+    return;
+  }
+  listEl.innerHTML = entries.map((e, i) => {
+    const label = PP2DATA.getResourceName(e.unitResId) || e.unitResId;
+    const rate = Number.isFinite(parseFloat(e.ratePerHour)) ? e.ratePerHour : 0;
+    return `<div class="planner-row" style="font-size:0.72rem;margin-top:4px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <span>${label}</span>
+      <span style="display:flex;align-items:center;gap:4px;">
+        <input type="number" min="0" step="0.1" value="${rate}" data-multi-mil-idx="${i}" style="width:52px;font-size:0.7rem;padding:2px;">
+        <span style="color:#666;font-size:0.65rem">/hr</span>
+        <button type="button" data-multi-mil-remove="${i}" title="Remove" style="padding:0 6px;cursor:pointer;background:transparent;border:1px solid #888;color:#ccc;border-radius:2px;">×</button>
+      </span>
+    </div>`;
+  }).join('');
+}
+
+/** Applies modal producer overrides while computing (same as Analyze). */
+function renderMultiCapacityPanel(overlay) {
+  const capEl = overlay.querySelector('#multi-planner-capacity');
+  if (!capEl || typeof computeIslandCapacityForProjectSlot !== 'function') return;
+  const backup = { ...state.producerOverrides };
+  const effective = { ...backup, ...(overlay._multiProducerOverrides || {}) };
+  state.producerOverrides = effective;
+  try {
+    let html = '<h3 style="font-size:0.85rem;margin:12px 0 4px;color:#ccc;">Per-island capacity (max houses / tier)</h3>';
+    html += '<p style="font-size:0.62rem;color:#888;margin:0 0 8px;line-height:1.35;">Each slot’s <strong>saved</strong> grid + fertilities. One tier at a time (isolation). Military targets above reduce the budget (battalion chain + inferred Pioneer Huts).</p>';
+    const entries = overlay._multiMilitaryEntries || [];
+    for (let i = 0; i < state.projectSlots.length; i++) {
+      const cap = computeIslandCapacityForProjectSlot(i, entries);
+      const b = cap.terrainBudget || {};
+      html += `<div style="margin-bottom:10px;border:1px solid #0f3460;border-radius:6px;padding:8px;background:#16213e;">`;
+      html += `<strong style="color:#e94560;">${slotLabel(i)}</strong>`;
+      html += `<div style="font-size:0.6rem;color:#888;margin:2px 0 4px;">Slots: river ${b.straight_river ?? 0} · ocean-adj ${b.ocean_adjacent ?? 0} · river-adj ${b.river_adjacent ?? 0} · water ${b.in_water_coastal ?? 0} · land ${b.land ?? 0}</div>`;
+      html += '<table style="width:100%;border-collapse:collapse;font-size:0.68rem;"><thead><tr style="color:#888;">'
+        + '<th align="left" style="padding:2px 4px 2px 0;">Tier</th>'
+        + '<th align="right" style="padding:2px 4px;">Max</th>'
+        + '<th align="left" style="padding:2px 0 2px 6px;">Bottleneck</th></tr></thead><tbody>';
+      for (const t of cap.tiers || []) {
+        const st = t.unlocked ? '' : 'color:#666;';
+        const maxStr = t.unlocked && t.maxHouses != null ? String(t.maxHouses) : '—';
+        const bot = (t.bottleneck || '—').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        html += `<tr style="${st}"><td style="padding:2px 4px 2px 0;">${t.label}</td>`
+          + `<td align="right" style="padding:2px 4px;">${maxStr}</td>`
+          + `<td style="padding:2px 0 2px 6px;font-size:0.62rem;color:#aaa;">${bot}</td></tr>`;
+      }
+      html += '</tbody></table></div>';
+    }
+    capEl.innerHTML = html;
+  } finally {
+    state.producerOverrides = backup;
+  }
+}
+
 function showMultiIslandPlannerModal() {
   if (typeof isMultiIslandProject !== 'function' || !isMultiIslandProject()) return;
 
@@ -696,7 +764,23 @@ function showMultiIslandPlannerModal() {
         Enter total population to place on <strong>one</strong> home island. Other islands may supply fertility‑gated chains (e.g. wheat vs apples). Production-only slots get no houses.
         Use <strong>⇄</strong> on a building row to cycle producers (same as main planner); analysis refreshes.
       </p>
-      <div id="multi-planner-inputs" style="overflow-y:auto;flex:1;padding-right:4px;"></div>
+      <div style="overflow-y:auto;flex:1;min-height:0;padding-right:4px;display:flex;flex-direction:column;">
+        <div id="multi-planner-military-wrap" style="margin-bottom:10px;padding:8px;border:1px solid #0f3460;border-radius:6px;background:#16213e;">
+          <h3 style="font-size:0.85rem;margin:0 0 6px;color:#ccc;">Military (planning only)</h3>
+          <p style="font-size:0.62rem;color:#888;margin:0 0 6px;line-height:1.35;">Adjusts <strong>capacity</strong> below. Does not sync to the main planner. <strong>Analyze</strong> still uses population counts only.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px;">
+            <select id="multi-planner-mil-sel" style="flex:1;min-width:140px;font-size:0.75rem;padding:4px;"></select>
+            <input type="number" id="multi-planner-mil-rate" min="0" step="0.1" value="1" style="width:52px;font-size:0.72rem;padding:4px;" title="Per hour">
+            <span style="font-size:0.65rem;color:#888">/hr</span>
+            <button type="button" class="header-btn" id="multi-planner-mil-add" style="font-size:0.72rem;padding:4px 8px;">Add</button>
+            <button type="button" class="header-btn" id="multi-planner-mil-clear" style="font-size:0.72rem;padding:4px 8px;">Clear</button>
+          </div>
+          <div id="multi-planner-mil-list"></div>
+        </div>
+        <div id="multi-planner-capacity"></div>
+        <h4 style="font-size:0.8rem;margin:8px 0 4px;color:#bbb;">Population targets</h4>
+        <div id="multi-planner-inputs"></div>
+      </div>
       <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
         <button type="button" class="header-btn" id="multi-planner-analyze" style="background:#e94560;border-color:#e94560;">Analyze</button>
         <button type="button" class="header-btn" id="multi-planner-close">Close</button>
@@ -707,7 +791,53 @@ function showMultiIslandPlannerModal() {
   document.body.appendChild(overlay);
 
   overlay._multiProducerOverrides = { ...state.producerOverrides };
+  overlay._multiMilitaryEntries = (state.militaryEntries || []).map(e => ({
+    unitResId: e.unitResId,
+    ratePerHour: parseFloat(e.ratePerHour) || 0,
+  }));
   window.__pp2MultiPlannerOverlayRef = overlay;
+
+  populateMultiPlannerMilitarySelect(overlay);
+  renderMultiPlannerMilitaryList(overlay);
+  renderMultiCapacityPanel(overlay);
+
+  overlay.addEventListener('click', e => {
+    if (e.target.id === 'multi-planner-mil-add') {
+      const sel = overlay.querySelector('#multi-planner-mil-sel');
+      const rateInp = overlay.querySelector('#multi-planner-mil-rate');
+      const unitResId = sel && sel.value;
+      const rate = Math.max(0, parseFloat(rateInp && rateInp.value) || 0);
+      if (!unitResId || rate <= 0) return;
+      if (!overlay._multiMilitaryEntries) overlay._multiMilitaryEntries = [];
+      overlay._multiMilitaryEntries.push({ unitResId, ratePerHour: rate });
+      renderMultiPlannerMilitaryList(overlay);
+      renderMultiCapacityPanel(overlay);
+    }
+    if (e.target.id === 'multi-planner-mil-clear') {
+      overlay._multiMilitaryEntries = [];
+      renderMultiPlannerMilitaryList(overlay);
+      renderMultiCapacityPanel(overlay);
+    }
+    const rm = e.target.closest('[data-multi-mil-remove]');
+    if (rm && overlay.contains(rm)) {
+      const i = parseInt(rm.getAttribute('data-multi-mil-remove'), 10);
+      if (!Number.isNaN(i) && overlay._multiMilitaryEntries && overlay._multiMilitaryEntries[i]) {
+        overlay._multiMilitaryEntries.splice(i, 1);
+        renderMultiPlannerMilitaryList(overlay);
+        renderMultiCapacityPanel(overlay);
+      }
+    }
+  });
+  overlay.addEventListener('change', e => {
+    const inp = e.target.closest && e.target.closest('[data-multi-mil-idx]');
+    if (!inp || !overlay.contains(inp)) return;
+    const i = parseInt(inp.getAttribute('data-multi-mil-idx'), 10);
+    if (Number.isNaN(i) || !overlay._multiMilitaryEntries || !overlay._multiMilitaryEntries[i]) return;
+    const v = Math.max(0, parseFloat(inp.value) || 0);
+    overlay._multiMilitaryEntries[i].ratePerHour = v;
+    inp.value = v;
+    renderMultiCapacityPanel(overlay);
+  });
 
   const inputsEl = overlay.querySelector('#multi-planner-inputs');
   const resultsEl = overlay.querySelector('#multi-planner-results');
@@ -880,6 +1010,7 @@ function cycleProducerMulti(resourceId, currentBuildingId) {
   if (!overlay._multiProducerOverrides) overlay._multiProducerOverrides = {};
   overlay._multiProducerOverrides[resourceId] = next.id;
   overlay._runMultiAnalyze();
+  renderMultiCapacityPanel(overlay);
 }
 window.cycleProducerMulti = cycleProducerMulti;
 

@@ -85,16 +85,21 @@ function getCustomBuildingExtraDemand() {
   return demand;
 }
 
-/** Demand (resource → rate/min) from military targets (rates are per hour in UI). */
-function getMilitaryDemand() {
+/** Demand (resource → rate/min) from military entries (rates are per hour in UI). */
+function getMilitaryDemandFromEntries(entries) {
   const demand = {};
-  for (const e of state.militaryEntries || []) {
+  for (const e of entries || []) {
     if (!e || !e.unitResId) continue;
     const r = parseFloat(e.ratePerHour);
     if (!Number.isFinite(r) || r <= 0) continue;
     demand[e.unitResId] = (demand[e.unitResId] || 0) + r / 60;
   }
   return demand;
+}
+
+/** Demand (resource → rate/min) from military targets (rates are per hour in UI). */
+function getMilitaryDemand() {
+  return getMilitaryDemandFromEntries(state.militaryEntries);
 }
 
 function hasAnyMilitaryRequested() {
@@ -160,6 +165,63 @@ function mergeChainResults(target, source) {
       target.tileNeeds[tId] = { ...entry };
     }
   }
+}
+
+/**
+ * Resolve military demand + inferred Pioneer Hut chain (same merge as calculateProduction).
+ * @returns {{ buildings: object, hutsNeeded: number }}
+ */
+function mergeMilitaryChainWithMilitiaHuts(entries) {
+  const demand = getMilitaryDemandFromEntries(entries);
+  if (!demand || Object.keys(demand).length === 0) {
+    return { buildings: {}, hutsNeeded: 0 };
+  }
+  const chainResult = resolveProductionChain(demand);
+  const militiaInfo = inferMilitiaHuts(chainResult.buildings);
+  if (militiaInfo) {
+    const hutChain = resolveProductionChain(militiaInfo.hutDemand);
+    mergeChainResults(chainResult, hutChain);
+    return { buildings: chainResult.buildings, hutsNeeded: militiaInfo.hutsNeeded };
+  }
+  return { buildings: chainResult.buildings, hutsNeeded: 0 };
+}
+
+/** Sum fractional building counts per LOCATION_REQUIREMENTS type (for capacity budget). */
+function accumulateLocationConstraintUsage(buildings) {
+  const out = {
+    straight_river: 0,
+    ocean_adjacent: 0,
+    river_adjacent: 0,
+    in_water_coastal: 0,
+  };
+  if (typeof LOCATION_REQUIREMENTS === 'undefined') return out;
+  for (const e of Object.values(buildings || {})) {
+    const req = LOCATION_REQUIREMENTS[e.building.id];
+    if (!req || out[req.type] === undefined) continue;
+    out[req.type] += e.count || 0;
+  }
+  return out;
+}
+
+/**
+ * Estimated land anchors consumed by a resolved chain (production + 1 warehouse + optional huts + hut services).
+ */
+function landAnchorEstimateFromChain(buildings, opts) {
+  let productionSum = 0;
+  for (const e of Object.values(buildings || {})) {
+    productionSum += e.count || 0;
+  }
+  const huts = Math.ceil((opts && opts.hutsNeeded > 0) ? opts.hutsNeeded : 0);
+  if (productionSum < 1e-9 && huts === 0) return 0;
+  const warehouseEst = 1;
+  const hutBd = PP2DATA.getBuilding('PopulationPioneersHut');
+  let servicePerHut = 0;
+  if (hutBd && hutBd.consumePerMinute) {
+    for (const resId of Object.keys(hutBd.consumePerMinute)) {
+      if (SERVICE_RESOURCES.has(resId)) servicePerHut += 1;
+    }
+  }
+  return productionSum + warehouseEst + huts + huts * servicePerHut;
 }
 
 /** Collect natural deposit types required by buildings in the resolved chain. */
@@ -771,9 +833,10 @@ function getPopulationChainGoodDemandFromPlacedHouses() {
 
 /**
  * Count placement slots for location-constrained building types (unoccupied cells only).
- * Used by Island Capacity estimates.
+ * Used by Island Capacity estimates. Pass a project slot island or omit for state.island.
  */
-function computeTerrainBudget() {
+function computeTerrainBudget(island) {
+  const ix = island !== undefined ? island : state.island;
   const empty = {
     straight_river: 0,
     ocean_adjacent: 0,
@@ -781,8 +844,26 @@ function computeTerrainBudget() {
     in_water_coastal: 0,
     land: 0,
   };
-  if (!state.island || !state.island.cells) return empty;
-  const { width, height, cells } = state.island;
+  if (!ix || !ix.cells) return empty;
+  const { width, height, cells } = ix;
+  function terrainAt(x, y) {
+    if (x < 0 || x >= width || y < 0 || y >= height) return 'water';
+    return cells[y][x].terrain;
+  }
+  /** Water-wheel valid river (same rules as buildings.js isRiverStraight, for this grid). */
+  function riverStraightAt(x, y) {
+    if (cells[y][x].terrain !== 'river') return false;
+    const left = terrainAt(x - 1, y) === 'river';
+    const right = terrainAt(x + 1, y) === 'river';
+    const up = terrainAt(x, y - 1) === 'river';
+    const down = terrainAt(x, y + 1) === 'river';
+    const count = (left ? 1 : 0) + (right ? 1 : 0) + (up ? 1 : 0) + (down ? 1 : 0);
+    if (count === 0) return true;
+    if (count === 1) return true;
+    if (count >= 3) return false;
+    if ((left && right) || (up && down)) return true;
+    return false;
+  }
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const cell = cells[y][x];
@@ -792,21 +873,18 @@ function computeTerrainBudget() {
       if (typeof PLACEABLE_TERRAIN !== 'undefined' && PLACEABLE_TERRAIN.has(terrain)) {
         empty.land++;
         const hasOcean = neighbors.some(n => {
-          const t = getTerrainAt(n.x, n.y);
+          const t = terrainAt(n.x, n.y);
           return t === 'water' || t === 'coastal';
         });
         if (hasOcean) empty.ocean_adjacent++;
-        const hasRiverN = neighbors.some(n => getTerrainAt(n.x, n.y) === 'river');
+        const hasRiverN = neighbors.some(n => terrainAt(n.x, n.y) === 'river');
         if (hasRiverN) empty.river_adjacent++;
       }
-      if (terrain === 'river' && typeof isRiverStraight === 'function' && isRiverStraight(x, y)) {
+      if (terrain === 'river' && riverStraightAt(x, y)) {
         empty.straight_river++;
       }
-      if ((terrain === 'water' || terrain === 'coastal')) {
-        const hasLand = neighbors.some(n => {
-          const t = getTerrainAt(n.x, n.y);
-          return t !== 'water';
-        });
+      if (terrain === 'water' || terrain === 'coastal') {
+        const hasLand = neighbors.some(n => terrainAt(n.x, n.y) !== 'water');
         if (hasLand) empty.in_water_coastal++;
       }
     }
@@ -819,12 +897,23 @@ const ISLAND_CAPACITY_LOC_TYPES = ['straight_river', 'ocean_adjacent', 'river_ad
 /**
  * Estimated max population houses per tier from terrain + resolveProductionChain (1 house demand).
  * Each tier is computed in isolation. Respects unlocks and producer overrides like the planner.
+ * @param {object} [options]
+ * @param {object} [options.island] — grid to scan (default state.island)
+ * @param {Array<{unitResId:string,ratePerHour:number}>} [options.militaryEntries] — fixed overhead (battalion + inferred huts)
  * @returns {{ terrainBudget: object, tiers: Array<{ id: string, label: string, tier: string, unlocked: boolean, maxHouses: number|null, bottleneck: string, constraints: Array<{ maxHouses: number, label: string, type: string }> }> }}
  */
-function computeIslandCapacity() {
-  const terrainBudget = computeTerrainBudget();
+function computeIslandCapacity(options) {
+  const opts = options || {};
+  const island = opts.island !== undefined ? opts.island : state.island;
+  const militaryEntries = opts.militaryEntries;
+  const terrainBudget = computeTerrainBudget(island);
   const tiersOut = [];
-  if (!state.island) {
+
+  const milMerged = mergeMilitaryChainWithMilitiaHuts(militaryEntries);
+  const milLocUsage = accumulateLocationConstraintUsage(milMerged.buildings);
+  const landUsedMil = landAnchorEstimateFromChain(milMerged.buildings, { hutsNeeded: milMerged.hutsNeeded });
+
+  if (!island || !island.cells) {
     return { terrainBudget, tiers: tiersOut };
   }
   const visible = typeof getVisiblePopBuildings === 'function' ? getVisiblePopBuildings() : POP_BUILDINGS;
@@ -870,7 +959,9 @@ function computeIslandCapacity() {
         if (!reqLabel) reqLabel = req.label;
       }
       if (sum > 1e-9) {
-        const avail = terrainBudget[lt] || 0;
+        const availRaw = terrainBudget[lt] || 0;
+        const usedMil = milLocUsage[lt] || 0;
+        const avail = Math.max(0, availRaw - usedMil);
         const maxH = avail / sum;
         const namePart = [...names].slice(0, 4).join(', ');
         const suffix = names.size > 4 ? '…' : '';
@@ -892,8 +983,9 @@ function computeIslandCapacity() {
     const warehouseEst = 1;
     const landPerHouse = 1 + productionSum + serviceAnchorEst + warehouseEst;
     if (landPerHouse > 1e-9) {
+      const availLand = Math.max(0, terrainBudget.land - landUsedMil);
       constraintRows.push({
-        maxHouses: terrainBudget.land / landPerHouse,
+        maxHouses: availLand / landPerHouse,
         label: 'Land area (1 house + production chain + service buildings est. + 1 warehouse)',
         type: 'land',
       });

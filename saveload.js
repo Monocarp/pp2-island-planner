@@ -1,9 +1,15 @@
 // ===== SAVE / LOAD =====
 const PROJECT_STORAGE_KEY = 'pp2_island_layout_v1';
 
+function normalizeSlotName(raw) {
+  if (typeof raw !== 'string') return '';
+  return raw.trim();
+}
+
 function createEmptyProjectSlot(type) {
   return {
     type,
+    name: '',
     island: null,
     activeFertilities: getDefaultFertilityIdsForArchetype(type),
   };
@@ -18,6 +24,7 @@ function rebuildProjectSlots(temperateCount, tropicalCount, previousSlots) {
     if (old) {
       slots.push({
         type: 'temperate',
+        name: normalizeSlotName(old.name),
         island: old.island ? deepCloneIsland(old.island) : null,
         activeFertilities: Array.isArray(old.activeFertilities)
           ? old.activeFertilities.slice()
@@ -33,6 +40,7 @@ function rebuildProjectSlots(temperateCount, tropicalCount, previousSlots) {
     if (old) {
       slots.push({
         type: 'tropical',
+        name: normalizeSlotName(old.name),
         island: old.island ? deepCloneIsland(old.island) : null,
         activeFertilities: Array.isArray(old.activeFertilities)
           ? old.activeFertilities.slice()
@@ -66,6 +74,7 @@ function saveProjectToStorage() {
     activeSlotIndex: state.activeSlotIndex,
     slots: state.projectSlots.map(s => ({
       type: s.type,
+      name: normalizeSlotName(s.name),
       island: s.island,
       activeFertilities: s.activeFertilities,
     })),
@@ -86,6 +95,7 @@ function loadProjectFromStorage() {
     state.projectTropicalCount = tr;
     state.projectSlots = data.slots.map(s => ({
       type: s.type === 'tropical' ? 'tropical' : 'temperate',
+      name: normalizeSlotName(s.name),
       island: s.island || null,
       activeFertilities: Array.isArray(s.activeFertilities)
         ? s.activeFertilities
@@ -114,6 +124,10 @@ function setActiveSlot(index, opts) {
 
   if (!opt.skipCommit && state.projectSlots[state.activeSlotIndex]) {
     const cur = state.projectSlots[state.activeSlotIndex];
+    const nameInp = document.getElementById('island-slot-name');
+    if (nameInp) {
+      cur.name = normalizeSlotName(nameInp.value);
+    }
     cur.island = deepCloneIsland(state.island);
     cur.activeFertilities = state.activeFertilities ? [...state.activeFertilities] : [];
   }
@@ -151,6 +165,10 @@ function setActiveSlot(index, opts) {
 function commitActiveSlotFromState() {
   if (!isMultiIslandProject() || !state.projectSlots[state.activeSlotIndex]) return;
   const cur = state.projectSlots[state.activeSlotIndex];
+  const nameInp = document.getElementById('island-slot-name');
+  if (nameInp) {
+    cur.name = normalizeSlotName(nameInp.value);
+  }
   cur.island = deepCloneIsland(state.island);
   cur.activeFertilities = state.activeFertilities ? [...state.activeFertilities] : [];
   saveProjectToStorage();
@@ -206,6 +224,7 @@ function saveToLocalStorage() {
     entry.activeSlotIndex = state.activeSlotIndex;
     entry.projectSlots = state.projectSlots.map(s => ({
       type: s.type,
+      name: normalizeSlotName(s.name),
       island: s.island,
       activeFertilities: s.activeFertilities,
     }));
@@ -235,6 +254,7 @@ function loadFromLocalStorage() {
       state.projectTropicalCount = tr;
       state.projectSlots = snap.projectSlots.map(s => ({
         type: s.type === 'tropical' ? 'tropical' : 'temperate',
+        name: normalizeSlotName(s.name),
         island: s.island || null,
         activeFertilities: Array.isArray(s.activeFertilities)
           ? s.activeFertilities

@@ -39,8 +39,8 @@ Each file depends on globals from previous files. There is no module system.
 ## Phase 1 multi-island project
 
 - On first visit (no **`pp2_island_layout_v1`**), the user sees **Island layout**: counts of **temperate** and **tropical** islands (at least one total). Order in memory: **all temperate slots first**, then tropical.
-- **`state.projectSlots`** — `{ type, island|null, activeFertilities: string[] }[]`. **`state.activeSlotIndex`** selects the slot edited on the canvas (`state.island` is the active grid mirror).
-- **Switch island slot** dropdown + **Island counts** (header): change counts (with confirm if removing a non-empty slot). Temperate/Tropical **type bar is hidden** in project mode; archetype comes from the slot.
+- **`state.projectSlots`** — `{ type, name?: string, island|null, activeFertilities: string[] }[]`. Optional **`name`** is a user label (trimmed); shown in the slot dropdown as `Name (Temperate 1)` when set. **`state.activeSlotIndex`** selects the slot edited on the canvas (`state.island` is the active grid mirror).
+- **Switch island slot** dropdown + optional **Island name** field + **Island counts** (header): change counts (with confirm if removing a non-empty slot). Temperate/Tropical **type bar is hidden** in project mode; archetype comes from the slot.
 - **`setActiveSlot`**, **`saveProjectToStorage`**, **`loadProjectFromStorage`**, **`commitActiveSlotFromState`** (saveload.js); **`buildSlotSelectorUI`**, **`syncMultiIslandUI`** (ui.js). `beforeunload` commits the active grid into the slot.
 - **Named saves** may include a full **`projectSlots`** snapshot + **`activeSlotIndex`**; legacy single-island entries are **migrated** into a one-slot project on load.
 - Planner / validation still use **only the active slot’s** `state.island` (no cross-island trade in Phase 1).

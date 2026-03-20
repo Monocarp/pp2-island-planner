@@ -412,6 +412,12 @@ function refreshIslandTypeDependentUI() {
   if (typeof syncMultiIslandUI === 'function') syncMultiIslandUI();
 }
 
+/** Trimmed optional display name on a project slot (no dependency on saveload parse order at call time). */
+function getSlotDisplayName(slot) {
+  if (!slot || typeof slot.name !== 'string') return '';
+  return slot.name.trim();
+}
+
 /** Slot dropdown + show/hide type bar when using a multi-island project. */
 function buildSlotSelectorUI() {
   const wrap = document.getElementById('slot-selector-wrap');
@@ -426,14 +432,16 @@ function buildSlotSelectorUI() {
   let tr = 0;
   sel.innerHTML = '';
   state.projectSlots.forEach((slot, idx) => {
-    let label;
+    let base;
     if (slot.type === 'temperate') {
       t += 1;
-      label = `Temperate ${t}`;
+      base = `Temperate ${t}`;
     } else {
       tr += 1;
-      label = `Tropical ${tr}`;
+      base = `Tropical ${tr}`;
     }
+    const custom = getSlotDisplayName(slot);
+    let label = custom ? `${custom} (${base})` : base;
     if (!slot.island) label += ' — no grid';
     const opt = document.createElement('option');
     opt.value = String(idx);
@@ -450,8 +458,36 @@ function buildSlotSelectorUI() {
   }
 }
 
+function syncIslandNameInput() {
+  const inp = document.getElementById('island-slot-name');
+  if (!inp) return;
+  if (typeof isMultiIslandProject !== 'function' || !isMultiIslandProject() || !state.projectSlots[state.activeSlotIndex]) {
+    inp.value = '';
+    return;
+  }
+  inp.value = getSlotDisplayName(state.projectSlots[state.activeSlotIndex]) || '';
+}
+
+function initIslandSlotNameField() {
+  const inp = document.getElementById('island-slot-name');
+  if (!inp || inp.dataset.wired === '1') return;
+  inp.dataset.wired = '1';
+  function applyName() {
+    if (typeof isMultiIslandProject !== 'function' || !isMultiIslandProject()) return;
+    const slot = state.projectSlots[state.activeSlotIndex];
+    if (!slot) return;
+    slot.name = typeof inp.value === 'string' ? inp.value.trim() : '';
+    if (typeof saveProjectToStorage === 'function') saveProjectToStorage();
+    if (typeof buildSlotSelectorUI === 'function') buildSlotSelectorUI();
+  }
+  inp.addEventListener('change', applyName);
+  inp.addEventListener('blur', applyName);
+}
+
 function syncMultiIslandUI() {
   if (typeof buildSlotSelectorUI === 'function') buildSlotSelectorUI();
+  initIslandSlotNameField();
+  syncIslandNameInput();
   const bar = document.getElementById('island-type-bar');
   const fixedHint = document.getElementById('island-type-fixed-hint');
   const layoutBtn = document.getElementById('btn-island-layout');

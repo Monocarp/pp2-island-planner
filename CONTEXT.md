@@ -10,7 +10,7 @@ A browser-based island planning tool for the game **Paragon Pioneers 2** (PP2). 
 ## Tech Stack
 
 - **Pure vanilla HTML/CSS/JS** — no framework, no build step, no npm dependencies
-- Single `index.html` (HTML + CSS) with 8 JS files loaded via `<script src>` tags
+- Single `index.html` (HTML + CSS) with 9 JS files loaded via `<script src>` tags
 - `data.js` is auto-generated game data (~3,400+ lines) — do not edit manually
 - Deployed as static files; works as a local file too (`file://` protocol)
 
@@ -31,7 +31,7 @@ A browser-based island planning tool for the game **Paragon Pioneers 2** (PP2). 
 ### Script Load Order (matters — globals are shared)
 
 ```
-data.js → buildings.js → island.js → renderer.js → ui.js → validation.js → planner.js → saveload.js
+data.js → buildings.js → island.js → ships.js → renderer.js → ui.js → validation.js → planner.js → saveload.js
 ```
 
 Each file depends on globals from previous files. There is no module system.
@@ -87,7 +87,8 @@ Each file depends on globals from previous files. There is no module system.
   militaryEntries: [],       // { unitResId, ratePerHour } for military chain
   projectTemperateCount: 0, projectTropicalCount: 0,
   projectSlots: [],         // multi-island slots (see Phase 1 above)
-  activeSlotIndex: 0 }
+  activeSlotIndex: 0,
+  projectShipCounts: {} }  // regional fleet: ship id → count (multi-island project only)
 ```
 
 ### Building (from data.js via `PP2DATA.getBuilding(id)`)

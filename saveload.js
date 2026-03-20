@@ -54,6 +54,28 @@ function rebuildProjectSlots(temperateCount, tropicalCount, previousSlots) {
 }
 
 /** Slots removed when shrinking counts (for data-loss confirm). */
+function applyProjectShipCountsFromPayload(raw) {
+  state.projectShipCounts = {};
+  if (typeof getAllShipTypeIds !== 'function') return;
+  const valid = new Set(getAllShipTypeIds());
+  if (!raw || typeof raw !== 'object') return;
+  for (const id of valid) {
+    if (!Object.prototype.hasOwnProperty.call(raw, id)) continue;
+    const n = parseInt(raw[id], 10);
+    if (Number.isFinite(n) && n >= 0) state.projectShipCounts[id] = Math.min(9999, Math.floor(n));
+  }
+}
+
+function shipCountsForProjectSave() {
+  if (typeof getAllShipTypeIds !== 'function') return {};
+  const out = {};
+  for (const id of getAllShipTypeIds()) {
+    const n = state.projectShipCounts[id];
+    if (Number.isFinite(n) && n > 0) out[id] = Math.floor(n);
+  }
+  return out;
+}
+
 function getDroppedSlotsWhenResizingCounts(oldSlots, oldTemperate, oldTropical, newTemperate, newTropical) {
   const dropped = [];
   for (let i = 0; i < oldSlots.length; i++) {
@@ -78,6 +100,7 @@ function saveProjectToStorage() {
       island: s.island,
       activeFertilities: s.activeFertilities,
     })),
+    shipCounts: shipCountsForProjectSave(),
   };
   localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(payload));
 }
@@ -108,6 +131,7 @@ function loadProjectFromStorage() {
       Math.max(0, parseInt(data.activeSlotIndex, 10) || 0),
       state.projectSlots.length - 1
     );
+    applyProjectShipCountsFromPayload(data.shipCounts);
     return true;
   } catch (_) {
     return false;
@@ -228,6 +252,7 @@ function saveToLocalStorage() {
       island: s.island,
       activeFertilities: s.activeFertilities,
     }));
+    entry.shipCounts = shipCountsForProjectSave();
   }
   saves.push(entry);
   localStorage.setItem('pp2_island_saves', JSON.stringify(saves));
@@ -267,6 +292,7 @@ function loadFromLocalStorage() {
         Math.max(0, parseInt(snap.activeSlotIndex, 10) || 0),
         state.projectSlots.length - 1
       );
+      applyProjectShipCountsFromPayload(snap.shipCounts);
       saveProjectToStorage();
       setActiveSlot(state.activeSlotIndex, { skipCommit: true });
       return;
@@ -286,6 +312,7 @@ function loadFromLocalStorage() {
     state.projectSlots[0].activeFertilities = snap.activeFertilities.slice();
   }
   state.activeSlotIndex = 0;
+  state.projectShipCounts = {};
   saveProjectToStorage();
   setActiveSlot(0, { skipCommit: true });
 }

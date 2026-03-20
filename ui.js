@@ -495,7 +495,94 @@ function syncMultiIslandUI() {
   if (bar) bar.style.display = multi ? 'none' : '';
   if (fixedHint) fixedHint.style.display = multi ? 'block' : 'none';
   if (layoutBtn) layoutBtn.style.display = multi ? 'inline-block' : 'none';
+  const shipsBtn = document.getElementById('btn-enter-ships');
+  if (shipsBtn) shipsBtn.style.display = multi ? 'inline-block' : 'none';
 }
+
+/** Modal: edit project-wide ship counts (multi-island only). */
+function showShipFleetModal() {
+  if (typeof isMultiIslandProject !== 'function' || !isMultiIslandProject()) return;
+  if (typeof SHIP_TYPES_BY_ARCHETYPE === 'undefined') {
+    alert('Ship data not loaded.');
+    return;
+  }
+  if (!state.projectShipCounts) state.projectShipCounts = {};
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  const sections = ['temperate', 'tropical'].map(arche => {
+    const list = SHIP_TYPES_BY_ARCHETYPE[arche] || [];
+    const title = arche === 'temperate' ? 'Temperate region' : 'Tropical region';
+    const rows = list.map(s => {
+      const v = state.projectShipCounts[s.id];
+      const n = Number.isFinite(v) && v >= 0 ? Math.min(9999, Math.floor(v)) : 0;
+      const sub = `${s.cargoSlots} slots × ${s.goodsPerSlotMax} goods · ${s.inRegionTravelLabel}`;
+      return `<div class="ship-fleet-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;">${esc(s.label)}</div>
+          <div style="font-size:0.72rem;color:#888;">${esc(sub)}</div>
+        </div>
+        <input type="number" class="ship-fleet-count" data-ship-id="${esc(s.id)}" min="0" max="9999" step="1" value="${n}" style="width:72px;padding:4px 6px;border:1px solid #0f3460;border-radius:4px;background:#1a1a2e;color:#e0e0e0;">
+      </div>`;
+    }).join('');
+    return `<h3 style="font-size:0.9rem;color:#e94560;margin:14px 0 8px 0;text-transform:uppercase;">${title}</h3>${rows}`;
+  }).join('');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:440px;max-height:85vh;display:flex;flex-direction:column;">
+      <h2>Regional fleet</h2>
+      <p style="font-size:0.82rem;color:#a0a0a0;margin-bottom:10px;">Counts are shared for the whole project (all island slots). Cross-region travel is not modeled yet.</p>
+      <div style="overflow-y:auto;flex:1;padding-right:4px;">${sections}</div>
+      <div class="modal-actions" style="margin-top:12px;">
+        <button type="button" class="header-btn" id="ship-fleet-cancel">Cancel</button>
+        <button type="button" class="header-btn" id="ship-fleet-save" style="background:#e94560;border-color:#e94560;">Save</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  function remove() {
+    overlay.remove();
+  }
+
+  overlay.querySelector('#ship-fleet-cancel').addEventListener('click', remove);
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) remove();
+  });
+  overlay.querySelector('#ship-fleet-save').addEventListener('click', () => {
+    if (typeof getAllShipTypeIds !== 'function' || typeof applyProjectShipCountsFromPayload !== 'function') {
+      remove();
+      return;
+    }
+    const valid = new Set(getAllShipTypeIds());
+    const raw = {};
+    overlay.querySelectorAll('input.ship-fleet-count[data-ship-id]').forEach(inp => {
+      const id = inp.getAttribute('data-ship-id');
+      if (!id || !valid.has(id)) return;
+      let n = parseInt(inp.value, 10);
+      if (!Number.isFinite(n) || n < 0) n = 0;
+      raw[id] = Math.min(9999, Math.floor(n));
+    });
+    applyProjectShipCountsFromPayload(raw);
+    if (typeof saveProjectToStorage === 'function') saveProjectToStorage();
+    remove();
+  });
+}
+
+(function initShipFleetHeaderButton() {
+  const btn = document.getElementById('btn-enter-ships');
+  if (!btn || btn.dataset.wired === '1') return;
+  btn.dataset.wired = '1';
+  btn.addEventListener('click', () => showShipFleetModal());
+})();
 
 /** Renders temperate (etc.) fertility checkboxes under Island Type. */
 function buildFertilityPanel() {

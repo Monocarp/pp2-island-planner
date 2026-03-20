@@ -231,6 +231,8 @@ const state = {
   /** { type: 'temperate'|'tropical', island: object|null, activeFertilities: string[] }[] — temperate slots first. */
   projectSlots: [],
   activeSlotIndex: 0,
+  /** Regional fleet: ship id -> count (project-wide, not per slot). */
+  projectShipCounts: {},
 };
 
 // Cell data: { terrain, deposit, building, buildingId (for placed buildings back-ref) }

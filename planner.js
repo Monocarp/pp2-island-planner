@@ -112,15 +112,16 @@ const NATURAL_DEPOSIT_IDS = new Set([
 ]);
 
 /**
- * After resolveProductionChain, compute militia demand from BootCamp count
- * and infer Pioneer Huts needed to supply that militia.
+ * After resolveProductionChain, sum militia demand from ALL military training
+ * buildings in the chain and infer Pioneer Huts needed to supply that militia.
  * Returns null when no militia is needed.
  */
 function inferMilitiaHuts(chainBuildings) {
-  const bootCampEntry = chainBuildings['BootCamp'];
-  if (!bootCampEntry) return null;
-  const militiaPerMin = bootCampEntry.count *
-    ((bootCampEntry.building.consumePerMinute || {}).militia || 0.2);
+  let militiaPerMin = 0;
+  for (const entry of Object.values(chainBuildings)) {
+    const rate = (entry.building.consumePerMinute || {}).militia;
+    if (rate) militiaPerMin += rate * entry.count;
+  }
   if (militiaPerMin <= 0) return null;
   const hutsNeeded = militiaPerMin / MILITIA_PER_MIN_PER_HUT;
   const hutBuilding = PP2DATA.getBuilding('PopulationPioneersHut');
@@ -346,13 +347,13 @@ function pickProducer(resourceId, producers) {
   return buildings[0];
 }
 
-/** Boot camp + training halls: consume recruits (or produce recruits only at BootCamp). */
+/** Military training buildings consume militia to produce battalion units. */
 function isMilitaryTrainingBuilding(b) {
   const bd = getBuildingData(b.id);
   if (!bd || bd.isPopulation || !b.produces || !FOOTPRINTS[b.id]) return false;
   if (SERVICE_RESOURCES.has(b.produces)) return false;
-  if (!b.consumePerMinute) return b.produces === 'recruits';
-  return Object.prototype.hasOwnProperty.call(b.consumePerMinute, 'recruits');
+  if (!b.consumePerMinute) return false;
+  return Object.prototype.hasOwnProperty.call(b.consumePerMinute, 'militia');
 }
 
 /** Unit types available in the military dropdown (default chain producer unlocked). */
@@ -571,7 +572,7 @@ function calculateProduction() {
   const chainResult = resolveProductionChain(demand);
   const { buildings, tileNeeds } = chainResult;
 
-  // Militia inference: BootCamp → militia → Pioneer Huts
+  // Militia inference: training buildings consume militia → infer Pioneer Huts
   const militiaInfo = inferMilitiaHuts(buildings);
   let inferredHutCount = 0;
   if (militiaInfo) {
@@ -1456,7 +1457,7 @@ function autoPopulate() {
   let chainBuildings = chainResult.buildings;
   const { width, height } = state.island;
 
-  // Militia inference: BootCamp → militia → Pioneer Huts
+  // Militia inference: training buildings consume militia → infer Pioneer Huts
   const militiaInfo = inferMilitiaHuts(chainBuildings);
   let inferredHutCount = 0;
   if (militiaInfo) {

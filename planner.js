@@ -11,9 +11,16 @@ const POP_BUILDINGS = [
   { id: 'PopulationParagonsResidence',label: 'Paragon Residences',tier: 'Paragons' },
 ];
 
+/** Population house rows allowed for the current island type (see getIslandTypeConfig). */
+function getVisiblePopBuildings() {
+  const tiers = new Set(getIslandTypeConfig().popTiers || []);
+  return POP_BUILDINGS.filter(pb => tiers.has(pb.tier));
+}
+
 function buildPlannerInputs() {
   const el = document.getElementById('planner-inputs');
-  el.innerHTML = POP_BUILDINGS.map(pb =>
+  const visible = getVisiblePopBuildings();
+  el.innerHTML = visible.map(pb =>
     `<div class="planner-row">
       <label>${pb.label}:</label>
       <input type="number" id="planner-${pb.id}" min="0" value="0" data-pop-id="${pb.id}">
@@ -26,7 +33,7 @@ function buildPlannerInputs() {
 // Calculate total resource demand from population houses
 function getPopulationDemand() {
   const demand = {}; // resourceId -> totalPerMinute
-  POP_BUILDINGS.forEach(pb => {
+  getVisiblePopBuildings().forEach(pb => {
     const input = document.getElementById(`planner-${pb.id}`);
     const count = parseInt(input.value) || 0;
     if (count === 0) return;
@@ -54,7 +61,7 @@ function mergeDemand(...parts) {
 
 /** True if any population house count in the planner is greater than 0. */
 function hasAnyPopulationHouseRequested() {
-  return POP_BUILDINGS.some(pb => {
+  return getVisiblePopBuildings().some(pb => {
     const input = document.getElementById(`planner-${pb.id}`);
     return input && (parseInt(input.value) || 0) > 0;
   });
@@ -117,6 +124,7 @@ const NATURAL_DEPOSIT_IDS = new Set([
  * Returns null when no militia is needed.
  */
 function inferMilitiaHuts(chainBuildings) {
+  if (!getVisiblePopBuildings().some(pb => pb.id === 'PopulationPioneersHut')) return null;
   let militiaPerMin = 0;
   for (const entry of Object.values(chainBuildings)) {
     const rate = (entry.building.consumePerMinute || {}).militia;
@@ -341,12 +349,14 @@ function sortProducersByTier(buildings) {
 /** Production buildings the user may add for auto-place (unlocked, plannable). */
 function getCustomBuildingPickerList() {
   const popIds = new Set(POP_BUILDINGS.map(pb => pb.id));
+  const allowedTiers = new Set(getIslandTypeConfig().prodTiers);
   return PP2DATA.buildings.filter(b => {
     if (popIds.has(b.id)) return false;
     const bd = getBuildingData(b.id);
     if (!bd || bd.isPopulation) return false;
     if (bd.isInfrastructure || bd.isService) return false;
     if (!FOOTPRINTS[b.id]) return false;
+    if (!allowedTiers.has(bd.tier)) return false;
     if (!state.unlockedBuildings.has(b.id)) return false;
     return true;
   }).sort((a, b) => {
@@ -366,18 +376,23 @@ function pickProducer(resourceId, producers) {
   // Filter to only buildings (not tiles)
   const buildings = producers.filter(p => PP2DATA.getBuilding(p.id));
   if (buildings.length === 0) return producers[0];
-  if (buildings.length === 1) {
-    const b = buildings[0];
+  const allowed = new Set(getIslandTypeConfig().prodTiers);
+  const inTier = b => allowed.has(b.tier);
+  let pool = buildings.filter(inTier);
+  if (pool.length === 0) pool = buildings;
+
+  if (pool.length === 1) {
+    const b = pool[0];
     if (!state.unlockedBuildings.has(b.id)) recordLockedProducerFallback(resourceId, b);
     return b;
   }
-  const unlocked = buildings.filter(b => state.unlockedBuildings.has(b.id));
+  const unlocked = pool.filter(b => state.unlockedBuildings.has(b.id));
   if (unlocked.length > 0) {
     sortProducersByTier(unlocked);
     return unlocked[0];
   }
-  sortProducersByTier(buildings);
-  const chosen = buildings[0];
+  sortProducersByTier(pool);
+  const chosen = pool[0];
   recordLockedProducerFallback(resourceId, chosen);
   return chosen;
 }
@@ -404,6 +419,8 @@ function getMilitaryUnitSelectOptions() {
     if (!producers.some(p => PP2DATA.getBuilding(p.id))) continue;
     const chosen = pickProducer(resId, producers);
     if (!chosen || !PP2DATA.getBuilding(chosen.id)) continue;
+    const allowedMil = new Set(getIslandTypeConfig().prodTiers);
+    if (!allowedMil.has(chosen.tier)) continue;
     if (!state.unlockedBuildings.has(chosen.id)) continue;
     out.push({ resId, label: PP2DATA.getResourceName(resId) });
   }
@@ -760,7 +777,7 @@ function calculateProduction() {
 
   // === Population house summary ===
   html += '<div class="planner-section"><h5>Population Houses</h5>';
-  POP_BUILDINGS.forEach(pb => {
+  getVisiblePopBuildings().forEach(pb => {
     const count = parseInt(document.getElementById(`planner-${pb.id}`).value) || 0;
     const extra = (pb.id === 'PopulationPioneersHut') ? inferredHutCount : 0;
     const total = count + extra;
@@ -1060,8 +1077,12 @@ function countNewWarehouseCoverage(whId, wx, wy) {
   return newCells;
 }
 
-// Pick best warehouse tier based on what's unlocked
+// Pick best warehouse tier based on what's unlocked and island-allowed tiers
 function pickWarehouseId() {
+  const allowed = new Set(getIslandTypeConfig().prodTiers);
+  if (allowed.has('Townsmen') && state.unlockedBuildings.has('Warehouse3')) return 'Warehouse3';
+  if (allowed.has('Colonists') && state.unlockedBuildings.has('Warehouse2')) return 'Warehouse2';
+  if (allowed.has('Pioneers') && state.unlockedBuildings.has('Warehouse1')) return 'Warehouse1';
   if (state.unlockedBuildings.has('Warehouse3')) return 'Warehouse3';
   if (state.unlockedBuildings.has('Warehouse2')) return 'Warehouse2';
   return 'Warehouse1';
@@ -1189,7 +1210,7 @@ function autoPlaceBuilding(buildingId, x, y) {
 // Determine which service buildings are needed for the requested population houses
 function getRequiredServices() {
   const needed = new Set();
-  POP_BUILDINGS.forEach(pb => {
+  getVisiblePopBuildings().forEach(pb => {
     const count = parseInt(document.getElementById(`planner-${pb.id}`).value) || 0;
     if (count === 0) return;
     const building = PP2DATA.getBuilding(pb.id);
@@ -1226,8 +1247,12 @@ function listServiceProviderIdsForResource(serviceResId) {
     return fb ? [fb] : [];
   }
 
-  const unlocked = candidates.filter(b => state.unlockedBuildings.has(b.id));
-  const pool = unlocked.length > 0 ? unlocked : candidates;
+  const allowed = new Set(getIslandTypeConfig().prodTiers);
+  let tierPool = candidates.filter(b => allowed.has(b.tier));
+  if (tierPool.length === 0) tierPool = candidates;
+
+  const unlocked = tierPool.filter(b => state.unlockedBuildings.has(b.id));
+  const pool = unlocked.length > 0 ? unlocked : tierPool;
   return pool.map(b => b.id);
 }
 
@@ -1609,7 +1634,7 @@ function autoPopulate() {
 
   // Population houses (user-specified + militia-inferred)
   const popList = [];
-  POP_BUILDINGS.forEach(pb => {
+  getVisiblePopBuildings().forEach(pb => {
     let count = parseInt(document.getElementById(`planner-${pb.id}`).value) || 0;
     if (pb.id === 'PopulationPioneersHut') count += inferredHutCount;
     const already = placedCounts[pb.id] || 0;

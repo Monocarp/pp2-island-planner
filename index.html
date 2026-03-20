@@ -130,6 +130,36 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
   border-left: 3px solid #c0392b;
   padding-left: 6px;
 }
+#island-type-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+#island-type-bar button {
+  flex: 1 1 auto;
+  min-width: 72px;
+  padding: 4px 6px;
+  font-size: 0.68rem;
+  border: 1px solid #0f3460;
+  border-radius: 3px;
+  background: #16213e;
+  color: #ccc;
+  cursor: pointer;
+}
+#island-type-bar button:hover { background: #1a2a4a; color: #e0e0e0; }
+#island-type-bar button.island-type-active {
+  background: #e94560;
+  border-color: #e94560;
+  color: #fff;
+  font-weight: 600;
+}
+#island-type-bar button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: #1a1a2e;
+  color: #666;
+}
 
 /* ===== CANVAS AREA ===== */
 #canvas-area {
@@ -440,6 +470,17 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
       <div class="tool-group">
         <button class="tool-btn" data-tool="eraser">Eraser</button>
         <button class="tool-btn" data-tool="select">Select</button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <h3>Island Type</h3>
+      <p class="building-unlock-hint" style="margin-top:0;">Limits production tiers and population houses for this island.</p>
+      <div id="island-type-bar">
+        <button type="button" data-type="temperate" title="Pioneers through Paragons">Temperate</button>
+        <button type="button" data-type="tropical" title="Farmers and Workers">Tropical</button>
+        <button type="button" data-type="northern" title="Northern Islands production (population TBD)">Northern</button>
+        <button type="button" data-type="magical" disabled title="Coming soon">Magical (soon)</button>
       </div>
     </div>
 

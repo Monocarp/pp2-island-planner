@@ -53,6 +53,23 @@ function loadUnlocks() {
   }
 }
 
+const ISLAND_TYPE_STORAGE_KEY = 'pp2_island_type';
+
+function loadIslandType() {
+  const raw = localStorage.getItem(ISLAND_TYPE_STORAGE_KEY);
+  if (raw && VALID_ISLAND_TYPES.has(raw)) {
+    state.islandType = raw;
+    // Magical has no data yet — treat as temperate for behaviour; UI keeps button disabled
+    if (raw === 'magical') state.islandType = 'temperate';
+  } else {
+    state.islandType = 'temperate';
+  }
+}
+
+function saveIslandType() {
+  localStorage.setItem(ISLAND_TYPE_STORAGE_KEY, state.islandType);
+}
+
 // ===== NEW ISLAND MODAL =====
 document.getElementById('btn-new-island').addEventListener('click', showNewIslandModal);
 
@@ -115,7 +132,9 @@ function centerView() {
 // ===== INITIALIZATION =====
 function init() {
   loadUnlocks();
+  loadIslandType();
   buildDepositTools();
+  initIslandTypeBar();
   buildBuildingList();
   buildPlannerInputs();
   resizeCanvas();

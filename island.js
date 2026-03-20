@@ -37,9 +37,38 @@ const DEPOSIT_TYPES = [
 const TILE_RESOURCE_IDS = new Set();
 PP2DATA.tiles.forEach(t => TILE_RESOURCE_IDS.add(t.produces));
 
+/** Production / population tier sets allowed per island archetype. `magical` is reserved (null). */
+const ISLAND_TYPE_TIERS = {
+  temperate: {
+    prodTiers: ['Pioneers', 'Colonists', 'Townsmen', 'Merchants', 'Paragons'],
+    popTiers: ['Pioneers', 'Colonists', 'Townsmen', 'Merchants', 'Paragons'],
+  },
+  tropical: {
+    prodTiers: ['Farmers', 'Workers'],
+    popTiers: ['Farmers', 'Workers'],
+  },
+  northern: {
+    prodTiers: ['Northern Islands'],
+    popTiers: [],
+  },
+  magical: null,
+};
+
+const VALID_ISLAND_TYPES = new Set(['temperate', 'tropical', 'northern', 'magical']);
+
+/** Effective config for planner + palette; invalid or unfinished types fall back to temperate. */
+function getIslandTypeConfig() {
+  const key = state.islandType;
+  const c = ISLAND_TYPE_TIERS[key];
+  if (c && Array.isArray(c.prodTiers)) return c;
+  return ISLAND_TYPE_TIERS.temperate;
+}
+
 // ===== APPLICATION STATE =====
 const state = {
   island: null,     // { width, height, cells: 2D array }
+  /** temperate | tropical | northern | magical (magical stub — use temperate behaviour until data exists) */
+  islandType: 'temperate',
   tool: 'select',   // current tool
   terrainType: null, // if tool=terrain
   depositType: null, // if tool=deposit

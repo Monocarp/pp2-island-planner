@@ -319,6 +319,42 @@ document.querySelectorAll('[data-tool="eraser"],[data-tool="select"]').forEach(b
   });
 });
 
+function syncIslandTypeBar() {
+  const bar = document.getElementById('island-type-bar');
+  if (!bar) return;
+  bar.querySelectorAll('[data-type]').forEach(btn => {
+    const active = btn.dataset.type === state.islandType && !btn.disabled;
+    btn.classList.toggle('island-type-active', active);
+  });
+}
+
+let _islandTypeBarInited = false;
+function initIslandTypeBar() {
+  const bar = document.getElementById('island-type-bar');
+  if (!bar) return;
+  if (_islandTypeBarInited) {
+    syncIslandTypeBar();
+    return;
+  }
+  _islandTypeBarInited = true;
+  bar.querySelectorAll('[data-type]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      state.islandType = btn.dataset.type;
+      if (typeof saveIslandType === 'function') saveIslandType();
+      syncIslandTypeBar();
+      if (typeof buildBuildingList === 'function') buildBuildingList();
+      if (typeof buildPlannerInputs === 'function') buildPlannerInputs();
+      if (typeof calculateProduction === 'function') calculateProduction();
+    });
+  });
+  syncIslandTypeBar();
+}
+
+// Stable order for production tiers in the palette (subset filtered by island type).
+const PRODUCTION_TIER_DISPLAY_ORDER = ['Pioneers', 'Colonists', 'Townsmen', 'Merchants', 'Paragons',
+  'Farmers', 'Workers', 'Northern Islands'];
+
 // ===== BUILDING PALETTE =====
 function buildBuildingList() {
   const container = document.getElementById('building-list');
@@ -332,8 +368,8 @@ function buildBuildingList() {
   hint.textContent = 'Double-click a building to toggle whether it is unlocked for the planner and auto-populate.';
   container.appendChild(hint);
 
-  const tiers = ['Pioneers', 'Colonists', 'Townsmen', 'Merchants', 'Paragons',
-                 'Farmers', 'Workers', 'Northern Islands'];
+  const allowedTierSet = new Set(getIslandTypeConfig().prodTiers);
+  const tiers = PRODUCTION_TIER_DISPLAY_ORDER.filter(t => allowedTierSet.has(t));
 
   tiers.forEach(tier => {
     // Combine data.js buildings + extra infrastructure buildings for this tier
@@ -422,8 +458,11 @@ function buildBuildingList() {
     container.appendChild(group);
   });
 
-  // Also add population buildings
-  const popBuildings = PP2DATA.buildings.filter(b => b.isPopulation);
+  // Also add population buildings allowed for this island type
+  const popIds = new Set(
+    (typeof getVisiblePopBuildings === 'function' ? getVisiblePopBuildings() : []).map(pb => pb.id)
+  );
+  const popBuildings = PP2DATA.buildings.filter(b => b.isPopulation && popIds.has(b.id));
   if (popBuildings.length > 0) {
     const group = document.createElement('div');
     group.className = 'tier-group';

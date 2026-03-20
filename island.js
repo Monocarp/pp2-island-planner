@@ -22,7 +22,9 @@ const DEPOSIT_TYPES = [
   { id: 'zinc_deposit', name: 'Zinc', color: '#a0b0c0' },
   { id: 'nitrate_field', name: 'Nitrate', color: '#c8e6c9' },
   { id: 'hop_field', name: 'Hop Field', color: '#7cb342' },
+  { id: 'honey_field', name: 'Honey Field', color: '#ffc107' },
   { id: 'wheat_field', name: 'Wheat Field', color: '#fdd835' },
+  { id: 'potato_field', name: 'Potato Field', color: '#d4a574' },
   { id: 'linseed_field', name: 'Linseed Field', color: '#81d4fa' },
   { id: 'strawberry_field', name: 'Strawberry', color: '#ef5350' },
   { id: 'apple_trees', name: 'Apple Trees', color: '#66bb6a' },
@@ -37,19 +39,65 @@ const DEPOSIT_TYPES = [
 const TILE_RESOURCE_IDS = new Set();
 PP2DATA.tiles.forEach(t => TILE_RESOURCE_IDS.add(t.produces));
 
+/**
+ * Temperate island fertilities: each gates tile resources that cannot be grown / auto-painted when off.
+ * Other island types: populate when tier data is added (see `fertilities` on ISLAND_TYPE_TIERS).
+ */
+const FERTILITY_RESOURCES = {
+  temperate: [
+    { id: 'apples', label: 'Apples', tileResources: ['apple_trees'] },
+    { id: 'wheat', label: 'Wheat', tileResources: ['wheat_field'] },
+    { id: 'hops', label: 'Hops', tileResources: ['hop_field'] },
+    { id: 'potatoes', label: 'Potatoes', tileResources: ['potato_field'] },
+    { id: 'strawberries', label: 'Strawberries', tileResources: ['strawberry_field'] },
+    { id: 'honey', label: 'Honey', tileResources: ['honey_field'] },
+    { id: 'roses', label: 'Roses', tileResources: ['rose_field'] },
+    { id: 'grapes', label: 'Grapes', tileResources: ['vineyard'] },
+  ],
+  tropical: [],
+  northern: [],
+  magical: [],
+};
+
+/** @returns {boolean} True if this regenerating tile resource cannot be used on the current island (fertility off). */
+function isTileResourceFertilityBlocked(tileResId) {
+  const list = FERTILITY_RESOURCES[state.islandType];
+  if (!list || list.length === 0) return false;
+  for (const f of list) {
+    if (f.tileResources.includes(tileResId) && !state.activeFertilities.has(f.id)) return true;
+  }
+  return false;
+}
+
+/** Default fertility IDs for the effective island type config. */
+function getDefaultFertilityIds() {
+  const cfg = getIslandTypeConfig();
+  if (cfg.fertilities && cfg.fertilities.length > 0) return cfg.fertilities.slice();
+  const list = FERTILITY_RESOURCES[state.islandType];
+  return (list || []).map(f => f.id);
+}
+
+/** Reset active fertilities to all enabled for current island type (e.g. after switching type). */
+function resetActiveFertilitiesToDefaults() {
+  state.activeFertilities = new Set(getDefaultFertilityIds());
+}
+
 /** Production / population tier sets allowed per island archetype. `magical` is reserved (null). */
 const ISLAND_TYPE_TIERS = {
   temperate: {
     prodTiers: ['Pioneers', 'Colonists', 'Townsmen', 'Merchants', 'Paragons'],
     popTiers: ['Pioneers', 'Colonists', 'Townsmen', 'Merchants', 'Paragons'],
+    fertilities: ['apples', 'wheat', 'hops', 'potatoes', 'strawberries', 'honey', 'roses', 'grapes'],
   },
   tropical: {
     prodTiers: ['Farmers', 'Workers'],
     popTiers: ['Farmers', 'Workers'],
+    fertilities: [],
   },
   northern: {
     prodTiers: ['Northern Islands'],
     popTiers: [],
+    fertilities: [],
   },
   magical: null,
 };
@@ -88,6 +136,10 @@ const state = {
   customBuildingEntries: [],
   /** { unitResId, ratePerHour }[] — military unit production targets for chain + auto-place */
   militaryEntries: [],
+  /** Set of fertility IDs active for the current island (temperate: apples, wheat, …). */
+  activeFertilities: new Set([
+    'apples', 'wheat', 'hops', 'potatoes', 'strawberries', 'honey', 'roses', 'grapes',
+  ]),
 };
 
 // Cell data: { terrain, deposit, building, buildingId (for placed buildings back-ref) }

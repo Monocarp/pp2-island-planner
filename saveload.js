@@ -70,6 +70,29 @@ function saveIslandType() {
   localStorage.setItem(ISLAND_TYPE_STORAGE_KEY, state.islandType);
 }
 
+const FERTILITY_STORAGE_KEY = 'pp2_island_fertilities';
+
+function saveFertilities() {
+  if (!state.activeFertilities) return;
+  localStorage.setItem(FERTILITY_STORAGE_KEY, JSON.stringify([...state.activeFertilities]));
+}
+
+function loadFertilities() {
+  const validIds = new Set(getDefaultFertilityIds());
+  const raw = localStorage.getItem(FERTILITY_STORAGE_KEY);
+  if (raw) {
+    try {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        if (validIds.size === 0) state.activeFertilities = new Set();
+        else state.activeFertilities = new Set(arr.filter(id => validIds.has(id)));
+        return;
+      }
+    } catch (_) { /* use defaults */ }
+  }
+  resetActiveFertilitiesToDefaults();
+}
+
 // ===== NEW ISLAND MODAL =====
 document.getElementById('btn-new-island').addEventListener('click', showNewIslandModal);
 
@@ -133,8 +156,10 @@ function centerView() {
 function init() {
   loadUnlocks();
   loadIslandType();
+  loadFertilities();
   buildDepositTools();
   initIslandTypeBar();
+  if (typeof buildFertilityPanel === 'function') buildFertilityPanel();
   buildBuildingList();
   buildPlannerInputs();
   resizeCanvas();

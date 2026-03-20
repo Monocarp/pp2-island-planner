@@ -367,6 +367,16 @@ function getCustomBuildingPickerList() {
   });
 }
 
+/** True if building consumes a tile resource gated by an inactive island fertility. */
+function buildingUsesBlockedFertilityTile(producer) {
+  if (!producer || !producer.inputs) return false;
+  for (const resId of Object.keys(producer.inputs)) {
+    if (!TILE_RESOURCE_IDS.has(resId)) continue;
+    if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(resId)) return true;
+  }
+  return false;
+}
+
 function pickProducer(resourceId, producers) {
   // Check user override first (explicit choice — no unlock warning)
   if (state.producerOverrides[resourceId]) {
@@ -376,10 +386,12 @@ function pickProducer(resourceId, producers) {
   // Filter to only buildings (not tiles)
   const buildings = producers.filter(p => PP2DATA.getBuilding(p.id));
   if (buildings.length === 0) return producers[0];
+  if (buildings.every(b => buildingUsesBlockedFertilityTile(b))) return null;
+  const candidates = buildings.filter(b => !buildingUsesBlockedFertilityTile(b));
   const allowed = new Set(getIslandTypeConfig().prodTiers);
   const inTier = b => allowed.has(b.tier);
-  let pool = buildings.filter(inTier);
-  if (pool.length === 0) pool = buildings;
+  let pool = candidates.filter(inTier);
+  if (pool.length === 0) pool = candidates;
 
   if (pool.length === 1) {
     const b = pool[0];
@@ -530,6 +542,7 @@ function resolveProductionChain(demand) {
 
     // Check if this is a regenerating tile resource (apple_trees, forest, fields)
     if (TILE_RESOURCE_IDS.has(resourceId)) {
+      if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(resourceId)) return;
       const tile = producers.find(p => PP2DATA.getTile(p.id)) || producers[0];
       if (!tile || !tile.producePerMinute) return;
       const countNeeded = rateNeeded / tile.producePerMinute;
@@ -580,6 +593,7 @@ function resolveProductionChain(demand) {
     if (!b.inputs) continue;
     for (const [resId, amountPerIter] of Object.entries(b.inputs)) {
       if (spatialTileResources.has(resId)) {
+        if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(resId)) continue;
         const tile = (PP2DATA.getProducersOf(resId) || []).find(p => PP2DATA.getTile(p.id));
         if (!tile) continue;
         const totalTiles = entry.count * amountPerIter;
@@ -676,6 +690,22 @@ function calculateProduction() {
       </div>`;
     }
     html += '</div>';
+  }
+
+  if (typeof FERTILITY_RESOURCES !== 'undefined' && state.activeFertilities) {
+    const list = FERTILITY_RESOURCES[state.islandType];
+    if (list && list.length > 0) {
+      const inactive = list.filter(f => !state.activeFertilities.has(f.id));
+      if (inactive.length > 0) {
+        html += '<div class="planner-section" style="border:1px solid #3498db;padding:6px;border-radius:4px;margin-bottom:6px;">';
+        html += '<h5 style="color:#3498db;">Fertility (local growth off)</h5>';
+        html += '<div style="font-size:0.7rem;color:#bbb;margin-bottom:4px;">Unchecked fertilities cannot grow on this island; chains assume import for those goods. Auto-populate skips buildings that only use those tile resources.</div>';
+        for (const f of inactive) {
+          html += `<div class="planner-summary-row" style="color:#85c1e9;"><span>${f.label}</span></div>`;
+        }
+        html += '</div>';
+      }
+    }
   }
 
   // === Extra production targets ===
@@ -1632,6 +1662,25 @@ function autoPopulate() {
     });
   }
 
+  const fertSkipReason = 'fertility not active on this island';
+  for (let i = productionList.length - 1; i >= 0; i--) {
+    const item = productionList[i];
+    if (!item.building.inputs) continue;
+    const tileInputs = Object.keys(item.building.inputs).filter(r => TILE_RESOURCE_IDS.has(r));
+    if (tileInputs.length === 0) continue;
+    if (!tileInputs.every(r => typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(r))) continue;
+    const bname = item.building.name || item.id;
+    for (let n = 0; n < item.count; n++) {
+      failed.push({ id: item.id, reason: fertSkipReason });
+      runLog.phases.production.failed.push({ name: bname, reason: fertSkipReason });
+    }
+    console.warn(
+      `%c[PP2 Auto-Populate]%c Skipping ${item.count}× %c${bname}%c (${fertSkipReason})`,
+      'font-weight:bold;color:#e94560', 'color:inherit', 'font-weight:bold;color:#3498db', 'color:inherit'
+    );
+    productionList.splice(i, 1);
+  }
+
   // Population houses (user-specified + militia-inferred)
   const popList = [];
   getVisiblePopBuildings().forEach(pb => {
@@ -1841,6 +1890,7 @@ function autoPopulate() {
         // building and the main tile covers the apple tree / field.
         const skipAnchorForPaint = fp.length > 1;
         for (const [resId] of depositInputs) {
+          if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(resId)) continue;
           const needed = tilesNeededPerBuilding(item.building, resId, chainFrac);
           const have = countTileResource(item.id, pos.x, pos.y, resId, claimedCells);
           const deficit = needed - have;

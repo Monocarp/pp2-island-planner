@@ -334,6 +334,7 @@ function initIslandTypeBar() {
   if (!bar) return;
   if (_islandTypeBarInited) {
     syncIslandTypeBar();
+    if (typeof buildFertilityPanel === 'function') buildFertilityPanel();
     return;
   }
   _islandTypeBarInited = true;
@@ -342,13 +343,42 @@ function initIslandTypeBar() {
       if (btn.disabled) return;
       state.islandType = btn.dataset.type;
       if (typeof saveIslandType === 'function') saveIslandType();
+      if (typeof resetActiveFertilitiesToDefaults === 'function') resetActiveFertilitiesToDefaults();
+      if (typeof saveFertilities === 'function') saveFertilities();
       syncIslandTypeBar();
+      if (typeof buildFertilityPanel === 'function') buildFertilityPanel();
       if (typeof buildBuildingList === 'function') buildBuildingList();
       if (typeof buildPlannerInputs === 'function') buildPlannerInputs();
       if (typeof calculateProduction === 'function') calculateProduction();
     });
   });
   syncIslandTypeBar();
+  if (typeof buildFertilityPanel === 'function') buildFertilityPanel();
+}
+
+/** Renders temperate (etc.) fertility checkboxes under Island Type. */
+function buildFertilityPanel() {
+  const el = document.getElementById('fertility-panel');
+  if (!el) return;
+  const list = typeof FERTILITY_RESOURCES !== 'undefined' ? FERTILITY_RESOURCES[state.islandType] : null;
+  if (!list || list.length === 0) {
+    el.innerHTML = '<span class="fertility-panel-empty">No fertility options for this island type.</span>';
+    return;
+  }
+  el.innerHTML = list.map(f => {
+    const id = `fertility-${f.id}`;
+    const checked = state.activeFertilities && state.activeFertilities.has(f.id) ? ' checked' : '';
+    return `<label class="fertility-item"><input type="checkbox" id="${id}" data-fertility="${f.id}"${checked}/> ${f.label}</label>`;
+  }).join('');
+  el.querySelectorAll('input[data-fertility]').forEach(inp => {
+    inp.addEventListener('change', () => {
+      if (!state.activeFertilities) state.activeFertilities = new Set();
+      if (inp.checked) state.activeFertilities.add(inp.dataset.fertility);
+      else state.activeFertilities.delete(inp.dataset.fertility);
+      if (typeof saveFertilities === 'function') saveFertilities();
+      if (typeof calculateProduction === 'function') calculateProduction();
+    });
+  });
 }
 
 // Stable order for production tiers in the palette (subset filtered by island type).

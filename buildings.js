@@ -30,12 +30,12 @@ function makePlus() {
 
 // 1x1
 ['CopperMine','Forest','Garrison','Garrison2','Garrison3',
- 'HopField','LinseedField','PioneersHut','Portal',
+ 'HoneyField','HopField','LinseedField','PioneersHut','Portal','PotatoField',
  'StrawberryField','WheatField'].forEach(id => FOOTPRINTS[id] = [[0,0]]);
 
 // 3x3
-['Arboretum','CattleRanch','CiderMaker','FishermansHut',
- 'LinseedFarm','Lumberjack','PigRanch','Warehouse1','WheatFarm'].forEach(id => FOOTPRINTS[id] = makeSquare(3));
+['Arboretum','Beekeeper','CattleRanch','CiderMaker','FishermansHut',
+ 'LinseedFarm','Lumberjack','PigRanch','PotatoFarm','Warehouse1','WheatFarm'].forEach(id => FOOTPRINTS[id] = makeSquare(3));
 
 // 5x5
 ['AshHouse','Bakery','BoilerMaker','BoilingHouse','Bowyer','Brewery',

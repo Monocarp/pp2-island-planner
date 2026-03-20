@@ -160,6 +160,30 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
   background: #1a1a2e;
   color: #666;
 }
+#fertility-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 4px 10px;
+  margin-top: 8px;
+  font-size: 0.68rem;
+  color: #ccc;
+}
+#fertility-panel .fertility-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  user-select: none;
+}
+#fertility-panel .fertility-item input {
+  margin: 0;
+  accent-color: #e94560;
+}
+.fertility-panel-empty {
+  font-size: 0.65rem;
+  color: #888;
+  grid-column: 1 / -1;
+}
 
 /* ===== CANVAS AREA ===== */
 #canvas-area {
@@ -482,6 +506,8 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
         <button type="button" data-type="northern" title="Northern Islands production (population TBD)">Northern</button>
         <button type="button" data-type="magical" disabled title="Coming soon">Magical (soon)</button>
       </div>
+      <p class="building-unlock-hint" style="margin-bottom:4px;">Fertilities: when listed for this island type, unchecked ones cannot be grown or auto-painted (import assumed).</p>
+      <div id="fertility-panel"></div>
     </div>
 
     <!-- BUILDING PALETTE -->

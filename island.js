@@ -79,14 +79,22 @@ const FERTILITY_RESOURCES = {
   magical: [],
 };
 
-/** @returns {boolean} True if this regenerating tile resource cannot be used on the current island (fertility off). */
+/**
+ * True if this tile resource cannot be grown/placed on the current island:
+ * not listed in any fertility set → allowed; listed for current type and active → allowed;
+ * otherwise blocked (inactive fertility on this type, or wrong climate / other island type only).
+ */
 function isTileResourceFertilityBlocked(tileResId) {
-  const list = FERTILITY_RESOURCES[state.islandType];
-  if (!list || list.length === 0) return false;
-  for (const f of list) {
-    if (f.tileResources.includes(tileResId) && !state.activeFertilities.has(f.id)) return true;
+  let gatedAnywhere = false;
+  for (const [type, list] of Object.entries(FERTILITY_RESOURCES)) {
+    if (!list) continue;
+    for (const f of list) {
+      if (!f.tileResources.includes(tileResId)) continue;
+      gatedAnywhere = true;
+      if (type === state.islandType && state.activeFertilities.has(f.id)) return false;
+    }
   }
-  return false;
+  return gatedAnywhere;
 }
 
 /** Default fertility IDs for the effective island type config. */

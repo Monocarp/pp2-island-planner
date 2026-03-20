@@ -535,6 +535,10 @@ function resolveProductionChain(demand) {
     if (rateNeeded <= 0) return;
     if (SERVICE_RESOURCES.has(resourceId)) return;
 
+    // #region agent log
+    if (resourceId === 'wool' || resourceId === 'thread') fetch('http://127.0.0.1:7893/ingest/59264f09-9a93-4ffa-929f-ee9c08408ac4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'71cbb6'},body:JSON.stringify({sessionId:'71cbb6',location:'planner.js:resolve-entry',message:'resolve called',data:{resourceId,rateNeeded},hypothesisId:'H-A/H-D',timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+
     // Spatial tile resources — skip rate resolution, counted per-building below
     if (spatialTileResources.has(resourceId)) return;
 
@@ -544,6 +548,9 @@ function resolveProductionChain(demand) {
 
     // Check if this is a regenerating tile resource (apple_trees, forest, fields)
     if (TILE_RESOURCE_IDS.has(resourceId)) {
+      // #region agent log
+      fetch('http://127.0.0.1:7893/ingest/59264f09-9a93-4ffa-929f-ee9c08408ac4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'71cbb6'},body:JSON.stringify({sessionId:'71cbb6',location:'planner.js:resolve-tile-branch',message:'resourceId is TILE_RESOURCE_ID',data:{resourceId},hypothesisId:'H-D',timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(resourceId)) return;
       const tile = producers.find(p => PP2DATA.getTile(p.id)) || producers[0];
       if (!tile || !tile.producePerMinute) return;
@@ -559,6 +566,10 @@ function resolveProductionChain(demand) {
     // Pick producer (user override or tier-based default)
     const allBuildings = producers.filter(p => PP2DATA.getBuilding(p.id));
     const producer = pickProducer(resourceId, producers);
+
+    // #region agent log
+    if (resourceId === 'wool' || resourceId === 'thread') fetch('http://127.0.0.1:7893/ingest/59264f09-9a93-4ffa-929f-ee9c08408ac4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'71cbb6'},body:JSON.stringify({sessionId:'71cbb6',location:'planner.js:resolve-pickProducer',message:'pickProducer result',data:{resourceId,producerId:producer&&producer.id,producerInputs:producer&&producer.inputs,blockedByFertility:producer?buildingUsesBlockedFertilityTile(producer):null},hypothesisId:'H-A/H-B',timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
 
     if (!producer || !producer.producePerMinute) return;
 
@@ -578,6 +589,9 @@ function resolveProductionChain(demand) {
     // Recurse into this producer's inputs
     if (producer.consumePerMinute && !visited.has(producer.id + ':' + resourceId)) {
       visited.add(producer.id + ':' + resourceId);
+      // #region agent log
+      if (producer.id === 'SpinningMill') fetch('http://127.0.0.1:7893/ingest/59264f09-9a93-4ffa-929f-ee9c08408ac4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'71cbb6'},body:JSON.stringify({sessionId:'71cbb6',location:'planner.js:resolve-recurse',message:'SpinningMill recursing into inputs',data:{consumePerMinute:producer.consumePerMinute},hypothesisId:'H-A/H-C',timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       for (const [inputRes, inputRate] of Object.entries(producer.consumePerMinute)) {
         resolve(inputRes, inputRate * countNeeded);
       }

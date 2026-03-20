@@ -107,9 +107,12 @@ function render() {
         // isolated: no overlay needed, just the base river color
       }
 
-      // Deposit overlay
+      // Deposit overlay (known + fallback via getDepositPaintStyle)
       if (cell.deposit) {
-        const dep = DEPOSIT_TYPES.find(d => d.id === cell.deposit);
+        const dep =
+          typeof getDepositPaintStyle === 'function'
+            ? getDepositPaintStyle(cell.deposit)
+            : DEPOSIT_TYPES.find(d => d.id === cell.deposit);
         if (dep) {
           ctx.fillStyle = dep.color;
           ctx.globalAlpha = 0.7;
@@ -207,12 +210,16 @@ function render() {
       for (let x = 0; x < width; x++) {
         const cell = cells[y][x];
         if (cell.deposit && !cell.building) {
-          const dep = DEPOSIT_TYPES.find(d => d.id === cell.deposit);
+          const dep =
+            typeof getDepositPaintStyle === 'function'
+              ? getDepositPaintStyle(cell.deposit)
+              : DEPOSIT_TYPES.find(d => d.id === cell.deposit);
           if (dep) {
             const px = ox + x * z;
             const py = oy + y * z;
             ctx.fillStyle = '#fff';
-            ctx.fillText(dep.name.substring(0, 3), px + z/2, py + z/2);
+            const short = (dep.name || '?').replace(/\s*\([^)]*\)\s*$/, '').trim();
+            ctx.fillText(short.substring(0, 3), px + z/2, py + z/2);
           }
         }
       }

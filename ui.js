@@ -389,20 +389,25 @@ function initIslandTypeBar() {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
       state.islandType = btn.dataset.type;
-      if (typeof saveIslandType === 'function') saveIslandType();
       if (typeof resetActiveFertilitiesToDefaults === 'function') resetActiveFertilitiesToDefaults();
-      if (typeof saveFertilities === 'function') saveFertilities();
-      syncIslandTypeBar();
-      if (typeof buildFertilityPanel === 'function') buildFertilityPanel();
-      if (typeof buildBuildingList === 'function') buildBuildingList();
-      if (typeof buildPlannerInputs === 'function') buildPlannerInputs();
-      if (typeof calculateProduction === 'function') calculateProduction();
-      buildDepositTools();
+      refreshIslandTypeDependentUI();
     });
   });
   syncIslandTypeBar();
   if (typeof buildFertilityPanel === 'function') buildFertilityPanel();
   buildDepositTools();
+}
+
+/** After load or programmatic island-type change: sync palette, planner, and global LS prefs. */
+function refreshIslandTypeDependentUI() {
+  syncIslandTypeBar();
+  if (typeof buildFertilityPanel === 'function') buildFertilityPanel();
+  if (typeof buildBuildingList === 'function') buildBuildingList();
+  if (typeof buildPlannerInputs === 'function') buildPlannerInputs();
+  buildDepositTools();
+  if (typeof saveIslandType === 'function') saveIslandType();
+  if (typeof saveFertilities === 'function') saveFertilities();
+  if (typeof calculateProduction === 'function') calculateProduction();
 }
 
 /** Renders temperate (etc.) fertility checkboxes under Island Type. */

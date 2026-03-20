@@ -32,8 +32,9 @@ function updateStats() {
   if (Object.keys(depositCounts).length > 0) {
     html += '<h4 style="margin-top:6px">Deposits</h4>';
     for (const [d, c] of Object.entries(depositCounts)) {
-      const dep = DEPOSIT_TYPES.find(dt => dt.id === d);
-      html += `<div class="info-row"><span class="info-label">${dep ? dep.name : d}:</span><span class="info-value">${c}</span></div>`;
+      const dep = typeof getDepositPaintStyle === 'function' ? getDepositPaintStyle(d) : null;
+      const label = dep ? dep.name : d;
+      html += `<div class="info-row"><span class="info-label">${label}:</span><span class="info-value">${c}</span></div>`;
     }
   }
 

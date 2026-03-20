@@ -112,10 +112,12 @@ const MILITIA_PER_MIN_PER_HUT = 0.06;
 // must pre-exist on the island (cannot be auto-painted in Phase 1.5).
 const NATURAL_DEPOSIT_IDS = new Set([
   'copper_deposit', 'copper_deposit_tropical', 'copper_pyrite_deposit',
-  'coal_deposit', 'iron_deposit',
+  'coal_deposit', 'coal_deposit_tropical', 'coal_deposit_north',
+  'iron_deposit', 'ironstone_deposit',
   'rock_salt_deposit', 'rock_salt_deposit_north',
   'clay_deposit', 'cliff', 'cliff_tropical', 'marble_deposit', 'marble_deposit_north',
-  'gold_deposit', 'gemstone_deposit', 'lead_deposit', 'zinc_deposit',
+  'gold_deposit', 'gold_deposit_tropical', 'gold_deposit_north',
+  'gemstone_deposit', 'lead_deposit', 'zinc_deposit',
 ]);
 
 /**

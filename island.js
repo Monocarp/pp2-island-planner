@@ -43,7 +43,30 @@ const DEPOSIT_TYPES = [
   { id: 'mahogany_trees', name: 'Mahogany Trees', color: '#8d4a3c' },
   { id: 'indigo_field', name: 'Indigo Field', color: '#283593' },
   { id: 'mulberry_trees', name: 'Mulberry Trees', color: '#ad1457' },
+  // Regional mine / geology variants (PP2DATA tiles — paintable; fertility rules still apply if gated)
+  { id: 'coal_deposit_tropical', name: 'Coal (tropical)', color: '#1a1a1a' },
+  { id: 'coal_deposit_north', name: 'Coal (north)', color: '#252525' },
+  { id: 'gold_deposit_tropical', name: 'Gold (tropical)', color: '#e6c200' },
+  { id: 'gold_deposit_north', name: 'Gold (north)', color: '#f0d030' },
+  { id: 'ironstone_deposit', name: 'Ironstone', color: '#5d4037' },
+  { id: 'river_tropical', name: 'River (tropical tile)', color: '#2874a6' },
+  { id: 'river_north', name: 'River (north tile)', color: '#5dade2' },
+  { id: 'coastal_tropical', name: 'Coastal (tropical tile)', color: '#48c9b0' },
+  { id: 'coastal_north', name: 'Coastal (north tile)', color: '#76d7c4' },
+  { id: 'grass_north', name: 'Grass (north tile)', color: '#2e7d32' },
 ];
+
+/** Label + color for map/stats; unknown ids fall back to PP2DATA name + neutral color. */
+function getDepositPaintStyle(depId) {
+  if (!depId) return null;
+  const known = DEPOSIT_TYPES.find(d => d.id === depId);
+  if (known) return { name: known.name, color: known.color };
+  const name =
+    typeof PP2DATA !== 'undefined' && typeof PP2DATA.getResourceName === 'function'
+      ? PP2DATA.getResourceName(depId)
+      : depId;
+  return { name, color: '#5c5c6e' };
+}
 
 // ===== TILE RESOURCE IDs (terrain tiles that buildings need within footprint) =====
 const TILE_RESOURCE_IDS = new Set();

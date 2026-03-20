@@ -1,4 +1,31 @@
 // ===== SAVE / LOAD =====
+/** Snapshot island type + fertilities from a save entry onto global state and refresh UI. */
+function applySaveArchetypeMetadata(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object') return;
+  let typeApplied = false;
+
+  if (typeof snapshot.islandType === 'string' && VALID_ISLAND_TYPES.has(snapshot.islandType)) {
+    state.islandType = snapshot.islandType === 'magical' ? 'temperate' : snapshot.islandType;
+    typeApplied = true;
+  }
+
+  if (Array.isArray(snapshot.activeFertilities)) {
+    const list = FERTILITY_RESOURCES[state.islandType] || [];
+    const validIds = new Set(list.map(f => f.id));
+    if (validIds.size === 0) {
+      state.activeFertilities = new Set();
+    } else {
+      const filt = snapshot.activeFertilities.filter(id => validIds.has(id));
+      state.activeFertilities =
+        filt.length > 0 ? new Set(filt) : new Set(list.map(f => f.id));
+    }
+  } else if (typeApplied) {
+    resetActiveFertilitiesToDefaults();
+  }
+
+  if (typeof refreshIslandTypeDependentUI === 'function') refreshIslandTypeDependentUI();
+}
+
 function saveToLocalStorage() {
   if (!state.island) return;
   const saves = JSON.parse(localStorage.getItem('pp2_island_saves') || '[]');
@@ -8,6 +35,8 @@ function saveToLocalStorage() {
     name,
     date: new Date().toISOString(),
     island: state.island,
+    islandType: state.islandType,
+    activeFertilities: state.activeFertilities ? [...state.activeFertilities] : [],
   });
   localStorage.setItem('pp2_island_saves', JSON.stringify(saves));
   alert('Saved!');
@@ -24,10 +53,12 @@ function loadFromLocalStorage() {
   const idx = parseInt(choice) - 1;
   if (isNaN(idx) || idx < 0 || idx >= saves.length) return;
 
-  state.island = saves[idx].island;
+  const snap = saves[idx];
+  state.island = snap.island;
   state.undoStack = [];
   state.redoStack = [];
   state.selectedBuilding = null;
+  applySaveArchetypeMetadata(snap);
   centerView();
   updateStats();
   validateIsland();

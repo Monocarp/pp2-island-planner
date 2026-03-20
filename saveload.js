@@ -198,6 +198,42 @@ function commitActiveSlotFromState() {
   saveProjectToStorage();
 }
 
+/**
+ * Remove one project slot by index (any position). Keeps temperate+tropical ordering in array.
+ * At least one island must remain. Persists and refreshes the active slot.
+ */
+function deleteProjectSlotAt(index) {
+  if (!isMultiIslandProject()) return;
+  if (index < 0 || index >= state.projectSlots.length) return;
+  if (state.projectSlots.length <= 1) {
+    alert('Cannot delete the last island.');
+    return;
+  }
+
+  commitActiveSlotFromState();
+
+  const slot = state.projectSlots[index];
+  const hasContent = islandLayoutHasContent(slot.island);
+  const msg = hasContent
+    ? 'This island has terrain, deposits, or buildings. Delete this slot permanently?'
+    : 'Remove this empty island slot from the project?';
+  if (!confirm(msg)) return;
+
+  const oldActive = state.activeSlotIndex;
+  state.projectSlots.splice(index, 1);
+
+  state.projectTemperateCount = state.projectSlots.filter(s => s.type === 'temperate').length;
+  state.projectTropicalCount = state.projectSlots.filter(s => s.type === 'tropical').length;
+
+  let newActive = oldActive;
+  if (index < oldActive) newActive--;
+  else if (index === oldActive) newActive = Math.min(index, state.projectSlots.length - 1);
+  state.activeSlotIndex = Math.max(0, newActive);
+
+  saveProjectToStorage();
+  setActiveSlot(state.activeSlotIndex, { skipCommit: true });
+}
+
 /** Snapshot island type + fertilities from a save entry onto global state and refresh UI. */
 function applySaveArchetypeMetadata(snapshot) {
   if (!snapshot || typeof snapshot !== 'object') return;
@@ -509,6 +545,14 @@ function showNewIslandModal() {
 }
 
 document.getElementById('btn-new-island').addEventListener('click', showNewIslandModal);
+
+const btnDeleteSlot = document.getElementById('btn-delete-island-slot');
+if (btnDeleteSlot) {
+  btnDeleteSlot.addEventListener('click', () => {
+    if (!isMultiIslandProject()) return;
+    deleteProjectSlotAt(state.activeSlotIndex);
+  });
+}
 
 const btnLayout = document.getElementById('btn-island-layout');
 if (btnLayout) {

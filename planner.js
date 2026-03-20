@@ -373,8 +373,11 @@ function getCustomBuildingPickerList() {
 function buildingUsesBlockedFertilityTile(producer) {
   if (!producer || !producer.inputs) return false;
   for (const resId of Object.keys(producer.inputs)) {
-    if (!TILE_RESOURCE_IDS.has(resId)) continue;
-    if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(resId)) return true;
+    if (TILE_RESOURCE_IDS.has(resId)) {
+      if (typeof isTileResourceFertilityBlocked === 'function' && isTileResourceFertilityBlocked(resId)) return true;
+    } else if (typeof isFertilityIdBlocked === 'function' && isFertilityIdBlocked(resId)) {
+      return true;
+    }
   }
   return false;
 }

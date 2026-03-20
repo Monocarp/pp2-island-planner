@@ -120,6 +120,24 @@ function isTileResourceFertilityBlocked(tileResId) {
   return gatedAnywhere;
 }
 
+/**
+ * True if resId matches a fertility ID (e.g. 'wheat', 'hops', 'strawberries') and that
+ * fertility is NOT active on the current island.  Some buildings reference the fertility
+ * ID directly in their inputs instead of the tile resource name (e.g. WheatFarm uses
+ * 'wheat' rather than 'wheat_field'), so this catches cases isTileResourceFertilityBlocked misses.
+ */
+function isFertilityIdBlocked(resId) {
+  for (const [type, list] of Object.entries(FERTILITY_RESOURCES)) {
+    if (!list) continue;
+    for (const f of list) {
+      if (f.id !== resId) continue;
+      if (type === state.islandType && state.activeFertilities.has(f.id)) return false;
+      return true;
+    }
+  }
+  return false;
+}
+
 /** Default fertility IDs for the effective island type config. */
 function getDefaultFertilityIds() {
   const cfg = getIslandTypeConfig();

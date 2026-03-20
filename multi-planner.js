@@ -316,10 +316,13 @@ function traceChainShipCandidates(finalResId, finalRate) {
   const spatialTileResources = new Set();
   PP2DATA.tiles.forEach(t => { if (t.iterationTime <= 1) spatialTileResources.add(t.produces); });
   const candidates = [];
+  const visited = new Set();
 
   function walk(resId, rateNeeded) {
     if (rateNeeded <= 0 || SERVICE_RESOURCES.has(resId)) return;
     if (spatialTileResources.has(resId)) return;
+    if (visited.has(resId)) return;
+    visited.add(resId);
     const producers = PP2DATA.getProducersOf(resId);
     if (!producers || producers.length === 0) return;
 

@@ -40,7 +40,7 @@ Each file depends on globals from previous files. There is no module system.
 
 ### Island Stats — Population supply (goods/min)
 
-The right-panel **Island Stats** box includes a **Population supply** table when at least one population house is on the grid: **need** comes from placed houses (`getPopulationDemandFromPlacedHouses` in `planner.js`), **produced** is the sum of nameplate `producePerMinute` from placed non-population buildings (`aggregatePlacedProducerOutputRates`). Service goods are excluded; regenerating map tiles that are not building instances are not counted; this is not a full chain check — use the **Production Planner** for that.
+The right-panel **Island Stats** box includes a **Population supply** table when at least one population house is on the grid: **need** is **chain-wide**—direct goods from placed houses plus all non-service inputs implied by `resolveProductionChain` (`getPopulationChainGoodDemandFromPlacedHouses` in `planner.js`). **Produced** is still the sum of nameplate `producePerMinute` from placed non-population buildings (`aggregatePlacedProducerOutputRates`). Service goods are excluded from need aggregation; regenerating map tiles are not counted toward **Produced**, so tile-only inputs may appear Short compared to chain need.
 
 ## Phase 1 multi-island project
 

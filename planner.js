@@ -747,6 +747,27 @@ function aggregatePlacedProducerOutputRates() {
   return out;
 }
 
+/**
+ * Per-min goods need: direct consumption from placed houses plus all non-service
+ * inputs implied by resolveProductionChain (same solver as Production Planner).
+ */
+function getPopulationChainGoodDemandFromPlacedHouses() {
+  const demand = getPopulationDemandFromPlacedHouses();
+  if (!demand || Object.keys(demand).length === 0) return {};
+  const { buildings } = resolveProductionChain(demand);
+  const need = { ...demand };
+  for (const entry of Object.values(buildings || {})) {
+    const b = entry.building;
+    const n = entry.count || 0;
+    if (!b || !b.consumePerMinute || n <= 0) continue;
+    for (const [resId, rate] of Object.entries(b.consumePerMinute)) {
+      if (SERVICE_RESOURCES.has(resId)) continue;
+      need[resId] = (need[resId] || 0) + n * rate;
+    }
+  }
+  return need;
+}
+
 function cycleProducer(resourceId, currentBuildingId) {
   const producers = (PP2DATA.getProducersOf(resourceId) || []).filter(p => PP2DATA.getBuilding(p.id));
   if (producers.length <= 1) return;

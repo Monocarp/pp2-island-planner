@@ -44,6 +44,7 @@ function updateStats() {
   // Population supply vs nameplate production (placed houses / buildings only)
   if (typeof countPlacedPopulationHousesByType === 'function' &&
       typeof getPopulationDemandFromPlacedHouses === 'function' &&
+      typeof getPopulationChainGoodDemandFromPlacedHouses === 'function' &&
       typeof aggregatePlacedProducerOutputRates === 'function') {
     const popCounts = countPlacedPopulationHousesByType();
     const placedPopN = Object.values(popCounts).reduce((a, n) => a + n, 0);
@@ -51,12 +52,12 @@ function updateStats() {
       html += '<h4 style="margin-top:8px;font-size:0.85rem">Population supply</h4>';
       html += '<p style="color:#888;font-size:0.72rem;margin:4px 0 0;line-height:1.35;">Place population houses to see goods demand vs production.</p>';
     } else {
-      const demand = getPopulationDemandFromPlacedHouses();
+      const chainNeed = getPopulationChainGoodDemandFromPlacedHouses();
       const produced = aggregatePlacedProducerOutputRates();
-      const resIds = new Set([...Object.keys(demand), ...Object.keys(produced)]);
+      const resIds = new Set([...Object.keys(chainNeed), ...Object.keys(produced)]);
       const rows = [...resIds].map(resId => ({
         resId,
-        need: demand[resId] || 0,
+        need: chainNeed[resId] || 0,
         prod: produced[resId] || 0,
       }));
       rows.sort((a, b) => {
@@ -67,7 +68,7 @@ function updateStats() {
       });
       const eps = typeof ISLAND_STATS_RATE_EPS === 'number' ? ISLAND_STATS_RATE_EPS : 1e-5;
       html += '<h4 style="margin-top:8px;font-size:0.85rem">Population supply (goods/min)</h4>';
-      html += '<p style="color:#666;font-size:0.65rem;margin:2px 0 6px;line-height:1.35;">Need from <strong>placed</strong> houses; produced = sum of nameplate rates from placed buildings (inputs assumed). Map tiles/regen not counted. Use Production Planner for full chains.</p>';
+      html += '<p style="color:#666;font-size:0.65rem;margin:2px 0 6px;line-height:1.35;"><strong>Need</strong> = direct goods from <strong>placed</strong> houses + upstream inputs from the same chain solver as the Production Planner (tiers, fertilities, producer picks). <strong>Produced</strong> = nameplate rates from placed buildings only; regen map tiles not counted—tile-only goods (e.g. apple trees) may show Short.</p>';
       html += '<table style="width:100%;border-collapse:collapse;font-size:0.72rem;"><thead><tr style="color:#888;">'
         + '<th align="left" style="font-weight:600;padding:2px 4px 2px 0;">Resource</th>'
         + '<th align="right" style="font-weight:600;padding:2px 4px;">Need</th>'

@@ -54,7 +54,11 @@ function updateStats() {
     } else {
       const chainNeed = getPopulationChainGoodDemandFromPlacedHouses();
       const produced = aggregatePlacedProducerOutputRates();
-      const resIds = new Set([...Object.keys(chainNeed), ...Object.keys(produced)]);
+      const resIds = new Set(
+        [...Object.keys(chainNeed), ...Object.keys(produced)].filter(
+          id => typeof TILE_RESOURCE_IDS === 'undefined' || !TILE_RESOURCE_IDS.has(id)
+        )
+      );
       const rows = [...resIds].map(resId => ({
         resId,
         need: chainNeed[resId] || 0,
@@ -68,7 +72,7 @@ function updateStats() {
       });
       const eps = typeof ISLAND_STATS_RATE_EPS === 'number' ? ISLAND_STATS_RATE_EPS : 1e-5;
       html += '<h4 style="margin-top:8px;font-size:0.85rem">Population supply (goods/min)</h4>';
-      html += '<p style="color:#666;font-size:0.65rem;margin:2px 0 6px;line-height:1.35;"><strong>Need</strong> = direct goods from <strong>placed</strong> houses + upstream inputs from the same chain solver as the Production Planner (tiers, fertilities, producer picks). <strong>Produced</strong> = nameplate rates from placed buildings only; regen map tiles not counted—tile-only goods (e.g. apple trees) may show Short.</p>';
+      html += '<p style="color:#666;font-size:0.65rem;margin:2px 0 6px;line-height:1.35;"><strong>Need</strong> = direct goods from <strong>placed</strong> houses + upstream inputs from the same chain solver as the Production Planner (tiers, fertilities, producer picks). <strong>Produced</strong> = nameplate rates from placed buildings only; map tile resources are omitted from this table.</p>';
       html += '<table style="width:100%;border-collapse:collapse;font-size:0.72rem;"><thead><tr style="color:#888;">'
         + '<th align="left" style="font-weight:600;padding:2px 4px 2px 0;">Resource</th>'
         + '<th align="right" style="font-weight:600;padding:2px 4px;">Need</th>'

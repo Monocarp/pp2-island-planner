@@ -499,6 +499,8 @@ function syncMultiIslandUI() {
   if (shipsBtn) shipsBtn.style.display = multi ? 'inline-block' : 'none';
   const planBtn = document.getElementById('btn-multi-island-plan');
   if (planBtn) planBtn.style.display = multi ? 'inline-block' : 'none';
+  const importSaveBtn = document.getElementById('btn-import-save');
+  if (importSaveBtn) importSaveBtn.style.display = multi ? 'inline-block' : 'none';
   const delSlotBtn = document.getElementById('btn-delete-island-slot');
   if (delSlotBtn) {
     const canDel = multi && state.projectSlots.length > 1;

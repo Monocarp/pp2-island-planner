@@ -362,6 +362,7 @@ function loadFromLocalStorage() {
 
 document.getElementById('btn-save').addEventListener('click', saveToLocalStorage);
 document.getElementById('btn-load').addEventListener('click', loadFromLocalStorage);
+if (typeof initSaveImport === 'function') initSaveImport();
 
 function saveUnlocks() {
   localStorage.setItem('pp2_unlocked_buildings', JSON.stringify([...state.unlockedBuildings]));

@@ -1,0 +1,155 @@
+{
+  "ships": [
+    {
+      "type": 1,
+      "description": "Cog",
+      "baseSlots": 2,
+      "expandedSlots": null,
+      "baseSlotSize": 60,
+      "expandedSlotSize": 80,
+      "baseTravelMin": 120,
+      "improvedTravelMin": null
+    },
+    {
+      "type": 2,
+      "description": "Caravel",
+      "baseSlots": 2,
+      "expandedSlots": null,
+      "baseSlotSize": 40,
+      "expandedSlotSize": null,
+      "baseTravelMin": 60,
+      "improvedTravelMin": 40
+    },
+    {
+      "type": 3,
+      "description": "Hulk",
+      "baseSlots": 4,
+      "expandedSlots": null,
+      "baseSlotSize": 90,
+      "expandedSlotSize": 120,
+      "baseTravelMin": 120,
+      "improvedTravelMin": null
+    },
+    {
+      "type": 4,
+      "description": "Pinnace",
+      "baseSlots": 3,
+      "expandedSlots": null,
+      "baseSlotSize": 60,
+      "expandedSlotSize": null,
+      "baseTravelMin": 40,
+      "improvedTravelMin": 30
+    },
+    {
+      "type": 5,
+      "description": "Galleon",
+      "baseSlots": 6,
+      "expandedSlots": null,
+      "baseSlotSize": 180,
+      "expandedSlotSize": 240,
+      "baseTravelMin": 120,
+      "improvedTravelMin": null
+    },
+    {
+      "type": 6,
+      "description": "Clipper",
+      "baseSlots": 4,
+      "expandedSlots": null,
+      "baseSlotSize": 100,
+      "expandedSlotSize": null,
+      "baseTravelMin": 30,
+      "improvedTravelMin": 24
+    },
+    {
+      "type": 7,
+      "description": "Schooner",
+      "baseSlots": 6,
+      "expandedSlots": null,
+      "baseSlotSize": 540,
+      "expandedSlotSize": 720,
+      "baseTravelMin": 120,
+      "improvedTravelMin": null
+    },
+    {
+      "type": 8,
+      "description": "Windjammer",
+      "baseSlots": 5,
+      "expandedSlots": null,
+      "baseSlotSize": 200,
+      "expandedSlotSize": null,
+      "baseTravelMin": 24,
+      "improvedTravelMin": 20
+    },
+    {
+      "type": 10,
+      "description": "Barque",
+      "baseSlots": 2,
+      "expandedSlots": null,
+      "baseSlotSize": 60,
+      "expandedSlotSize": 80,
+      "baseTravelMin": 120,
+      "improvedTravelMin": null
+    },
+    {
+      "type": 11,
+      "description": "Skiff",
+      "baseSlots": 2,
+      "expandedSlots": null,
+      "baseSlotSize": 40,
+      "expandedSlotSize": null,
+      "baseTravelMin": 60,
+      "improvedTravelMin": 40
+    },
+    {
+      "type": 12,
+      "description": "Phoenix (Flagship)",
+      "baseSlots": 3,
+      "expandedSlots": null,
+      "baseSlotSize": 60,
+      "expandedSlotSize": 120,
+      "baseTravelMin": 60,
+      "improvedTravelMin": 40
+    },
+    {
+      "type": 13,
+      "description": "Misty Lady (Flagship)",
+      "baseSlots": 3,
+      "expandedSlots": null,
+      "baseSlotSize": 60,
+      "expandedSlotSize": 120,
+      "baseTravelMin": 60,
+      "improvedTravelMin": 40
+    },
+    {
+      "type": 14,
+      "description": "Dying Gull (Flagship)",
+      "baseSlots": 4,
+      "expandedSlots": 6,
+      "baseSlotSize": 180,
+      "expandedSlotSize": null,
+      "baseTravelMin": 40,
+      "improvedTravelMin": 30
+    },
+    {
+      "type": 15,
+      "description": "Interceptor (Flagship)",
+      "baseSlots": 6,
+      "expandedSlots": null,
+      "baseSlotSize": 540,
+      "expandedSlotSize": null,
+      "baseTravelMin": 20,
+      "improvedTravelMin": null
+    },
+    {
+      "type": 16,
+      "description": "Blue Pearl",
+      "baseSlots": 6,
+      "expandedSlots": null,
+      "baseSlotSize": 1000,
+      "expandedSlotSize": null,
+      "baseTravelMin": 10,
+      "improvedTravelMin": null
+    }
+  ],
+  "notes": "Expanded upgrades are research-unlocked ship-specific upgrades. Global ship upgrades will be added later."
+}

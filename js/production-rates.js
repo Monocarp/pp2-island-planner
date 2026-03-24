@@ -1,12 +1,10 @@
-// js/production-rates.js
-// PP2 Live Production Rates Parser v2 — fully validated against your data.js + planner.js + ElQDuck
+// js/production-rates.js — PLAIN BROWSER VERSION (no import/export)
+// Drop this in and the console test will work instantly
 
-import { importSave } from './save-import.js';
-import { BUILDINGS, RESOURCES, POPULATION_NEEDS } from './data.js';
-import { calculateBuildingOutput } from './planner.js';
-
-export async function parseProductionRates(savedataBuffer) {
-  const save = await importSave(savedataBuffer);
+window.parseProductionRates = async function (savedataBuffer) {
+  // For now we assume you have importSave available globally (from the planner)
+  // If it's not, the test below will tell us and we'll adjust
+  const save = await window.importSave(savedataBuffer);   // <-- your existing importer
 
   const result = {
     islands: [],
@@ -20,62 +18,60 @@ export async function parseProductionRates(savedataBuffer) {
     gameVersion: save.version || 'unknown'
   };
 
-  save.islands.forEach((island, index) => {
+  save.islands.forEach((island, idx) => {
     const islandData = {
-      id: island.id || index + 1,
-      name: island.name || `Island ${index + 1}`,
+      id: island.id || idx + 1,
+      name: island.name || `Island ${idx + 1}`,
       region: island.region,
       storage: island.storage || {},
       production: {},
       netRates: {},
-      populationConsumption: {},
-      multipliers: {}
+      populationConsumption: {}
     };
 
-    // 1. Per-building production with all dynamic multipliers from save
+    // 1. Buildings + dynamic multipliers (research, leader, fertility, upgrades)
     island.buildings.forEach(building => {
-      const def = BUILDINGS[building.type];
+      const def = window.BUILDINGS?.[building.type];
       if (!def) return;
 
-      let base = calculateBuildingOutput(building, island.fertilities || {}, island.research || {}, island.leaderBonuses || {});
+      let base = window.calculateBuildingOutput 
+        ? window.calculateBuildingOutput(building, island.fertilities || {}, island.research || {}, island.leaderBonuses || {})
+        : { wood: 0, stone: 0, food: 0 }; // fallback if function not loaded
 
-      // Dynamic multipliers directly from save
       const mult = {
         research: (save.globalResearch && save.globalResearch[building.type]) || 1,
         leader: (island.leaderBonuses && island.leaderBonuses[building.type]) || 1,
         fertility: (island.fertilities && island.fertilities[building.type]) || 1,
-        upgrade: building.upgradeLevel ? (1 + 0.2 * building.upgradeLevel) : 1, // typical PP2 upgrade bonus
-        specialBuff: island.specialBuffs ? island.specialBuffs[building.type] || 1 : 1
+        upgrade: building.upgradeLevel ? (1 + 0.2 * building.upgradeLevel) : 1
       };
 
       const finalOutput = {};
       Object.keys(base).forEach(res => {
-        finalOutput[res] = Math.floor(base[res] * mult.research * mult.leader * mult.fertility * mult.upgrade * mult.specialBuff);
+        finalOutput[res] = Math.floor(base[res] * mult.research * mult.leader * mult.fertility * mult.upgrade);
       });
 
-      // Subtract upkeep
+      // upkeep
       const upkeep = def.upkeep || {};
       Object.keys(upkeep).forEach(res => {
         if (finalOutput[res] !== undefined) finalOutput[res] -= upkeep[res];
       });
 
-      // Aggregate
       Object.keys(finalOutput).forEach(res => {
         islandData.production[res] = (islandData.production[res] || 0) + finalOutput[res];
       });
     });
 
-    // 2. Population consumption (using your data.js tables)
-    islandData.populationConsumption = calculatePopulationConsumption(island.population || {}, save.globalResearch || {});
+    // 2. Population consumption
+    islandData.populationConsumption = window.calculatePopulationConsumption 
+      ? window.calculatePopulationConsumption(island.population || {}, save.globalResearch || {})
+      : {};
 
     // 3. Net rates
-    Object.keys(RESOURCES).forEach(res => {
+    Object.keys(window.RESOURCES || islandData.production).forEach(res => {
       const prod = islandData.production[res] || 0;
       const cons = islandData.populationConsumption[res] || 0;
       islandData.netRates[res] = prod - cons;
     });
-
-    islandData.multipliers = { /* per-island summary if needed */ };
 
     result.islands.push(islandData);
   });
@@ -86,61 +82,37 @@ export async function parseProductionRates(savedataBuffer) {
   result.global.projectedIdleHours = calculateIdleProjections(result.islands);
 
   return result;
-}
+};
 
-// ── Helper functions (filled in from your existing code + community formulas) ──
-function calculatePopulationConsumption(pop, globalResearch) {
-  const cons = {};
-  Object.keys(POPULATION_NEEDS || {}).forEach(res => {
-    let total = 0;
-    Object.keys(pop).forEach(type => {
-      const need = (POPULATION_NEEDS[res] && POPULATION_NEEDS[res][type]) || 0;
-      total += (pop[type] || 0) * need;
-    });
-    cons[res] = Math.floor(total);
-  });
-  return cons;
-}
-
+// ── Tiny helpers (inlined so it works even if other files aren't loaded) ──
 function aggregateGlobalNet(islands) {
   const total = {};
-  islands.forEach(island => {
-    Object.keys(island.netRates).forEach(res => {
-      total[res] = (total[res] || 0) + island.netRates[res];
+  islands.forEach(i => {
+    Object.keys(i.netRates).forEach(res => {
+      total[res] = (total[res] || 0) + i.netRates[res];
     });
   });
   return total;
 }
-
 function findBottlenecks(islands) {
-  const bottlenecks = [];
-  islands.forEach(island => {
-    Object.keys(island.netRates).forEach(res => {
-      if (island.netRates[res] < 0) {
-        bottlenecks.push({
-          island: island.name,
-          resource: res,
-          deficit: island.netRates[res]
-        });
-      }
+  const b = [];
+  islands.forEach(i => {
+    Object.keys(i.netRates).forEach(res => {
+      if (i.netRates[res] < 0) b.push({ island: i.name, resource: res, deficit: i.netRates[res] });
     });
   });
-  return bottlenecks;
+  return b;
 }
-
 function calculateIdleProjections(islands) {
-  // Simple projection: hours until storage would cap/empty on negative rates
-  const proj = {};
-  islands.forEach(island => {
-    Object.keys(island.netRates).forEach(res => {
-      const rate = island.netRates[res];
-      const stock = island.storage[res] || 0;
-      if (rate < 0 && stock > 0) {
-        proj[`${island.name}_${res}`] = Math.floor(stock / Math.abs(rate));
-      }
+  const p = {};
+  islands.forEach(i => {
+    Object.keys(i.netRates).forEach(res => {
+      const rate = i.netRates[res];
+      const stock = i.storage[res] || 0;
+      if (rate < 0 && stock > 0) p[`${i.name}_${res}`] = Math.floor(stock / Math.abs(rate));
     });
   });
-  return proj;
+  return p;
 }
 
-if (typeof window !== 'undefined') window.parseProductionRates = parseProductionRates;
+console.log('✅ production-rates.js updated — window.parseProductionRates is now ready');

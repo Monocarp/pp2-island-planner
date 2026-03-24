@@ -1,47 +1,41 @@
-// js/production-rates.js — LIVE PRODUCTION PARSER (v1)
-// Works directly with your JSON save file. Run it on the planner page or in console.
+// js/production-rates.js — FINAL LIVE PRODUCTION PARSER
+// Extracts current stocks + island overview from your JSON save.
+// Ready for the companion app (stocks = "live" numbers).
 
-window.parseProductionRates = function (saveJson) {
+window.parseProductionRates = function (save) {
   const result = {
-    stocks: {},               // current balance for every resource (global)
+    stocks: {},                    // current balance for every resource (global)
     islands: [],
+    researchCompleted: save.ResearchManager?.CompletedResearchTimes?.length || 0,
+    timestamp: Date.now(),
+    // Future fields (net rates will be filled in v2 once we hook planner.js)
     globalNetRates: {},
     bottlenecks: [],
-    projectedIdleHours: {},
-    researchCompleted: saveJson.ResearchManager?.CompletedResearchTimes?.length || 0,
-    timestamp: Date.now()
+    projectedIdleHours: {}
   };
 
-  // 1. Current stock levels (the "live" part everyone wants)
-  (saveJson.ResourceManager?.GlobalResources?.Resources || []).forEach(r => {
+  // 1. Current stock levels (the most important "live" data)
+  (save.ResourceManager?.GlobalResources?.Resources || []).forEach(r => {
     result.stocks[r.key] = r.value.balance;
   });
 
-  // 2. Per-island overview + building counts (we'll expand to full rates next)
-  const islands = saveJson.IslandManager?.islands || [];
+  // 2. Island overview
+  const islands = save.IslandManager?.islands || [];
   islands.forEach((island, idx) => {
-    const islandData = {
+    result.islands.push({
       id: island.UID || idx + 1,
       name: island.Name || `Island ${idx + 1}`,
-      buildingCount: (island.GameEntities || []).length,
-      stocks: {},          // we can map per-island later if needed
-      production: {},      // placeholder for calculated rates
-      netRates: {}
-    };
-
-    // For now we log the stocks globally; in v2 we will calculate per-island production
-    result.islands.push(islandData);
+      buildingCount: (island.GameEntities || []).length
+    });
   });
 
-  // 3. Basic global net rates stub (expand with planner.js in next version)
-  // For now we just show total stock as a starting point
-  console.log('✅ Production parser v1 complete — current stocks extracted for all resources');
+  console.log('✅ parseProductionRates complete');
   console.log('Islands:', result.islands.length);
   console.log('Research completed:', result.researchCompleted);
-  console.log('Sample stocks (first 5):', Object.fromEntries(Object.entries(result.stocks).slice(0, 5)));
+  console.table(result.stocks);
 
   return result;
 };
 
-// Auto-run example so you can test immediately in console
-console.log('✅ production-rates.js loaded — type parseProductionRates(window.currentSave) after loading your save');
+// Auto-test message
+console.log('✅ production-rates.js vFINAL loaded — call window.parseProductionRates(window.currentSave) in console');

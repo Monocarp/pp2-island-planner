@@ -1,87 +1,47 @@
-// js/production-rates.js — FULLY STANDALONE BROWSER VERSION
-// Paste this, commit, then run the console test below
+// js/production-rates.js — LIVE PRODUCTION PARSER (v1)
+// Works directly with your JSON save file. Run it on the planner page or in console.
 
-window.parseProductionRates = async function (savedataBuffer) {
-  // Direct JSON parse (your save file is JSON, not binary .dat)
-  const text = new TextDecoder().decode(savedataBuffer);
-  const save = JSON.parse(text);
-
+window.parseProductionRates = function (saveJson) {
   const result = {
+    stocks: {},               // current balance for every resource (global)
     islands: [],
-    global: {
-      totalNet: {},
-      bottlenecks: [],
-      projectedIdleHours: {}
-    },
-    timestamp: Date.now(),
-    gameVersion: save.version || 'unknown'
+    globalNetRates: {},
+    bottlenecks: [],
+    projectedIdleHours: {},
+    researchCompleted: saveJson.ResearchManager?.CompletedResearchTimes?.length || 0,
+    timestamp: Date.now()
   };
 
-  save.islands.forEach((island, idx) => {
+  // 1. Current stock levels (the "live" part everyone wants)
+  (saveJson.ResourceManager?.GlobalResources?.Resources || []).forEach(r => {
+    result.stocks[r.key] = r.value.balance;
+  });
+
+  // 2. Per-island overview + building counts (we'll expand to full rates next)
+  const islands = saveJson.IslandManager?.islands || [];
+  islands.forEach((island, idx) => {
     const islandData = {
-      id: island.id || idx + 1,
-      name: island.name || `Island ${idx + 1}`,
-      storage: island.storage || {},
-      production: {},
-      netRates: {},
-      populationConsumption: {}
+      id: island.UID || idx + 1,
+      name: island.Name || `Island ${idx + 1}`,
+      buildingCount: (island.GameEntities || []).length,
+      stocks: {},          // we can map per-island later if needed
+      production: {},      // placeholder for calculated rates
+      netRates: {}
     };
 
-    // Production from buildings + dynamic multipliers from save
-    (island.buildings || []).forEach(building => {
-      const base = {}; // placeholder — we’ll improve once we see real data
-      // TODO: replace with real calculateBuildingOutput once we validate
-
-      const mult = {
-        research: (save.globalResearch && save.globalResearch[building.type]) || 1,
-        leader: (island.leaderBonuses && island.leaderBonuses[building.type]) || 1,
-        fertility: (island.fertilities && island.fertilities[building.type]) || 1,
-        upgrade: building.upgradeLevel ? (1 + 0.2 * building.upgradeLevel) : 1
-      };
-
-      Object.keys(base).forEach(res => {
-        islandData.production[res] = (islandData.production[res] || 0) + Math.floor(base[res] * mult.research * mult.leader * mult.fertility * mult.upgrade);
-      });
-    });
-
-    // Net rates (for now using production only until we see real data)
-    Object.keys(islandData.production).forEach(res => {
-      islandData.netRates[res] = islandData.production[res];
-    });
-
+    // For now we log the stocks globally; in v2 we will calculate per-island production
     result.islands.push(islandData);
   });
 
-  // Global aggregates
-  result.global.totalNet = aggregateGlobalNet(result.islands);
-  result.global.bottlenecks = findBottlenecks(result.islands);
-  result.global.projectedIdleHours = calculateIdleProjections(result.islands);
+  // 3. Basic global net rates stub (expand with planner.js in next version)
+  // For now we just show total stock as a starting point
+  console.log('✅ Production parser v1 complete — current stocks extracted for all resources');
+  console.log('Islands:', result.islands.length);
+  console.log('Research completed:', result.researchCompleted);
+  console.log('Sample stocks (first 5):', Object.fromEntries(Object.entries(result.stocks).slice(0, 5)));
 
   return result;
 };
 
-function aggregateGlobalNet(islands) {
-  const total = {};
-  islands.forEach(i => Object.keys(i.netRates || {}).forEach(res => {
-    total[res] = (total[res] || 0) + (i.netRates[res] || 0);
-  }));
-  return total;
-}
-function findBottlenecks(islands) {
-  const b = [];
-  islands.forEach(i => Object.keys(i.netRates || {}).forEach(res => {
-    if ((i.netRates[res] || 0) < 0) b.push({ island: i.name, resource: res, deficit: i.netRates[res] });
-  }));
-  return b;
-}
-function calculateIdleProjections(islands) {
-  const p = {};
-  islands.forEach(i => Object.keys(i.netRates || {}).forEach(res => {
-    const rate = i.netRates[res] || 0;
-    const stock = i.storage[res] || 0;
-    if (rate < 0 && stock > 0) p[`${i.name}_${res}`] = Math.floor(stock / Math.abs(rate));
-  }));
-  return p;
-}
-
-console.log('✅ production-rates.js is now ready for console testing');
+// Auto-run example so you can test immediately in console
+console.log('✅ production-rates.js loaded — type parseProductionRates(window.currentSave) after loading your save');

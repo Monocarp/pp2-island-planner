@@ -1,0 +1,1055 @@
+{
+  "research": [
+    {
+      "id": 1,
+      "name": "Axehammer",
+      "description": "Buildings cost 5 less wood, but your workers curse you for having to chop down the trees themselves."
+    },
+    {
+      "id": 2,
+      "name": "Optimized Construction",
+      "description": "Buildings cost 10 less planks, and your inhabitants hope it doesn't get too windy."
+    },
+    {
+      "id": 3,
+      "name": "Pig Ranch",
+      "description": "Is 4 times as effective as the piggery, but needs more space."
+    },
+    {
+      "id": 4,
+      "name": "Sawmill",
+      "description": "Saws double the amount of wood as the saw works, and yields more planks from the same amount of wood, but needs a river build spot."
+    },
+    {
+      "id": 5,
+      "name": "Arboretum",
+      "description": "Plants new trees in forest spaces with fewer than three trees."
+    },
+    {
+      "id": 6,
+      "name": "Storage Expansion",
+      "description": "Expands the island storage by 50."
+    },
+    {
+      "id": 7,
+      "name": "Garrison Expansion",
+      "description": "Expands the garrison limit by 20."
+    },
+    {
+      "id": 8,
+      "name": "Sprouting Touch",
+      "description": "Automatically replants trees chopped by hand."
+    },
+    {
+      "id": 9,
+      "name": "Echoing Touch",
+      "description": "Each tap is now counted as double."
+    },
+    {
+      "id": 10,
+      "name": "Aquatic Touch Technique",
+      "description": "You can now fish by hand, and might find random flotsam."
+    },
+    {
+      "id": 11,
+      "name": "War Drums",
+      "description": "All future battles are 10 minutes shorter."
+    },
+    {
+      "id": 12,
+      "name": "Bannerman",
+      "description": "You can assign 10 additional units to a battle."
+    },
+    {
+      "id": 13,
+      "name": "Village Fair",
+      "description": "You receive once-only 30 militias."
+    },
+    {
+      "id": 14,
+      "name": "Vanguard",
+      "description": "Each newly discovered island will be equipped with militia up to the garrison limit."
+    },
+    {
+      "id": 15,
+      "name": "Squire",
+      "description": "With a hastily assembled wooden shield, this unit is remarkably resistant to ranged attacks."
+    },
+    {
+      "id": 16,
+      "name": "Better Relations",
+      "description": "You can discover one more island."
+    },
+    {
+      "id": 17,
+      "name": "Bigger Islands",
+      "description": "Increases the maximum island size by 2."
+    },
+    {
+      "id": 18,
+      "name": "Exploration (requires Phoenix from the Ashes)",
+      "description": "You receive once-only 1 cartography."
+    },
+    {
+      "id": 19,
+      "name": "Outpost",
+      "description": "Each newly discovered island will start with a garrison equal to the Kontor tier."
+    },
+    {
+      "id": 20,
+      "name": "Clearing",
+      "description": "You get the free cartography option to clear a newly discovered island of all trees."
+    },
+    {
+      "id": 21,
+      "name": "Better Spyglasses",
+      "description": "All island discoveries are completed 35% faster."
+    },
+    {
+      "id": 22,
+      "name": "Improved Sails",
+      "description": "All ships are 10% faster within a region."
+    },
+    {
+      "id": 23,
+      "name": "Phoenix from the Ashes",
+      "description": "You will receive once-only a small flagship."
+    },
+    {
+      "id": 24,
+      "name": "Efficient Stacking (requires Phoenix from the Ashes)",
+      "description": "Your small flagships can now carry twice the amount of cargo."
+    },
+    {
+      "id": 25,
+      "name": "Streamlined Hull (requires Phoenix from the Ashes)",
+      "description": "Your small flagships' travel time is reduced by 33% within a region."
+    },
+    {
+      "id": 26,
+      "name": "Optimized Accounting",
+      "description": "All your inhabitants pay 5% more taxes."
+    },
+    {
+      "id": 27,
+      "name": "Slack Time",
+      "description": "Your pioneers generate 10% more creativity."
+    },
+    {
+      "id": 28,
+      "name": "Cistern",
+      "description": "Provides fresh water to houses in a large area."
+    },
+    {
+      "id": 29,
+      "name": "Labor Camp",
+      "description": "You can trade in your militias for a selection of basic building materials here every 8 hours."
+    },
+    {
+      "id": 30,
+      "name": "Psychological Persuasion",
+      "description": "Your pioneers provide 20% more militias."
+    },
+    {
+      "id": 31,
+      "name": "Wage Optimization",
+      "description": "Buildings cost 5 fewer coins."
+    },
+    {
+      "id": 32,
+      "name": "Optimized Construction",
+      "description": "Buildings cost 10 less limestone."
+    },
+    {
+      "id": 33,
+      "name": "Flour Windmill",
+      "description": "Grinds wheat into flour. Has the same efficiency, but doesn't need a river build spot."
+    },
+    {
+      "id": 34,
+      "name": "Rickyard",
+      "description": "Consumes wheat to double the yield at all nearby ranches."
+    },
+    {
+      "id": 35,
+      "name": "Textile Factory",
+      "description": "Processes yarn into fabric. Produces more fabric from less yarn, but needs a river build spot."
+    },
+    {
+      "id": 36,
+      "name": "Storage Expansion",
+      "description": "Expands the island storage by 100."
+    },
+    {
+      "id": 37,
+      "name": "Garrison Expansion",
+      "description": "Expands the garrison limit by 20."
+    },
+    {
+      "id": 38,
+      "name": "Forefinger Workout",
+      "description": "You can now quarry limestone by hand on temperate islands."
+    },
+    {
+      "id": 39,
+      "name": "Cargo Kontor",
+      "description": "Reduces the cargo queue of trade routes by half."
+    },
+    {
+      "id": 40,
+      "name": "Trade Charter",
+      "description": "You can now sell random goods in exchange for coins at the kontor every 8 hours."
+    },
+    {
+      "id": 41,
+      "name": "War Drums",
+      "description": "All future battles are 10 minutes shorter."
+    },
+    {
+      "id": 42,
+      "name": "Bannerman",
+      "description": "You can assign 10 additional units to a battle."
+    },
+    {
+      "id": 43,
+      "name": "Mercenaries",
+      "description": "You can recruit units for coins in your garrison."
+    },
+    {
+      "id": 44,
+      "name": "Pillage",
+      "description": "Each conquered enemy camp yields some coins."
+    },
+    {
+      "id": 45,
+      "name": "Berserker",
+      "description": "This fearsome warrior whirls with his greataxe through the enemy ranks."
+    },
+    {
+      "id": 46,
+      "name": "Better Relations",
+      "description": "You can discover one more island."
+    },
+    {
+      "id": 47,
+      "name": "Bigger Islands",
+      "description": "Increases the maximum island size by 2."
+    },
+    {
+      "id": 48,
+      "name": "Construction Unit I",
+      "description": "You get the cartography option to start a newly discovered temperate island with a Kontor II."
+    },
+    {
+      "id": 49,
+      "name": "Seedlings",
+      "description": "Reduces the cost of selecting fertilities for newly discovered islands by 4."
+    },
+    {
+      "id": 50,
+      "name": "Processing (requires Clearing)",
+      "description": "The cartography option to clear an island of trees yields the same amount of planks in addition to wood."
+    },
+    {
+      "id": 51,
+      "name": "Better Spyglasses",
+      "description": "All island discoveries are completed 35% faster."
+    },
+    {
+      "id": 52,
+      "name": "Improved Sails",
+      "description": "All ships are 10% faster within a region."
+    },
+    {
+      "id": 53,
+      "name": "Fleet Command",
+      "description": "You can now send an additional ship on a discovery mission."
+    },
+    {
+      "id": 54,
+      "name": "Efficient Stacking",
+      "description": "Your cogs can now carry 20 more per cargo hold."
+    },
+    {
+      "id": 55,
+      "name": "Streamlined Hull",
+      "description": "Your caravels' travel time is reduced by 33%."
+    },
+    {
+      "id": 56,
+      "name": "Optimized Accounting",
+      "description": "All your inhabitants pay 5% more taxes."
+    },
+    {
+      "id": 57,
+      "name": "Slack Time",
+      "description": "Your colonists generate 10% more creativity."
+    },
+    {
+      "id": 58,
+      "name": "Harbor Tavern",
+      "description": "Provides community to houses in a huge area."
+    },
+    {
+      "id": 59,
+      "name": "Mercenary Guild",
+      "description": "You can trade in a random selection of troops for coins here every 8 hours."
+    },
+    {
+      "id": 60,
+      "name": "Property Tax",
+      "description": "Your colonists reluctantly pay 20% more taxes."
+    },
+    {
+      "id": 61,
+      "name": "Wage Optimization",
+      "description": "Buildings cost 5 fewer coins."
+    },
+    {
+      "id": 62,
+      "name": "Optimized Construction",
+      "description": "Buildings cost 10 less mortar."
+    },
+    {
+      "id": 63,
+      "name": "Paddock",
+      "description": "Consumes horses to double the yield of all nearby farms."
+    },
+    {
+      "id": 64,
+      "name": "Charcoal Kiln",
+      "description": "Burns wood to produce coal."
+    },
+    {
+      "id": 65,
+      "name": "Boulder Gatherer",
+      "description": "Gathers limestone on grass fields without buildings."
+    },
+    {
+      "id": 66,
+      "name": "Storage Expansion",
+      "description": "Expands the island storage by 150."
+    },
+    {
+      "id": 67,
+      "name": "Garrison Expansion",
+      "description": "Expands the garrison limit by 20."
+    },
+    {
+      "id": 68,
+      "name": "Swift Finger (requires Echoing Touch)",
+      "description": "Each tap is now counted as triple."
+    },
+    {
+      "id": 69,
+      "name": "Ship Guild",
+      "description": "Once a day, you can charter a fast ship here for 24 hours using coins."
+    },
+    {
+      "id": 70,
+      "name": "Weir",
+      "description": "Doubles the effectiveness of a coastal field for fishermen."
+    },
+    {
+      "id": 71,
+      "name": "War Drums",
+      "description": "All future battles are 15 minutes shorter."
+    },
+    {
+      "id": 72,
+      "name": "Bannerman",
+      "description": "You can assign 10 additional units to a battle."
+    },
+    {
+      "id": 73,
+      "name": "Bribery",
+      "description": "You have the ability to bribe enemy units."
+    },
+    {
+      "id": 74,
+      "name": "Baggage Train",
+      "description": "Increases the supporter limit to twice the assignment limit."
+    },
+    {
+      "id": 75,
+      "name": "War Drummer",
+      "description": "This support unit encourages your units to fight faster."
+    },
+    {
+      "id": 76,
+      "name": "Better Relations",
+      "description": "You can discover one more island."
+    },
+    {
+      "id": 77,
+      "name": "Bigger Islands",
+      "description": "Increases the maximum island size by 2."
+    },
+    {
+      "id": 78,
+      "name": "Construction Unit II",
+      "description": "You get the cartography option to start a newly discovered temperate island with a Kontor III."
+    },
+    {
+      "id": 79,
+      "name": "Orology",
+      "description": "Changes to mountain size cost 1 cartography less."
+    },
+    {
+      "id": 80,
+      "name": "Tropical Islands",
+      "description": "You can now discover islands in the tropical region."
+    },
+    {
+      "id": 81,
+      "name": "Better Spyglasses",
+      "description": "All island discoveries are completed 35% faster."
+    },
+    {
+      "id": 82,
+      "name": "Improved Sails",
+      "description": "All ships are 10% faster within a region."
+    },
+    {
+      "id": 83,
+      "name": "Supply Casks",
+      "description": "Your small flagships can now travel to other regions."
+    },
+    {
+      "id": 84,
+      "name": "Efficient Stacking",
+      "description": "Your hulks can now carry 30 more per cargo hold."
+    },
+    {
+      "id": 85,
+      "name": "Streamlined Hull",
+      "description": "Your pinnaces' travel time is reduced by 25% within a region."
+    },
+    {
+      "id": 86,
+      "name": "Optimized Accounting",
+      "description": "All your inhabitants pay 5% more taxes."
+    },
+    {
+      "id": 87,
+      "name": "Slack Time",
+      "description": "Your townsmen generate 10% more creativity."
+    },
+    {
+      "id": 88,
+      "name": "Town School",
+      "description": "Provides surrounding houses in a huge area with access to education."
+    },
+    {
+      "id": 89,
+      "name": "Fair",
+      "description": "Provides community to houses within a large area."
+    },
+    {
+      "id": 90,
+      "name": "Middle Class Tax",
+      "description": "Your townsmen reluctantly pay 20% more taxes."
+    },
+    {
+      "id": 91,
+      "name": "Wage Optimization",
+      "description": "Buildings cost 5 fewer coins."
+    },
+    {
+      "id": 92,
+      "name": "Optimized Construction",
+      "description": "Buildings cost 10 less bricks."
+    },
+    {
+      "id": 93,
+      "name": "Deep Copper Mine",
+      "description": "Deep Copper Mine."
+    },
+    {
+      "id": 94,
+      "name": "Forest Warden's Cabin",
+      "description": "Forest Warden's Cabin."
+    },
+    {
+      "id": 95,
+      "name": "Coining Press",
+      "description": "Coining Press."
+    },
+    {
+      "id": 96,
+      "name": "Storage Expansion",
+      "description": "Expands the island storage by 400."
+    },
+    {
+      "id": 97,
+      "name": "Garrison Expansion",
+      "description": "Expands the garrison limit by 20."
+    },
+    {
+      "id": 98,
+      "name": "Breaking Touch",
+      "description": "Breaking Touch."
+    },
+    {
+      "id": 99,
+      "name": "Trading Acumen",
+      "description": "Trading Acumen."
+    },
+    {
+      "id": 100,
+      "name": "Cargo Trade Charter",
+      "description": "Cargo Trade Charter."
+    },
+    {
+      "id": 101,
+      "name": "War Drums",
+      "description": "All future battles are 25 minutes shorter."
+    },
+    {
+      "id": 102,
+      "name": "Bannerman",
+      "description": "You can assign 10 additional units to a battle."
+    },
+    {
+      "id": 103,
+      "name": "Larger Gold Pouches (requires Bribery)",
+      "description": "Increases the bribery limit by 50."
+    },
+    {
+      "id": 104,
+      "name": "Landing Barges",
+      "description": "Landing Barges."
+    },
+    {
+      "id": 105,
+      "name": "Composite Bow Archer",
+      "description": "Composite Bow Archer."
+    },
+    {
+      "id": 106,
+      "name": "Better Relations",
+      "description": "You can discover one more island."
+    },
+    {
+      "id": 107,
+      "name": "Bigger Islands",
+      "description": "Increases the maximum island size by 2."
+    },
+    {
+      "id": 108,
+      "name": "Construction Unit III",
+      "description": "You get the cartography option to start a newly discovered temperate island with a Kontor V."
+    },
+    {
+      "id": 109,
+      "name": "Northern Islands",
+      "description": "Northern Islands."
+    },
+    {
+      "id": 110,
+      "name": "Sugar Beets",
+      "description": "Sugar Beets."
+    },
+    {
+      "id": 111,
+      "name": "Better Spyglasses",
+      "description": "All island discoveries are completed 35% faster."
+    },
+    {
+      "id": 112,
+      "name": "Improved Sails",
+      "description": "All ships are 10% faster within a region."
+    },
+    {
+      "id": 113,
+      "name": "Legendary Captains",
+      "description": "Legendary Captains."
+    },
+    {
+      "id": 114,
+      "name": "Efficient Stacking",
+      "description": "Efficient Stacking."
+    },
+    {
+      "id": 115,
+      "name": "Streamlined Hull",
+      "description": "Streamlined Hull."
+    },
+    {
+      "id": 116,
+      "name": "Optimized Accounting",
+      "description": "All your inhabitants pay 5% more taxes."
+    },
+    {
+      "id": 117,
+      "name": "Slack Time",
+      "description": "Your paragons generate 10% more creativity."
+    },
+    {
+      "id": 118,
+      "name": "Hospital",
+      "description": "Hospital."
+    },
+    {
+      "id": 119,
+      "name": "Inventors' Guild",
+      "description": "Inventors' Guild."
+    },
+    {
+      "id": 120,
+      "name": "Wealth Tax",
+      "description": "Wealth Tax."
+    },
+    {
+      "id": 121,
+      "name": "Wage Optimization",
+      "description": "Buildings cost 5 fewer coins."
+    },
+    {
+      "id": 122,
+      "name": "Optimized Construction",
+      "description": "Buildings cost 10 less marble."
+    },
+    {
+      "id": 123,
+      "name": "Saltern",
+      "description": "Produces salt from seawater."
+    },
+    {
+      "id": 124,
+      "name": "Treasure Seeker",
+      "description": "Occasionally finds random treasures while exploring the island."
+    },
+    {
+      "id": 125,
+      "name": "Pantheon",
+      "description": "Provides surrounding houses in a huge area with access to culture."
+    },
+    {
+      "id": 126,
+      "name": "Storage Expansion",
+      "description": "Expands the island storage by 250."
+    },
+    {
+      "id": 127,
+      "name": "Garrison Expansion",
+      "description": "Expands the garrison limit by 20."
+    },
+    {
+      "id": 128,
+      "name": "Digging Touch",
+      "description": "You can now quarry granite by hand."
+    },
+    {
+      "id": 129,
+      "name": "Regular Customers",
+      "description": "You receive 25% more coins from trading."
+    },
+    {
+      "id": 130,
+      "name": "Professional Photography",
+      "description": "You can now sell random goods in exchange for coins at the cargo kontor every 8 hours."
+    },
+    {
+      "id": 131,
+      "name": "War Drums",
+      "description": "All future battles are 25 minutes shorter."
+    },
+    {
+      "id": 132,
+      "name": "Bannerman",
+      "description": "You can assign 10 additional units to a battle."
+    },
+    {
+      "id": 133,
+      "name": "Silver Tongue",
+      "description": "Increases the bribery limit by 50."
+    },
+    {
+      "id": 134,
+      "name": "Elite Bannerman",
+      "description": "You can assign 20 additional units to a battle."
+    },
+    {
+      "id": 135,
+      "name": "Musketeer",
+      "description": "This ranged unit is equipped with a musket."
+    },
+    {
+      "id": 136,
+      "name": "Better Relations",
+      "description": "You can discover one more island."
+    },
+    {
+      "id": 137,
+      "name": "Bigger Islands",
+      "description": "Increases the maximum island size by 2."
+    },
+    {
+      "id": 138,
+      "name": "Construction Unit IV",
+      "description": "You get the cartography option to start a newly discovered temperate island with a Kontor V."
+    },
+    {
+      "id": 139,
+      "name": "Shovel Brigade",
+      "description": "Changes to mountain size cost 2 cartography less."
+    },
+    {
+      "id": 140,
+      "name": "Marble Pit",
+      "description": "You can now select marble as a fertility for temperate islands."
+    },
+    {
+      "id": 141,
+      "name": "Better Spyglasses",
+      "description": "All island discoveries are completed 35% faster."
+    },
+    {
+      "id": 142,
+      "name": "Improved Sails",
+      "description": "All ships are 10% faster within a region."
+    },
+    {
+      "id": 143,
+      "name": "Interceptor",
+      "description": "All your flagships travel the open seas between regions five times faster."
+    },
+    {
+      "id": 144,
+      "name": "Efficient Stacking",
+      "description": "Your frigates can now carry 100 more per cargo hold."
+    },
+    {
+      "id": 145,
+      "name": "Streamlined Hull",
+      "description": "Your schooners' travel time is reduced by 15% within a region."
+    },
+    {
+      "id": 146,
+      "name": "Optimized Accounting",
+      "description": "All your inhabitants pay 5% more taxes."
+    },
+    {
+      "id": 147,
+      "name": "Slack Time",
+      "description": "Your paragons generate 10% more creativity."
+    },
+    {
+      "id": 148,
+      "name": "Senate",
+      "description": "Provides surrounding houses in a huge area with access to politics."
+    },
+    {
+      "id": 149,
+      "name": "Large Thermal Bath",
+      "description": "Provides community to houses within a large area."
+    },
+    {
+      "id": 150,
+      "name": "Elite Engagement",
+      "description": "Your paragons reluctantly pay 20% more taxes."
+    },
+    {
+      "id": 151,
+      "name": "Wage Optimization",
+      "description": "Buildings cost 5 fewer coins."
+    },
+    {
+      "id": 152,
+      "name": "Optimized Construction",
+      "description": "Buildings cost 10 less bricks."
+    },
+    {
+      "id": 153,
+      "name": "Crocodile Ranch",
+      "description": "Is 4 times as effective as the crocodile farm."
+    },
+    {
+      "id": 154,
+      "name": "Sugar Windmill",
+      "description": "Grinds sugar beets into sugar."
+    },
+    {
+      "id": 155,
+      "name": "Saltern",
+      "description": "Produces salt from seawater."
+    },
+    {
+      "id": 156,
+      "name": "Storage Expansion",
+      "description": "Expands the island storage by 200."
+    },
+    {
+      "id": 157,
+      "name": "Garrison Expansion",
+      "description": "Expands the garrison limit by 20."
+    },
+    {
+      "id": 158,
+      "name": "Explosive Touch",
+      "description": "You can now quarry granite by hand on tropical islands."
+    },
+    {
+      "id": 159,
+      "name": "Cargo Kontor",
+      "description": "Reduces the cargo queue of trade routes by half."
+    },
+    {
+      "id": 160,
+      "name": "Ship Guild",
+      "description": "Once a day, you can charter a fast ship here for 24 hours using coins."
+    },
+    {
+      "id": 161,
+      "name": "War Drums",
+      "description": "All future battles are 15 minutes shorter."
+    },
+    {
+      "id": 162,
+      "name": "Bannerman",
+      "description": "You can assign 10 additional units to a battle."
+    },
+    {
+      "id": 163,
+      "name": "Larger Gold Pouches",
+      "description": "Increases the bribery limit by 25."
+    },
+    {
+      "id": 164,
+      "name": "Ranged Vanguard",
+      "description": "With a hastily assembled wooden shield and a sling."
+    },
+    {
+      "id": 165,
+      "name": "Field Surgeon",
+      "description": "This support unit heals your units during battle."
+    },
+    {
+      "id": 166,
+      "name": "Better Relations",
+      "description": "You can discover one more island."
+    },
+    {
+      "id": 167,
+      "name": "Bigger Islands",
+      "description": "Increases the maximum island size by 2."
+    },
+    {
+      "id": 168,
+      "name": "Coal Pit",
+      "description": "You can now select coal as a fertility for tropical islands."
+    },
+    {
+      "id": 169,
+      "name": "Miner Training",
+      "description": "The cartography option to clear an island of trees yields the same amount of coal."
+    },
+    {
+      "id": 170,
+      "name": "Potamology",
+      "description": "You can now discover islands in the tropical region."
+    },
+    {
+      "id": 171,
+      "name": "Better Spyglasses",
+      "description": "All island discoveries are completed 35% faster."
+    },
+    {
+      "id": 172,
+      "name": "Improved Sails",
+      "description": "All ships are 10% faster within a region."
+    },
+    {
+      "id": 173,
+      "name": "Princess",
+      "description": "This fearsome warrior whirls with her dual blades."
+    },
+    {
+      "id": 174,
+      "name": "Efficient Stacking",
+      "description": "Your cogs can now carry 20 more per cargo hold."
+    },
+    {
+      "id": 175,
+      "name": "Streamlined Hull",
+      "description": "Your caravels' travel time is reduced by 33%."
+    },
+    {
+      "id": 176,
+      "name": "Optimized Accounting",
+      "description": "All your inhabitants pay 5% more taxes."
+    },
+    {
+      "id": 177,
+      "name": "Slack Time",
+      "description": "Your farmers generate 10% more creativity."
+    },
+    {
+      "id": 178,
+      "name": "Whim House",
+      "description": "You can trade in your militias for a selection of basic building materials."
+    },
+    {
+      "id": 179,
+      "name": "Labor Camp",
+      "description": "You can trade in your militias for a selection of basic building materials."
+    },
+    {
+      "id": 180,
+      "name": "Mobilization",
+      "description": "Your farmers provide 20% more militias."
+    },
+    {
+      "id": 181,
+      "name": "Wage Optimization",
+      "description": "Buildings cost 5 fewer coins."
+    },
+    {
+      "id": 182,
+      "name": "Optimized Construction",
+      "description": "Buildings cost 10 less granite."
+    },
+    {
+      "id": 183,
+      "name": "Gold Panner",
+      "description": "Gathers gold on grass fields without buildings."
+    },
+    {
+      "id": 184,
+      "name": "Mahogany Arboretum",
+      "description": "Plants new mahogany trees."
+    },
+    {
+      "id": 185,
+      "name": "Buffalo Butchery",
+      "description": "Processes buffalo into meat."
+    },
+    {
+      "id": 186,
+      "name": "Storage Expansion",
+      "description": "Expands the island storage by 250."
+    },
+    {
+      "id": 187,
+      "name": "Garrison Expansion",
+      "description": "Expands the garrison limit by 20."
+    },
+    {
+      "id": 188,
+      "name": "Shoveling Touch",
+      "description": "Each tap is now counted as double for quarrying."
+    },
+    {
+      "id": 189,
+      "name": "Rickyard",
+      "description": "Consumes wheat to double the yield at all nearby ranches."
+    },
+    {
+      "id": 190,
+      "name": "Buffalo Pasture",
+      "description": "Consumes wheat to double the yield at all nearby buffalo ranches."
+    },
+    {
+      "id": 191,
+      "name": "War Drums",
+      "description": "All future battles are 20 minutes shorter."
+    },
+    {
+      "id": 192,
+      "name": "Bannerman",
+      "description": "You can assign 10 additional units to a battle."
+    },
+    {
+      "id": 193,
+      "name": "Larger Gold Pouches",
+      "description": "Increases the bribery limit by 25."
+    },
+    {
+      "id": 194,
+      "name": "Baggage Train",
+      "description": "Increases the supporter limit to twice the assignment limit."
+    },
+    {
+      "id": 195,
+      "name": "Shield Bearer",
+      "description": "With a hastily assembled wooden shield."
+    },
+    {
+      "id": 196,
+      "name": "Better Relations",
+      "description": "You can discover one more island."
+    },
+    {
+      "id": 197,
+      "name": "Bigger Islands",
+      "description": "Increases the maximum island size by 2."
+    },
+    {
+      "id": 198,
+      "name": "Construction Brigade I",
+      "description": "You get the cartography option to start a newly discovered island with additional basic buildings."
+    },
+    {
+      "id": 199,
+      "name": "Cotton",
+      "description": "You can now select cotton as a fertility for tropical islands."
+    },
+    {
+      "id": 200,
+      "name": "Scouts",
+      "description": "All island discoveries are completed faster and reveal more details."
+    },
+    {
+      "id": 201,
+      "name": "Better Spyglasses",
+      "description": "All island discoveries are completed 35% faster."
+    },
+    {
+      "id": 202,
+      "name": "Improved Sails",
+      "description": "All ships are 10% faster within a region."
+    },
+    {
+      "id": 203,
+      "name": "Dying Gull",
+      "description": "Your small flagships can now travel to other regions with reduced penalties."
+    },
+    {
+      "id": 204,
+      "name": "Efficient Stacking",
+      "description": "Your small flagships can now carry twice the amount of cargo."
+    },
+    {
+      "id": 205,
+      "name": "Streamlined Hull",
+      "description": "Your small flagships' travel time is reduced by 33% within a region."
+    },
+    {
+      "id": 206,
+      "name": "Optimized Accounting",
+      "description": "All your inhabitants pay 5% more taxes."
+    },
+    {
+      "id": 207,
+      "name": "Slack Time",
+      "description": "Your workers generate 10% more creativity."
+    },
+    {
+      "id": 208,
+      "name": "Stadium",
+      "description": "Provides community to houses within a large area."
+    },
+    {
+      "id": 209,
+      "name": "Researchers' Guild",
+      "description": "You can trade in a random selection of creativity for coins here every 8 hours."
+    },
+    {
+      "id": 210,
+      "name": "Regressive Tax",
+      "description": "Your workers reluctantly pay 20% more taxes."
+    }
+  ],
+  "notes": "This covers the vast majority of research unlocks. Expanded upgrades and global ship upgrades can be added later."
+}

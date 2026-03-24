@@ -1,0 +1,41 @@
+Building IDS & Inputs/Outputs
+
+import json
+
+def discover_recipes(file_path):
+    with open(file_path, 'r') as f:
+        data = json.load(f)
+
+    # { BuildingID: { "inputs": [res_ids], "outputs": [res_ids] } }
+    recipes = {}
+
+    def crawl(obj):
+        if isinstance(obj, dict):
+            if "id" in obj and "components" in obj:
+                b_id = obj["id"]
+                storage = obj["components"].get("internalstorage", {})
+                
+                inputs = [r.get("key") for r in storage.get("InputResources", {}).get("Resources", [])]
+                outputs = [r.get("key") for r in storage.get("OutputResources", {}).get("Resources", [])]
+                
+                if inputs or outputs:
+                    if b_id not in recipes:
+                        recipes[b_id] = {"in": set(inputs), "out": set(outputs)}
+                    else:
+                        recipes[b_id]["in"].update(inputs)
+                        recipes[b_id]["out"].update(outputs)
+
+            for v in obj.values(): crawl(v)
+        elif isinstance(obj, list):
+            for i in obj: crawl(i)
+
+    crawl(data)
+
+    print(f"{'Building ID':<22} | {'Inputs':<15} | {'Outputs':<15}")
+    print("=" * 60)
+    for b_id, r in sorted(recipes.items()):
+        in_str = ", ".join(map(str, sorted(list(r["in"]))))
+        out_str = ", ".join(map(str, sorted(list(r["out"]))))
+        print(f"{b_id:<22} | {in_str:<15} | {out_str:<15}")
+
+discover_recipes('save_file.json')

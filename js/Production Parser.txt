@@ -1,0 +1,75 @@
+Production Parser
+
+
+import json
+
+def calculate_clean_empire_production(file_path):
+    with open(file_path, 'r') as f:
+        data = json.load(f)
+
+    islands = data.get("IslandManager", {}).get("islands", [])
+    
+    # Tiered multipliers matching your observed rates
+    BOOST_TABLE = {
+        "StrawberryFarm": 2.5, "SheepFarm": 1.2, "PigRanch": 1.2,
+        "CattleFarm": 1.2, "HorseFarm": 1.2, "CrocodileRanch": 1.2, "GoatFarm": 1.2
+    }
+
+    print(f"{'Island':<18} | {'Building':<20} | {'Qty':<5} | {'Rate/Min'}")
+    print("=" * 60)
+
+    for island in islands:
+        island_name = island.get("Name", "Unknown")
+        entities = island.get("GameEntities", [])
+        
+        # Locate Silos first to check proximity for boosts
+        silos = [e for e in entities if e.get("id") == "Silo"]
+        
+        # Aggregate stats by Building ID to prevent split rows
+        island_summary = {}
+
+        for ent in entities:
+            b_id = ent.get("id")
+            # Skip infrastructure and nature
+            if not b_id or any(x in b_id for x in ["Warehouse", "Kontor", "Portal", "Silo", "Forest", "Field", "Pasture"]):
+                continue
+
+            comps = ent.get("components", {})
+            # Detect production component
+            p_key = next((c for c in ["harvester", "factory", "gatherer"] if c in comps), None)
+            if not p_key: continue
+
+            # Calculate Base Rate
+            cooldown = comps[p_key].get("Timer", {}).get("Cooldown", 120)
+            base_rate = 60 / cooldown
+            
+            # Boost Check (Proximity to Silo)
+            is_boosted = False
+            f_xy = ent.get("xy")
+            if isinstance(f_xy, list) and len(f_xy) == 2:
+                for s in silos:
+                    s_xy = s.get("xy")
+                    if isinstance(s_xy, list) and len(s_xy) == 2:
+                        # Chebyshev distance (max of x or y difference)
+                        if max(abs(f_xy[0] - s_xy[0]), abs(f_xy[1] - s_xy[1])) <= 4:
+                            is_boosted = True
+                            break
+            
+            multiplier = BOOST_TABLE.get(b_id, 1.0) if is_boosted else 1.0
+            
+            # Add to island total
+            if b_id not in island_summary:
+                island_summary[b_id] = {"qty": 0, "total_rate": 0}
+            
+            island_summary[b_id]["qty"] += 1
+            island_summary[b_id]["total_rate"] += (base_rate * multiplier)
+
+        # Print the island report
+        if island_summary:
+            for b_name in sorted(island_summary.keys()):
+                info = island_summary[b_name]
+                print(f"{island_name[:18]:<18} | {b_name:<20} | {info['qty']:<5} | {info['total_rate']:>8.2f}")
+            print("-" * 60)
+
+# Run the production summary
+calculate_clean_empire_production('save_file.json')

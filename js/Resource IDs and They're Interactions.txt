@@ -1,0 +1,42 @@
+Resource IDs and They're Interactions
+
+import json
+
+def inventory_and_key_scanner(file_path):
+    with open(file_path, 'r') as f:
+        data = json.load(f)
+
+    # Dictionary to track: { ResourceKey: [List of buildings using/holding it] }
+    resource_map = {}
+
+    def scan_storage(obj):
+        if isinstance(obj, dict):
+            # Look for the internalstorage component
+            storage = obj.get("components", {}).get("internalstorage", {})
+            if storage:
+                building_id = obj.get("id", "Unknown")
+                
+                # Check Input and Output resource lists
+                for io_type in ["InputResources", "OutputResources"]:
+                    resources = storage.get(io_type, {}).get("Resources", [])
+                    for res in resources:
+                        res_key = res.get("key")
+                        balance = res.get("value", {}).get("balance", 0)
+                        
+                        if res_key not in resource_map:
+                            resource_map[res_key] = set()
+                        resource_map[res_key].add(building_id)
+
+            for v in obj.values(): scan_storage(v)
+        elif isinstance(obj, list):
+            for i in obj: scan_storage(i)
+
+    scan_storage(data)
+
+    print(f"{'Res ID':<8} | {'Buildings interacting with this Resource'}")
+    print("=" * 60)
+    for res_id in sorted(resource_map.keys()):
+        related_buildings = ", ".join(list(resource_map[res_id])[:4]) # Show first 4
+        print(f"{res_id:<8} | {related_buildings}")
+
+inventory_and_key_scanner('save_file.json')

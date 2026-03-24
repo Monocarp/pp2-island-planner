@@ -1,0 +1,51 @@
+Basic Production Identifier for Coffee Fields as Example
+
+import json
+
+def deep_search(data, target_id):
+    """Recursively finds all objects with a specific 'id'."""
+    results = []
+    if isinstance(data, dict):
+        if data.get('id') == target_id:
+            results.append(data)
+        for key, value in data.items():
+            results.extend(deep_search(value, target_id))
+    elif isinstance(data, list):
+        for item in data:
+            results.extend(deep_search(item, target_id))
+    return results
+
+def calculate_production(file_path):
+    with open(file_path, 'r') as f:
+        data = json.load(f)
+
+    # 1. Deep search for all relevant entities
+    plantations = deep_search(data, 'CoffeePlantation')
+    fields = deep_search(data, 'CoffeeField')
+    
+    num_plantations = len(plantations)
+    num_fields = len(fields)
+    
+    # 2. Extract the Cooldown from the first plantation found
+    base_cooldown = 120  # Default fallback
+    for p in plantations:
+        # Navigate the nested components -> harvester -> Timer -> Cooldown
+        components = p.get('components', {})
+        harvester = components.get('harvester', {})
+        timer = harvester.get('Timer', {})
+        if 'Cooldown' in timer:
+            base_cooldown = timer['Cooldown']
+            break
+
+    # 3. Final Math (1 tick = 1 second)
+    items_per_min_per_building = 60 / base_cooldown
+    total_rate = num_plantations * items_per_min_per_building
+    
+    print(f"--- Deep Scan Results ---")
+    print(f"Plantations Found: {num_plantations}")
+    print(f"Fields Found: {num_fields}")
+    print(f"Detected Cooldown: {base_cooldown} seconds")
+    print(f"Total Production Rate: {total_rate:.2f} per minute")
+    print("-" * 25)
+
+calculate_production('save_file.json')

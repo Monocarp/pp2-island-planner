@@ -1,6 +1,6 @@
-// js/production-rates.js — FINAL LIVE PRODUCTION PARSER
+// js/production-rates.js — FINAL LIVE PRODUCTION PARSER FOR COMPANION APP
 // Extracts current stocks + island overview from your JSON save.
-// Ready for the companion app (stocks = "live" numbers).
+// Ready for Android companion (stocks = "live" numbers you wanted).
 
 window.parseProductionRates = function (save) {
   const result = {
@@ -8,7 +8,7 @@ window.parseProductionRates = function (save) {
     islands: [],
     researchCompleted: save.ResearchManager?.CompletedResearchTimes?.length || 0,
     timestamp: Date.now(),
-    // Future fields (net rates will be filled in v2 once we hook planner.js)
+    // Net rates will be added in the next step once we hook planner.js
     globalNetRates: {},
     bottlenecks: [],
     projectedIdleHours: {}
@@ -29,7 +29,7 @@ window.parseProductionRates = function (save) {
     });
   });
 
-  console.log('✅ parseProductionRates complete');
+  console.log('✅ parseProductionRates FINAL complete');
   console.log('Islands:', result.islands.length);
   console.log('Research completed:', result.researchCompleted);
   console.table(result.stocks);
@@ -37,5 +37,4 @@ window.parseProductionRates = function (save) {
   return result;
 };
 
-// Auto-test message
-console.log('✅ production-rates.js vFINAL loaded — call window.parseProductionRates(window.currentSave) in console');
+console.log('✅ production-rates.js FINAL loaded — ready for companion app');

@@ -15,6 +15,11 @@ This document corrects and extends [Notes.json](Notes.json) using a real decoded
 | `RouteManager` | yes | **`SimpleRoutes`** and **`ComplexRoutes`** — not a single `routes` array. |
 | `ShipManager.Ships[]` | yes | `Type`, `Name`, `Slots[]` (cargo), `RouteUID`, etc. |
 
+### Per-island `Grid` and `GameEntities`
+
+- **`Grid[]`**: terrain only — e.g. `Type` 2 = water, `Type` 3 + `DepositType` = mineral deposit, `IsRiver: true` = river on land. There is **no** serialized field for which building “owns” a grass or deposit tile.
+- **`GameEntities`**: building anchors (`id`, `xy`). On gatherer components, **`AmountRemainder`** is **not** “tiles used / tiles needed”; it is **fractional production carry** between ticks. Tile utilization for save analysis must be **recomputed** from grid + footprints + `data.js` inputs (see companion `save-island-from-save.js` / overlap model in `save-tile-utilization.js`).
+
 ## ResourceManager (stocks)
 
 Verified path:
@@ -50,6 +55,7 @@ Each simple route has: `UID`, `Name`, `Simple`, `Waypoints[]` with `IslandUID`, 
 - **Silo proximity** in `production_modifiers.json` applies only to building IDs listed in **`siloBoostMultipliers`** (livestock: sheep, pigs, cattle, horses, etc.). **Crop harvesters** (e.g. `StrawberryFarm`) use other boost mechanics in-game and must **not** be given a silo row there, or they get false × boosts when a silo is merely nearby.
 - **Non-producers** (fields, forests, deposits, `Warehouse*`, `House*`, `Silo`, etc.) use **`nonProducerExactIds` / `nonProducerIdPrefixes`** in `production_modifiers.json`, not broad substring skips (so `StrawberryFarm` is not dropped because of `Field` in another id).
 - **Per-resource output rate (goods/min)** when using save outputs: `sum over outputs: (balance || 0) * 60 / cooldown` (with batch `1` if missing).
+- **Spatial inputs (grass, deposits, `water_tile`, etc.):** companion save analysis scales nameplate rates by **effective tile units** — footprint cells that match the input, excluding cells blocked by another building’s anchor, with **shared** matching cells split **evenly** among all buildings that count that cell for the same resource id (e.g. two ranches on one grass tile → 50% each).
 
 ## Corrections to Notes.json
 

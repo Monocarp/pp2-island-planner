@@ -39,3 +39,18 @@ test('minimal save: research id 4 present', () => {
   const r = parsePp2SaveJson(save, {});
   assert.strictEqual(r.researchCompleted[0].researchId, 4);
 });
+
+test('tile overlap: adjacent 3×3 ranches split shared grass 50/50 (6 effective / 8 needed → 0.75)', () => {
+  const p = path.join(__dirname, 'fixtures', 'tile-overlap-save.json');
+  const save = JSON.parse(fs.readFileSync(p, 'utf8'));
+  const r = parsePp2SaveJson(save, {});
+  const island = r.islands[0];
+  assert.strictEqual(island.productionBuildings.length, 2);
+  const byPlanner = Object.fromEntries(
+    island.productionBuildings.map(row => [row.plannerBuildingId, row])
+  );
+  assert.ok(Math.abs(byPlanner.PigRanch.tileUtilizationFactor - 0.75) < 1e-5);
+  assert.ok(Math.abs(byPlanner.CattleRanch.tileUtilizationFactor - 0.75) < 1e-5);
+  assert.ok(Math.abs(byPlanner.PigRanch.totalOutputPerMinute - 1.5) < 1e-5);
+  assert.ok(Math.abs(byPlanner.CattleRanch.totalOutputPerMinute - 0.1875) < 1e-5);
+});

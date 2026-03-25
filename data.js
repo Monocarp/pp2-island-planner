@@ -3510,3 +3510,7 @@ const PP2DATA = {
     return chain;
   },
 };
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { PP2DATA };
+}

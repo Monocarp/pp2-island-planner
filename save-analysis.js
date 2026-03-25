@@ -430,7 +430,9 @@
           }
         }
 
-        var mult = boosted ? (boostTable[bid] != null ? boostTable[bid] : defaultBoost) : 1.0;
+        var liveTimerRate =
+          resolved.rateSource === 'saveOutputs' || resolved.rateSource === 'saveFallback';
+        var mult = !liveTimerRate && boosted ? (boostTable[bid] != null ? boostTable[bid] : defaultBoost) : 1.0;
         var byResourceId = resolved.byResourceId;
         var scaled = {};
         var scaledTotal = 0;

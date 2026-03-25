@@ -169,7 +169,9 @@ export function parsePp2SaveJson(save, options = {}) {
         }
       }
 
-      const mult = boosted ? (boostTable[bid] ?? defaultBoost) : 1.0;
+      const liveTimerRate =
+        resolved.rateSource === 'saveOutputs' || resolved.rateSource === 'saveFallback';
+      const mult = !liveTimerRate && boosted ? (boostTable[bid] ?? defaultBoost) : 1.0;
       const byResourceId = resolved.byResourceId;
       const scaled = {};
       let scaledTotal = 0;
@@ -203,6 +205,7 @@ export function parsePp2SaveJson(save, options = {}) {
           componentKey: resolved.timerInfo.componentKey,
           cooldown: resolved.cooldownSeconds,
           siloBoosted: boosted,
+          liveTimerRate,
           multiplier: mult,
           outputs: scaled,
         });

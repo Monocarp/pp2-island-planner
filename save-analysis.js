@@ -39,6 +39,8 @@
       Fisherman: 'FishermansHut',
       BeachFisherman: 'BeachFishermansHut',
       SalmonFisherman: 'SalmonFishermansHut',
+      CattleFarm: 'CattleRanch',
+      HorseFarm: 'HorseBreeder',
     },
     productionComponentKeysPreferred: ['harvester', 'factory', 'gatherer', 'miner', 'smelter'],
     nonProducerExactIds: [

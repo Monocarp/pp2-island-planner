@@ -1003,6 +1003,12 @@
       "producePerMinute": 0.5,
       "produces": "soap"
     },
+    "FishOilBoilingHouse": {
+      "iterationTime": 240,
+      "producePerIteration": 2,
+      "producePerMinute": 0.5,
+      "produces": "fish_oil"
+    },
     "BoulderGatherer": {
       "iterationTime": 60,
       "producePerIteration": 1,

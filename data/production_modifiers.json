@@ -94,6 +94,8 @@
   "gameEntityBuildingIdRemap": {
     "Fisherman": "FishermansHut",
     "BeachFisherman": "BeachFishermansHut",
-    "SalmonFisherman": "SalmonFishermansHut"
+    "SalmonFisherman": "SalmonFishermansHut",
+    "CattleFarm": "CattleRanch",
+    "HorseFarm": "HorseBreeder"
   }
 }

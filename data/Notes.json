@@ -1,0 +1,67 @@
+PP2 Save File Structure Reference
+**Derived entirely from the parsing scripts in `js/` (production parser.txt and related files)**
+
+This is the consolidated knowledge from your work. Do not re-discover — use this as the single source of truth.
+
+## 1. Overall Save Format
+- Plain JSON (SaveFileVersion: 20)
+- Top-level keys of interest:
+  - `IslandManager.islands[]`
+  - `ResourceManager.GlobalResources.Resources[]` → current stocks
+  - `ResearchManager.CompletedResearchTimes[]` → `{key: ID, value: level}`
+  - `PopulationManager.PopulationTiers[]` → consumption
+  - `RouteManager.routes[]` → trade routes
+  - `GameEntities[]` inside each island
+
+## 2. Production / Consumption Data (the core you already solved)
+Every production/consumption value lives at:
+
+`IslandManager.islands[X].GameEntities[Y].components[Z].internalstorage`
+
+Inside `internalstorage`:
+- `OutputResources.Resources[]` → production (key = resource ID, value.balance = raw amount per cycle)
+- `InputResources.Resources[]` → consumption (same format)
+
+The **actual rate** is calculated as:
+```python
+base_rate_per_minute = 60 / Timer.Cooldown
+
+## 3. Boosts & Multipliers (your BOOST_TABLE + silo logic)
+
+- **Proximity boost:** Chebyshev distance ≤ 4 to any Silo on the same island
+- **Farm-specific multipliers (your table):**
+    - `StrawberryFarm`: 2.5
+    - `SheepFarm` / `PigRanch` / `CattleFarm` / `HorseFarm` / `CrocodileRanch` / `GoatFarm`: 1.2
+    - Others default to 1.0
+
+## 4. Buildings to Skip / Special Cases
+
+Your script correctly skips:
+- `Warehouse*`, `Kontor*`, `Portal*`, `Silo`, `Forest`, `Field`, `Pasture`, etc.
+
+## 5. Population Consumption
+
+`PopulationManager.PopulationTiers[]` contains:
+- `BasicNeeds.ConsumedResources`
+- `LuxuryNeeds.ConsumedResources`
+- `ProductionAmountRemainder`
+
+## 6. Research
+
+- `ResearchManager.CompletedResearchTimes[]` → `key` = research ID (matches `data/research.json`)
+
+## 7. Ships & Transport
+
+- See `data/ships.json` (already added)
+
+## 8. Portals & Trade Routes
+
+- **Portals:** `GameEntities` with id `"PortalIn0"` or `"PortalOut0"`
+- **Trade routes:** `RouteManager.routes[]`
+
+## 9. Key Takeaways from Your Parsers
+
+- **Internal Storage:** You already solved the hardest part: finding the correct `internalstorage` path and handling irregular components structure.
+- **Multipliers:** You already implemented silo proximity boost and farm-specific multipliers.
+- **Grouping:** You already grouped by building ID to avoid duplicate rows.
+- **Timer:** You already used `Timer.Cooldown` correctly for per-minute rates.

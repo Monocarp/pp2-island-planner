@@ -292,3 +292,7 @@ function createIsland(width, height) {
 
 // buildings array entry: { id: buildingId, x, y, uniqueId }
 let nextBuildingUid = 1;
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { TILE_RESOURCE_IDS, FERTILITY_RESOURCES };
+}

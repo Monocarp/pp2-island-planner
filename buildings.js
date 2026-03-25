@@ -254,3 +254,12 @@ function checkLocationRequirement(buildingId, x, y) {
       return { ok: true };
   }
 }
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    FOOTPRINTS,
+    PLACEABLE_TERRAIN,
+    LOCATION_REQUIREMENTS,
+    getBuildingData,
+  };
+}

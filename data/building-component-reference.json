@@ -1,0 +1,40 @@
+{
+  "version": "2026-03-25",
+  "notes": "Generated from diagnose_buildings script on a live save. Used by save-production-core.mjs to discover production timers.",
+  "componentsByBuilding": {
+    "WheatField": {
+      "component": "resourcefield",
+      "timerPath": "spots[].resource.Timer",
+      "exampleCooldown": 955
+    },
+    "WheatFarm": {
+      "component": "harvester",
+      "timerPath": "Timer",
+      "exampleCooldown": 120
+    },
+    "SheepFarm": {
+      "component": "gatherer",
+      "timerPath": "Timer",
+      "extraFields": ["AmountRemainder"],
+      "exampleCooldown": 240
+    }
+    // Add more buildings here as we discover them (StrawberryFarm, JamMaker, etc.)
+  },
+  "allBuildingIds": [
+    "AppleTrees", "AshHouse", "Bakery", "BarracksBerserker", "BarracksCavalry", "BarracksLongbowArcher",
+    "BarracksRecruit", "BarracksSquire", "Basaltcutter", "BoilerMaker", "Brewery", "CargoKontor",
+    "CattleFarm", "CiderMaker", "CigarManufacture", "CloakTailor", "CopperAxesmith", "CopperMine",
+    "CopperSmelter", "CopperSwordsmith", "FiberMaker", "Fisherman", "FishermanHighSeas", "FishermanSouthern",
+    "FlourMill", "FlourWindMill", "Forest", "ForestHighSeas", "ForestSouthern", "Forester", "Furriery",
+    "GoatFarm", "HopsFarm", "HopsField", "House0Apprentices", "House0Farmers", "House0Pioneers",
+    "House1Adepts", "House1Colonists", "House2Townsmen", "Kontor0", "Kontor0HighSeas", "Kontor0Southern",
+    "Kontor1", "LimeKiln", "LinenWeaver", "LinseedFarm", "LinseedFarmHighSeas", "LinseedField",
+    "LinseedFieldHighSeas", "LongBowyer", "Lumberjack", "LumberjackHighSeas", "Malthouse", "MortarBatchWorks",
+    "PigRanch", "PortalIn0", "PortalOut0", "RenderingWorks", "Ropery", "RoperySouthern", "RumDistillery",
+    "Sailmaker", "Saline", "SausageMaker", "SawWorks", "Sawmill", "SchnappsFarm", "SchnappsField",
+    "SectorCamp", "SheepFarm", "Shipyard0Southern", "Shipyard2", "SoapMaker", "Stonecutter",
+    "SugarCaneField", "SugarCanePlantation", "SugarMill", "Tannery", "TeaField", "TeaPlantation",
+    "TextileFactory", "TobaccoFarm", "TobaccoField", "Warehouse0HighSeas", "Warehouse0Southern",
+    "Warehouse1", "Warehouse1HighSeas", "Warehouse2", "WheatFarm", "WheatField"
+  ]
+}

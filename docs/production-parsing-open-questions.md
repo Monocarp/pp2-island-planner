@@ -97,7 +97,7 @@ Does the answer **differ** for **horse vs pig vs cattle vs sheep** or for **non-
 
 **Status:** Open
 
-**Notes:** Example: horse ranch — `inputs.grass` cap stays 20; footprint may have 21 cells; **usable** grass can be lower (e.g. 18 when 2 cells are water).
+**Notes:** Example: horse ranch — `inputs.grass` cap stays 20; footprint may have 21 cells; **usable** grass can be lower (e.g. 18 when 2 cells are water). For **livestock grass** (`PigRanch`, `CattleRanch`, `SheepFarm`, `HorseBreeder`), the **anchor cell is not** counted as grass — only the footprint ring (e.g. cattle: 8 of 8 cells in 3×3 excluding center). **`Silo`** / **`Warehouse0`** must be on `cell.building` in the reconstructed grid (`EXTRA_BUILDINGS` in `buildings.js`) so they block grass like **`Warehouse1`**.
 
 ---
 

@@ -69,7 +69,7 @@ test('rickyard: pig anchor inside Silo 5×5 gets ×2; outside Chebyshev 2 does n
   assert.ok(Math.abs(away.totalOutputPerMinute - 2) < 1e-5);
 });
 
-test('new_bursting_cay: cattle at (17,14) in silo 5×5 at (15,13) is siloBoosted with partial tile util', () => {
+test('new_bursting_cay: cattle at (17,14) in silo 5×5 — rivers + warehouse on ring → 5/8 ×2', () => {
   const p = path.join(__dirname, '..', 'data', 'new_bursting_cay.json');
   const island = JSON.parse(fs.readFileSync(p, 'utf8'));
   const save = { SaveFileVersion: 20, IslandManager: { islands: [island] } };
@@ -80,11 +80,25 @@ test('new_bursting_cay: cattle at (17,14) in silo 5×5 at (15,13) is siloBoosted
   assert.ok(row);
   assert.strictEqual(row.insideSiloFootprint, true);
   assert.strictEqual(row.siloBoosted, true);
-  assert.ok(Math.abs(row.tileUtilizationFactor - 0.75) < 1e-5);
-  assert.ok(Math.abs(row.multiplier - 1.5) < 1e-5);
+  assert.ok(Math.abs(row.tileUtilizationFactor - 5 / 8) < 1e-5);
+  assert.ok(Math.abs(row.multiplier - 1.25) < 1e-5);
 });
 
-test('tile overlap: adjacent 3×3 ranches split shared grass 50/50 (6 effective / 8 needed → 0.75)', () => {
+test('new_bursting_cay: Silo at (15,13) blocks grass cell for cattle at (14,14) → 7/8 util × rickyard', () => {
+  const p = path.join(__dirname, '..', 'data', 'new_bursting_cay.json');
+  const island = JSON.parse(fs.readFileSync(p, 'utf8'));
+  const save = { SaveFileVersion: 20, IslandManager: { islands: [island] } };
+  const r = parsePp2SaveJson(save, {});
+  const row = r.islands[0].productionBuildings.find(
+    b => b.buildingId === 'CattleFarm' && b.xy[0] === 14 && b.xy[1] === 14
+  );
+  assert.ok(row);
+  assert.ok(Math.abs(row.tileUtilizationFactor - 7 / 8) < 1e-5);
+  assert.strictEqual(row.siloBoosted, true);
+  assert.ok(Math.abs(row.multiplier - 1.75) < 1e-5);
+});
+
+test('tile overlap: adjacent 3×3 ranches — grass ring excludes anchors; split on overlap (5/8 util)', () => {
   const p = path.join(__dirname, 'fixtures', 'tile-overlap-save.json');
   const save = JSON.parse(fs.readFileSync(p, 'utf8'));
   const r = parsePp2SaveJson(save, {});
@@ -93,8 +107,8 @@ test('tile overlap: adjacent 3×3 ranches split shared grass 50/50 (6 effective 
   const byPlanner = Object.fromEntries(
     island.productionBuildings.map(row => [row.plannerBuildingId, row])
   );
-  assert.ok(Math.abs(byPlanner.PigRanch.tileUtilizationFactor - 0.75) < 1e-5);
-  assert.ok(Math.abs(byPlanner.CattleRanch.tileUtilizationFactor - 0.75) < 1e-5);
-  assert.ok(Math.abs(byPlanner.PigRanch.totalOutputPerMinute - 1.5) < 1e-5);
-  assert.ok(Math.abs(byPlanner.CattleRanch.totalOutputPerMinute - 0.1875) < 1e-5);
+  assert.ok(Math.abs(byPlanner.PigRanch.tileUtilizationFactor - 5 / 8) < 1e-5);
+  assert.ok(Math.abs(byPlanner.CattleRanch.tileUtilizationFactor - 5 / 8) < 1e-5);
+  assert.ok(Math.abs(byPlanner.PigRanch.totalOutputPerMinute - 1.25) < 1e-5);
+  assert.ok(Math.abs(byPlanner.CattleRanch.totalOutputPerMinute - 0.15625) < 1e-5);
 });

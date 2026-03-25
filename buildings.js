@@ -31,7 +31,7 @@ function makePlus() {
 // 1x1
 ['CopperMine','Forest','Garrison','Garrison2','Garrison3',
  'HoneyField','HopField','LinseedField','PioneersHut','Portal','PotatoField',
- 'StrawberryField','WheatField'].forEach(id => FOOTPRINTS[id] = [[0,0]]);
+ 'StrawberryField','WheatField','Silo','Warehouse0'].forEach(id => FOOTPRINTS[id] = [[0,0]]);
 
 // 3x3
 ['Arboretum','Beekeeper','CattleRanch','CiderMaker','FishermansHut',
@@ -74,8 +74,9 @@ FOOTPRINTS['Warehouse2'] = makeDiamond([1,3,5,3,1]);
 // ===== NON-PRODUCTION BUILDINGS (not in data.js) =====
 // These are infrastructure buildings that don't produce resources.
 const EXTRA_BUILDINGS = [
+  { id: 'Warehouse0', name: 'Warehouse (save id)', tier: 'Pioneers', produces: null, isInfrastructure: true },
   { id: 'Warehouse1', name: 'Small Warehouse', tier: 'Pioneers', produces: null, isInfrastructure: true },
-  { id: 'Warehouse2', name: 'Warehouse', tier: 'Colonists', produces: null, isInfrastructure: true },
+  { id: 'Silo', name: 'Silo (rickyard)', tier: 'Pioneers', produces: null, isInfrastructure: true },
   { id: 'Warehouse3', name: 'Large Warehouse', tier: 'Townsmen', produces: null, isInfrastructure: true },
   { id: 'Well', name: 'Well', tier: 'Pioneers', produces: null, isService: true },
   { id: 'Cistern', name: 'Cistern', tier: 'Colonists', produces: null, isService: true },

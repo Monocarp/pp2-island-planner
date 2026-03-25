@@ -72,6 +72,8 @@ function cellProvidesWaterTile(cell, cx, cy, width, height, opts) {
  */
 function footprintCellCountsForGathering(cell, cx, cy, resId, ax, ay, width, height, opts) {
   if (!cell) return false;
+  // Grass (livestock): only surrounding footprint cells count — not the building anchor (needs 8 in a 3×3 ring, etc.).
+  if (resId === 'grass' && cx === ax && cy === ay) return false;
   if (cell.building && (cx !== ax || cy !== ay)) return false;
   if (resId === 'water_tile') return cellProvidesWaterTile(cell, cx, cy, width, height, opts);
   return matchesTileResource(cell, resId);

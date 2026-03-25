@@ -12,13 +12,15 @@ These are **separate**; the game might answer “yes” to one and “no” to a
 
 ### 1a — One formula family vs many
 
-**Question:** Is there a **single** rule family for “spatial input → production multiplier” that applies to **all** producers with tile/deposit-style `inputs` (grass, forest, water_tile, deposits, fields, river counts, etc.)?
+**Question (clarified):** By “multiplier story” we meant **the shape of the rule**, not the numeric rates. Example: “always `R × (U/N)`” vs “binary: full R if U ≥ 1 else 0” would be two different *stories* even if both use `data.js`.
 
-Or does the game use **different** rules **by building category** (e.g. livestock gatherers vs crop harvesters vs mines vs fishers), even if each category is internally consistent?
+**Question:** Aside from different nameplate **R** and need **N** per building, is the **same pipeline** used everywhere (count usable tiles → form ratio to need → scale output → boosts), or are there buildings you believe use a **fundamentally different** pipeline?
 
-**Status:** Open
+**Status:** Answered (pending counterexamples)
 
-**Notes:**
+**Conclusion:** Same **general logic** everywhere; cows vs sheep etc. differ in **constants** (R, N, footprint), not in replacing linearity with a different shape. If the codebase finds a case that looks like a different pipeline, surface it for review.
+
+**Notes:** User: “if you have instances of what you think are different multiplier stories I’d be happy to look into it.”
 
 ### 1b — Linear vs stepped / threshold
 
@@ -28,9 +30,11 @@ Fix **one** spatial input with need **N** from `inputs` and nameplate **R** at f
 
 Or does output change in **steps** (only certain U values matter), use **ceil/floor**, or hit a **hard cap** below R even when U ≥ N?
 
-**Status:** Open
+**Status:** Answered (pending counterexamples)
 
-**Notes:**
+**Conclusion:** **Linear** in U/N to the best of your knowledge. Parser should assume linear until a specific in-game counterexample is documented here.
+
+**Notes:** User: “if you have a specific example you think challenges that notion, let me know.”
 
 ### 1c — Independence vs shared supply (overlap between buildings)
 
@@ -40,9 +44,16 @@ Consider two buildings whose **footprints overlap** on the same map cell that co
 
 Does the answer **differ** for **horse vs pig vs cattle vs sheep** or for **non-livestock** spatial producers?
 
-**Status:** Open
+**Status:** Answered (with follow-up: compatibility groups)
 
-**Notes:**
+**Conclusion:**
+
+- When **two footprints can both use** the same cell for their spatial input (e.g. pigs and sheep on **grass**), each building gets **1/n** of that cell toward its effective supply when **n** buildings share it (two → **50% each**).
+- Some pairs **cannot** share: the cell is **one crop or the other** (e.g. **strawberry farm vs coffee field** — strawberries **or** coffee beans, not split 50/50). Those exclusions should be **explicitly marked** in data (or an adjunct table), not inferred only by heuristics.
+
+**Follow-up for implementation:** Define **compatibility groups** (or pairwise exclusions) for tile-resource / deposit types so the parser knows when to apply **1/n** vs **exclusive claim**.
+
+**Notes:** User answered 1c directly; overlaps with old §5 — see §5 status below.
 
 ---
 
@@ -80,9 +91,9 @@ Does the answer **differ** for **horse vs pig vs cattle vs sheep** or for **non-
 
 **Question:** When two+ buildings’ **footprints overlap** on the same grass (or other tile input), does the game **split** effective supply (e.g. 50/50), use a **single pool** with a shared cap (sum of needs), or **duplicate** count for each building? Does this differ for **pig/cattle/sheep vs horse**?
 
-**Status:** Open
+**Status:** Superseded by **§1c** + **compatibility follow-up**
 
-**Notes:** Parser previously used 1/n per contested cell for some types and island-wide pools for others—needs game confirmation.
+**Notes:** Answer: **1/n** on cells that **can** be shared; **mutually exclusive** tile types (strawberry vs coffee) must be **data-driven**, not 50/50. Horse vs other livestock: no separate rule stated in 1c answer; revisit if UI disagrees.
 
 ---
 

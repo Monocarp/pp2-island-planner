@@ -57,8 +57,7 @@
     var inPaddock = anchorInsideAnyBoostFootprint(xy, paddockAnchors);
 
     var rickyardEligible = inSilo && isRickyardLivestockEligible(bid, plannerId);
-    var horseBreederRickyard = rickyardEligible && plannerId === 'HorseBreeder';
-    var rickyardApplies = rickyardEligible && (fullTileUtilization || horseBreederRickyard);
+    var rickyardApplies = rickyardEligible && fullTileUtilization;
     var paddockApplies = inPaddock && entityHasHarvesterComponent(comps) && !rickyardEligible;
 
     var mult = rickyardApplies || paddockApplies ? 2 : 1;

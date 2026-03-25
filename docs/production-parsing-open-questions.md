@@ -75,13 +75,13 @@ Does the answer **differ** for **horse vs pig vs cattle vs sheep** or for **non-
 
 **Status:** Answered (revised to match game presentation)
 
-**Conclusion:** **Match the game’s production UI** — each building’s **footprint counts cells independently** for harvest/specific-tile inputs, so two overlapping wheat farms can **both** show **8/8** (or full need) on the same underlying tiles. Parser uses **per-building cell counts** with **no 1/n split** for non-grass spatial inputs (deposits, fields, forest, river counts, `water_tile`, etc.). **Grass** for livestock still uses **shared** logic (1/n and/or pool) per §1c.
+**Conclusion:** **Match the game’s production UI** — each building’s **footprint counts cells independently** for harvest/specific-tile inputs, so two overlapping wheat farms can **both** show **8/8** (or full need) on the same underlying tiles. Parser uses **per-building cell counts** with **no 1/n split** for those inputs. **Grass** for **pig, sheep, cattle, horse** uses **only** **1/n** on shared cells (no island-wide cattle pool, no separate horse path).
 
 **Rationale (user):** Overlap is uncommon; **adherence to what the game shows** is the guiding principle even if simulation might arbitrate harvest workers differently.
 
 **Supersedes:** Earlier “exclusive claim per tile” hypothesis for same-type harvesters.
 
-**Notes:** Implemented in `save-tile-utilization.js` via `countIndependentSpatialCells` for all spatial inputs except pooled grass / horse linear grass.
+**Notes:** Implemented in `save-tile-utilization.js`: `countIndependentSpatialCells` for non-grass tile resources; `effectiveSpatialInputUnits` (claimants 1/n) for `grass` and `water_tile`.
 
 ---
 

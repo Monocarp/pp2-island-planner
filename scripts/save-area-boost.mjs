@@ -62,12 +62,7 @@ export function computeAreaBoost(ent, resolved, siloAnchors, paddockAnchors, opt
   const inPaddock = anchorInsideAnyBoostFootprint(xy, paddockAnchors);
 
   const rickyardEligible = inSilo && isRickyardLivestockEligible(bid, plannerId);
-  /** Horse breeders: aggregate grass pool can be <1 per building while UI still applies rickyard in silo. */
-  const horseBreederRickyard =
-    rickyardEligible && plannerId === 'HorseBreeder';
-  const rickyardApplies =
-    rickyardEligible &&
-    (fullTileUtilization || horseBreederRickyard);
+  const rickyardApplies = rickyardEligible && fullTileUtilization;
   const paddockApplies =
     inPaddock && entityHasHarvesterComponent(comps) && !rickyardEligible;
 

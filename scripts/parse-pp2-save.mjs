@@ -156,11 +156,6 @@ export function parsePp2SaveJson(save, options = {}) {
       tileClaimantsMap = tiles.tileClaimantsForReconstructedIsland(reconstructed.island);
     }
 
-    let grassPoolRatios = null;
-    if (reconstructed && typeof tiles.grassPoolRatiosForIsland === 'function') {
-      grassPoolRatios = tiles.grassPoolRatiosForIsland(reconstructed.island);
-    }
-
     const siloPositions = entities
       .filter(e => e.id && String(e.id).includes(siloNeedle))
       .map(e => e.xy)
@@ -191,8 +186,7 @@ export function parsePp2SaveJson(save, options = {}) {
           reconstructed.island,
           resolved.plannerBuildingId,
           xy,
-          tileClaimantsMap,
-          grassPoolRatios
+          tileClaimantsMap
         );
         if (tu && typeof tu.tileUtilizationFactor === 'number' && Number.isFinite(tu.tileUtilizationFactor)) {
           tileUtil = tu.tileUtilizationFactor;

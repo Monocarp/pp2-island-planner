@@ -378,11 +378,6 @@
         }
       }
 
-      var grassPoolRatios = null;
-      if (reconstructed && reconstructed.island && typeof buildGrassPoolRatiosByAnchor === 'function') {
-        grassPoolRatios = buildGrassPoolRatiosByAnchor(reconstructed.island, null);
-      }
-
       var siloPositions = [];
       for (var ei = 0; ei < entities.length; ei++) {
         var e0 = entities[ei];
@@ -420,8 +415,7 @@
             resolved.plannerBuildingId,
             xy,
             tileClaimantsMap,
-            null,
-            grassPoolRatios
+            null
           );
           if (tu && typeof tu.tileUtilizationFactor === 'number' && isFinite(tu.tileUtilizationFactor)) {
             tileUtil = tu.tileUtilizationFactor;

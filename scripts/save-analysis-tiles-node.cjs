@@ -19,7 +19,6 @@ const { footprintCellCountsForGathering } = require(path.join(__dirname, '..', '
 const { buildPlannerIslandFromSaveIsland } = require(path.join(__dirname, '..', 'save-island-from-save.js'));
 const {
   buildSpatialTileClaimantsMap,
-  buildGrassPoolRatiosByAnchor,
   computeTileUtilizationForProducer,
 } = require(path.join(__dirname, '..', 'save-tile-utilization.js'));
 
@@ -43,25 +42,13 @@ function tileClaimantsForReconstructedIsland(islandGrid) {
   return buildSpatialTileClaimantsMap(islandGrid, tileUtilDeps);
 }
 
-function grassPoolRatiosForIsland(islandGrid) {
-  return buildGrassPoolRatiosByAnchor(islandGrid, tileUtilDeps);
-}
-
-function tileUtilizationForEntity(islandGrid, plannerBuildingId, xy, claimantsMap, grassPoolRatios) {
-  return computeTileUtilizationForProducer(
-    islandGrid,
-    plannerBuildingId,
-    xy,
-    claimantsMap,
-    tileUtilDeps,
-    grassPoolRatios
-  );
+function tileUtilizationForEntity(islandGrid, plannerBuildingId, xy, claimantsMap) {
+  return computeTileUtilizationForProducer(islandGrid, plannerBuildingId, xy, claimantsMap, tileUtilDeps);
 }
 
 module.exports = {
   reconstructIslandFromSaveSlice,
   tileClaimantsForReconstructedIsland,
-  grassPoolRatiosForIsland,
   tileUtilizationForEntity,
   tileUtilDeps,
 };

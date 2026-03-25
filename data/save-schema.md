@@ -8,12 +8,18 @@ This document corrects and extends [Notes.json](Notes.json) using a real decoded
 |-----|----------------|-------|
 | `SaveFileVersion` | yes | Integer (e.g. 20). |
 | `GameTimeManager` | yes | `current_tick` for simulation time. |
-| `IslandManager.islands[]` | yes | Per-island `UID`, `Name`, `Grid`, `GameEntities`, `MapSettings`. |
+| `IslandManager.islands[]` | yes | Per-island `UID`, `Name`, `Grid`, `GameEntities`, `MapSettings`, **`Sectors`**, `Fertilities`, `Population`, `Storage`, `Units`, etc. |
 | `ResourceManager` | yes | Global warehouse stocks (see below). |
 | `PopulationManager` | yes | See below — **not** only `PopulationTiers`. |
 | `ResearchManager.CompletedResearchTimes[]` | yes | `{ key: researchId, value: levelOrFlag }`. |
 | `RouteManager` | yes | **`SimpleRoutes`** and **`ComplexRoutes`** — not a single `routes` array. |
 | `ShipManager.Ships[]` | yes | `Type`, `Name`, `Slots[]` (cargo), `RouteUID`, etc. |
+
+### Per-island `Sectors` (conquest regions)
+
+- **`Sectors[]`**: each sector has **`ID`**, **`Center`** `[x,y]`, **`Fields`** (list of land cells in that sector), **`NeighbourIDs`**, **`IsConquered`**, **`IsRevealed`**, etc.
+- **`Grid[]`** entries on land often include **`SectorID`** matching `Sectors[].ID` for that tile.
+- **Rickyard (livestock ×2 area) vs `Silo`:** the UI “rickyard” location **does not** match `GameEntities` with `id: "Silo"` in general. On **Bursting Cay** (`data/bursting_cay.json`), three UI rickyard points **`(6,17)`**, **`(19,9)`**, **`(15,13)`** align with **`Sectors[].Center`** for sectors **9**, **21**, and **23** (`[5,17]`, `[18,7]`, `[17,14]` — centers are adjacent/coincident with the indicated tiles). There are **three** `Silo` entities at **`(6,17)`**, **`(14,9)`**, **`(17,7)`**; silo anchors fall in sectors **9**, **22**, and **21** — so **one** rickyard sector (**23**) has **no** silo, and **one** silo sits in sector **22** without the user’s rickyard label on that tile. **Conclusion:** save analysis should treat **sector centers** (or sector territory from `Fields`) as the boost source for livestock, **not** the `Silo` entity id alone. (Needs in-game confirmation; `Rickyard` exists in planner `data.js` but was not present as an entity id in this island JSON.)
 
 ### Per-island `Grid` and `GameEntities`
 
@@ -55,7 +61,7 @@ Each simple route has: `UID`, `Name`, `Simple`, `Waypoints[]` with `IslandUID`, 
 - **Rickyard / Paddock (save analysis):** Saves use **`Silo`** for rickyards. Silo and Paddock are **boost sources only** (not production rows). **5×5** area: Chebyshev distance ≤ 2 from the silo/paddock **anchor**. **Rickyard ×2** applies only to pigs/cattle/sheep/horses whose anchor is in that area **and** whose **tile utilization is full** (all spatial inputs satisfied); partial grass still scales output down but **without** rickyard ×2 on that building (matches in-game UI totals). **Paddock ×2:** entities with a **`harvester`** component whose anchor is in the paddock footprint, and **not** a rickyard-eligible building in a silo footprint (no stacking). Valid saves do not place two building anchors on the same cell.
 - **Non-producers** (fields, forests, deposits, `Warehouse*`, `House*`, `Silo`, etc.) use **`nonProducerExactIds` / `nonProducerIdPrefixes`** in `production_modifiers.json`, not broad substring skips (so `StrawberryFarm` is not dropped because of `Field` in another id).
 - **Per-resource output rate (goods/min)** when using save outputs: `sum over outputs: (balance || 0) * 60 / cooldown` (with batch `1` if missing).
-- **Spatial inputs (grass, deposits, `water_tile`, etc.):** non-grass tile resources use **per-cell 1/n** splitting among overlapping footprints. **Grass for `PigRanch` / `SheepFarm`:** same 1/n model within each **connected** overlap component (footprints that share a cell). **Grass for `HorseBreeder` / `CattleRanch`:** all instances on one island share **one aggregate pool** each; `groupMax = min(|union of footprint cells|, sum of `inputs.grass` from data.js)`; `usedGrass` walks the union and adds `1 / m` per cell where `m` = footprints in the pool that include that cell and at least one anchor can gather grass there; ratio = `min(1, usedGrass / groupMax)` for every building in that pool. **Rickyard ×2** requires full tile util for pigs/cattle/sheep; **`HorseBreeder` in silo** still gets rickyard ×2 while output is scaled by the aggregate pool ratio.
+- **Spatial inputs (grass, deposits, `water_tile`, etc.):** non-grass tile resources use **per-cell 1/n** splitting among overlapping footprints. **`HorseBreeder`:** linear grass — gatherable grass cells in footprint ÷ `inputs.grass` × `producePerMinute` (no 1/n); **rickyard ×2** on that result when anchor is in silo 5×5 **even if** grass count &lt; need. **`PigRanch` / `SheepFarm`:** 1/n within each **connected** overlap component. **`CattleRanch`:** island-wide aggregate pool. **Rickyard ×2** for pigs/cattle/sheep still requires **full** tile utilization.
 
 ## Corrections to Notes.json
 

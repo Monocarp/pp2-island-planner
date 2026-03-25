@@ -181,7 +181,6 @@ function parseBuildingFile(filePath, source, tier) {
     consumePerMinute,
     producePerIteration: Number.isFinite(producePerIteration) ? producePerIteration : null,
     producePerMinute,
-    sourceFile: path.relative(REPO_ROOT, filePath).replace(/\\/g, '/'),
   };
 }
 
@@ -215,7 +214,6 @@ function parseTileFile(filePath, source) {
     iterationSeconds,
     producePerIteration: Number.isFinite(producePerIteration) ? producePerIteration : null,
     producePerMinute,
-    sourceFile: path.relative(REPO_ROOT, filePath).replace(/\\/g, '/'),
   };
 }
 
@@ -324,7 +322,6 @@ function main() {
     'consumePerMinuteJson',
     'producePerIteration',
     'producePerMinute',
-    'sourceFile',
   ].join(',');
   const bLines = [bHeader];
   for (const b of buildings) {
@@ -338,7 +335,6 @@ function main() {
         csvEscape(JSON.stringify(b.consumePerMinute)),
         b.producePerIteration ?? '',
         b.producePerMinute ?? '',
-        csvEscape(b.sourceFile),
       ].join(',')
     );
   }
@@ -346,9 +342,7 @@ function main() {
   console.log(`Wrote ${bCsvPath}`);
 
   const tCsvPath = path.join(dataDir, 'production-reference-tiles.csv');
-  const tHeader = ['id', 'displayName', 'iterationSeconds', 'producePerIteration', 'producePerMinute', 'sourceFile'].join(
-    ','
-  );
+  const tHeader = ['id', 'displayName', 'iterationSeconds', 'producePerIteration', 'producePerMinute'].join(',');
   const tLines = [tHeader];
   for (const t of tiles) {
     tLines.push(
@@ -358,7 +352,6 @@ function main() {
         t.iterationSeconds,
         t.producePerIteration ?? '',
         t.producePerMinute ?? '',
-        csvEscape(t.sourceFile),
       ].join(',')
     );
   }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-03-25T01:11:01.009Z",
+  "generatedAt": "2026-03-25T01:23:39.117Z",
   "source": {
     "repository": "https://github.com/ElQDuck/paragon-pioneers-2-calculator",
     "productionChainPath": "src/pages/production-chain",
@@ -25,8 +25,7 @@
         "Bow": 0.2
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.2,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/ArcheryRange.tsx"
+      "producePerMinute": 0.2
     },
     {
       "kind": "building",
@@ -42,8 +41,7 @@
         "Wood": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/AshHouse.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -59,8 +57,7 @@
         "Flour": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Bakery.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -78,8 +75,7 @@
         "CopperSword": 0.1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Barracks.tsx"
+      "producePerMinute": 0.1
     },
     {
       "kind": "building",
@@ -97,8 +93,7 @@
         "CopperAxe": 0.1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/BerserkerHall.tsx"
+      "producePerMinute": 0.1
     },
     {
       "kind": "building",
@@ -116,8 +111,7 @@
         "Fiber": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Bowyer.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -135,8 +129,7 @@
         "CopperIngot": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/CopperArmory.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -154,8 +147,7 @@
         "CopperIngot": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/CopperAxesmith.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -171,8 +163,7 @@
         "CopperDeposit": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/CopperMine.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -190,8 +181,7 @@
         "Copper": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/CopperSmelter.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -209,8 +199,7 @@
         "RiverField": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/FlourMill.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -226,8 +215,7 @@
         "Wheat": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/FlourWindmill.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -239,8 +227,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 65,
-      "producePerMinute": 3900,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/HarborTavern.tsx"
+      "producePerMinute": 3900
     },
     {
       "kind": "building",
@@ -258,8 +245,7 @@
         "Limestone": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/LimeKiln.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -275,8 +261,7 @@
         "Linseed": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/LinseedFarm.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -294,8 +279,7 @@
         "RiverField": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/MortarBatchWorks.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -311,8 +295,7 @@
         "Pigs": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/RenderingWorks.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -328,8 +311,7 @@
         "Wheat": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Rickyard.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -345,8 +327,7 @@
         "Fiber": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Ropery.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -358,8 +339,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 24,
-      "producePerMinute": 1440,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/School.tsx"
+      "producePerMinute": 1440
     },
     {
       "kind": "building",
@@ -375,8 +355,7 @@
         "Grass": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/SheepFarm.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -394,8 +373,7 @@
         "Tallow": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/SoapMaker.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -411,8 +389,7 @@
         "Cliff": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Stonecutter.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -430,8 +407,7 @@
         "RiverField": 0.25
       },
       "producePerIteration": 3,
-      "producePerMinute": 0.75,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/TextileFactory.tsx"
+      "producePerMinute": 0.75
     },
     {
       "kind": "building",
@@ -447,8 +423,7 @@
         "Yarn": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Weaver.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -464,8 +439,7 @@
         "Wheat": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/WheatFarm.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -483,8 +457,7 @@
         "Rum": 0.75
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/Apothecary.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -500,8 +473,7 @@
         "Leather": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/BallMaker.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -517,8 +489,7 @@
         "CoastalField": 2.6666666666666665
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.6666666666666666,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/BeachFishermansHut.tsx"
+      "producePerMinute": 0.6666666666666666
     },
     {
       "kind": "building",
@@ -536,8 +507,7 @@
         "Clay": 0.5
       },
       "producePerIteration": 2,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/Brickyard.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -553,8 +523,7 @@
         "Tobacco": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CigarManufacture.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -570,8 +539,7 @@
         "Clay": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/ClayPit.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -587,8 +555,7 @@
         "Coal": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CoalMineTropical.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -604,8 +571,7 @@
         "Coffee": 0.25
       },
       "producePerIteration": 20,
-      "producePerMinute": 5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CoffeeHouse.tsx"
+      "producePerMinute": 5
     },
     {
       "kind": "building",
@@ -621,8 +587,7 @@
         "CoffeeBean": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CoffeePlantation.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -638,8 +603,7 @@
         "Copper": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CopperMineTropical.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -657,8 +621,7 @@
         "Copper": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CopperSmelterTropical.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -674,8 +637,7 @@
         "RiverField": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CrocodileRanch.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -691,8 +653,7 @@
         "Milk": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/Dairy.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -704,8 +665,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 4,
-      "producePerMinute": 240,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/Drywell.tsx"
+      "producePerMinute": 240
     },
     {
       "kind": "building",
@@ -717,8 +677,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 0.057,
-      "producePerMinute": 0.057,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/FarmersShack.tsx"
+      "producePerMinute": 0.057
     },
     {
       "kind": "building",
@@ -734,8 +693,7 @@
         "PalmTree": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 2,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/FiberMaker.tsx"
+      "producePerMinute": 2
     },
     {
       "kind": "building",
@@ -753,8 +711,7 @@
         "Bandages": 0.06666666666666667
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.06666666666666667,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/FieldSurgeonHouse.tsx"
+      "producePerMinute": 0.06666666666666667
     },
     {
       "kind": "building",
@@ -770,8 +727,7 @@
         "Mountain": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/GoatFarm.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -789,8 +745,7 @@
         "Pike": 0.06666666666666667
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.06666666666666667,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/PikemenBarracks.tsx"
+      "producePerMinute": 0.06666666666666667
     },
     {
       "kind": "building",
@@ -808,8 +763,7 @@
         "CopperIngot": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/PoleturnersWorkshop.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -825,8 +779,7 @@
         "CoffeeBean": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/RoastHouse.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -842,8 +795,7 @@
         "Fiber": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/RoperyTropical.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -859,8 +811,7 @@
         "SugarCane": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/RumDistillery.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -876,8 +827,7 @@
         "CoastalField": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.0625,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/SalternTropical.tsx"
+      "producePerMinute": 0.0625
     },
     {
       "kind": "building",
@@ -893,8 +843,7 @@
         "Ball": 0.5
       },
       "producePerIteration": 40,
-      "producePerMinute": 20,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/SportsGround.tsx"
+      "producePerMinute": 20
     },
     {
       "kind": "building",
@@ -910,8 +859,7 @@
         "SugarCane": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/SugarCanePlantation.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -929,8 +877,7 @@
         "RiverField": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/SugarMill.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -946,8 +893,7 @@
         "SugarCane": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/SugarWindmill.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -963,8 +909,7 @@
         "Tea": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/TeaPlantation.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -980,8 +925,7 @@
         "Tobacco": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/TobaccoFarm.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -999,8 +943,7 @@
         "RiverField": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/WaterBuffaloRanch.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1016,8 +959,7 @@
         "WaterBuffalo": 0.6666666666666666
       },
       "producePerIteration": 76,
-      "producePerMinute": 50.666666666666664,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/WhimHouse.tsx"
+      "producePerMinute": 50.666666666666664
     },
     {
       "kind": "building",
@@ -1033,8 +975,7 @@
         "Gras": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Apiary.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1052,8 +993,7 @@
         "CompositeBow": 0.05
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.05,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/ArcherAcademy.tsx"
+      "producePerMinute": 0.05
     },
     {
       "kind": "building",
@@ -1071,8 +1011,7 @@
         "Soap": 0.25
       },
       "producePerIteration": 48,
-      "producePerMinute": 12,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Bathhouse.tsx"
+      "producePerMinute": 12
     },
     {
       "kind": "building",
@@ -1090,8 +1029,7 @@
         "Cider": 1.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/BrandyDistillery.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -1109,8 +1047,7 @@
         "Cattle": 0.25
       },
       "producePerIteration": 4,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Butchery.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -1126,8 +1063,7 @@
         "Gras": 4
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/ChickenFarm.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -1143,8 +1079,7 @@
         "GoldIngot": 0.25
       },
       "producePerIteration": 7,
-      "producePerMinute": 1.75,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/CoiningPress.tsx"
+      "producePerMinute": 1.75
     },
     {
       "kind": "building",
@@ -1162,8 +1097,7 @@
         "Cattle": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/CompositeBowyer.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1183,8 +1117,7 @@
         "RiverField": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/CrossbowMaker.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1202,8 +1135,7 @@
         "Crossbow": 0.05
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.05,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/CrossbowShootingRange.tsx"
+      "producePerMinute": 0.05
     },
     {
       "kind": "building",
@@ -1221,8 +1153,7 @@
         "Tobacco": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/CuringHouse.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -1238,8 +1169,7 @@
         "CopperDeposit": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/DeepCopperMine.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -1257,8 +1187,7 @@
         "Rose": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/EssenceDistillery.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -1278,8 +1207,7 @@
         "RiverField": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/FeltmakingMill.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -1295,8 +1223,7 @@
         "Forest": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 2,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/ForestWardensCabin.tsx"
+      "producePerMinute": 2
     },
     {
       "kind": "building",
@@ -1314,8 +1241,7 @@
         "Gold": 0.125
       },
       "producePerIteration": 2,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/GoldSmelter.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -1333,8 +1259,7 @@
         "GoldIngot": 0.125
       },
       "producePerIteration": 6,
-      "producePerMinute": 0.375,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Goldsmith.tsx"
+      "producePerMinute": 0.375
     },
     {
       "kind": "building",
@@ -1350,8 +1275,7 @@
         "Felt": 0.0625
       },
       "producePerIteration": 4,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/HattersShop.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1367,8 +1291,7 @@
         "FishOil": 2
       },
       "producePerIteration": 120,
-      "producePerMinute": 120,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Hospital.tsx"
+      "producePerMinute": 120
     },
     {
       "kind": "building",
@@ -1388,8 +1311,7 @@
         "RiverField": 0.0625
       },
       "producePerIteration": 2,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/IronArmory.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -1405,8 +1327,7 @@
         "IronDeposit": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/IronMine.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1424,8 +1345,7 @@
         "Iron": 0.125
       },
       "producePerIteration": 2,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/IronSmelter.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -1443,8 +1363,7 @@
         "Sword": 0.05
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.05,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/KnightBarracks.tsx"
+      "producePerMinute": 0.05
     },
     {
       "kind": "building",
@@ -1460,8 +1379,7 @@
         "MarbleDeposit": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/MarbleQuarry.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -1481,8 +1399,7 @@
         "Egg": 0.75
       },
       "producePerIteration": 4,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/PastryManufacture.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -1502,8 +1419,7 @@
         "RoseWater": 0.25
       },
       "producePerIteration": 10,
-      "producePerMinute": 1.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Perfumery.tsx"
+      "producePerMinute": 1.25
     },
     {
       "kind": "building",
@@ -1521,8 +1437,7 @@
         "PipeTobacco": 0.5
       },
       "producePerIteration": 4,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/PipemakersShop.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -1538,8 +1453,7 @@
         "Rose": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/RoseCultivation.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1555,8 +1469,7 @@
         "SugarBeet": 10
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/SugarBeetFarm.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -1574,8 +1487,7 @@
         "IronIngot": 0.125
       },
       "producePerIteration": 4,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Toolmaker.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1591,8 +1503,7 @@
         "Honeycomb": 0.5
       },
       "producePerIteration": 24,
-      "producePerMinute": 12,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Townhall.tsx"
+      "producePerMinute": 12
     },
     {
       "kind": "building",
@@ -1608,8 +1519,7 @@
         "SpermWhale": 0.0625
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.03125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/AmbergrisProduction.tsx"
+      "producePerMinute": 0.03125
     },
     {
       "kind": "building",
@@ -1627,8 +1537,7 @@
         "ZincIngot": 0.3333333333333333
       },
       "producePerIteration": 5,
-      "producePerMinute": 0.8333333333333334,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/BrassSmelterNorth.tsx"
+      "producePerMinute": 0.8333333333333334
     },
     {
       "kind": "building",
@@ -1646,8 +1555,7 @@
         "Sturgeon": 0.125
       },
       "producePerIteration": 2,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/CaviarFactory.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1663,8 +1571,7 @@
         "Coal": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/CoalMineNorth.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -1680,8 +1587,7 @@
         "ConiferForest": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 2,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/ConiferLumberjack.tsx"
+      "producePerMinute": 2
     },
     {
       "kind": "building",
@@ -1697,8 +1603,7 @@
         "Copper": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/CopperMineNorth.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -1716,8 +1621,7 @@
         "Copper": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/CopperSmelterNorth.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1733,8 +1637,7 @@
         "Grass": 1.1666666666666667
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.16666666666666666,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/FurTrapper.tsx"
+      "producePerMinute": 0.16666666666666666
     },
     {
       "kind": "building",
@@ -1750,8 +1653,7 @@
         "Gold": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/GoldMineNorth.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -1769,8 +1671,7 @@
         "GoldOre": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/GoldSmelterNorth.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -1786,8 +1687,7 @@
         "Wood": 0.5
       },
       "producePerIteration": 8,
-      "producePerMinute": 4,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/HeatingPlant.tsx"
+      "producePerMinute": 4
     },
     {
       "kind": "building",
@@ -1803,8 +1703,7 @@
         "Iron": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/IronMineNorth.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -1822,8 +1721,7 @@
         "Iron": 0.25
       },
       "producePerIteration": 2,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/IronSmelterNorth.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1839,8 +1737,7 @@
         "Coal": 0.5
       },
       "producePerIteration": 20,
-      "producePerMinute": 10,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/LargeHeatingPlant.tsx"
+      "producePerMinute": 10
     },
     {
       "kind": "building",
@@ -1856,8 +1753,7 @@
         "Lead": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/LeadMine.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -1875,8 +1771,7 @@
         "Lead": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/LeadSmelter.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1892,8 +1787,7 @@
         "Marble": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/MarbleQuarryNorth.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -1909,8 +1803,7 @@
         "RockSalt": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/RockSaltMineNorth.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1926,8 +1819,7 @@
         "CoastalField": 5.333333333333333
       },
       "producePerIteration": 1,
-      "producePerMinute": 1.3333333333333333,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/SalmonFishermansHut.tsx"
+      "producePerMinute": 1.3333333333333333
     },
     {
       "kind": "building",
@@ -1945,8 +1837,7 @@
         "RockSalt": 0.08333333333333333
       },
       "producePerIteration": 2,
-      "producePerMinute": 0.16666666666666666,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/SaltWorksNorth.tsx"
+      "producePerMinute": 0.16666666666666666
     },
     {
       "kind": "building",
@@ -1962,8 +1853,7 @@
         "RiverField": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/SturgeonFarm.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -1979,8 +1869,7 @@
         "SpermWhale": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/Whaler.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -1996,8 +1885,7 @@
         "Zinc": 0.3333333333333333
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.3333333333333333,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/ZincMine.tsx"
+      "producePerMinute": 0.3333333333333333
     },
     {
       "kind": "building",
@@ -2015,8 +1903,7 @@
         "Zinc": 0.16666666666666666
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.16666666666666666,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/ZincSmelter.tsx"
+      "producePerMinute": 0.16666666666666666
     },
     {
       "kind": "building",
@@ -2036,8 +1923,7 @@
         "RiverField": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Armorsmith.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -2055,8 +1941,7 @@
         "Paper": 4
       },
       "producePerIteration": 2,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Bookbinder.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -2074,8 +1959,7 @@
         "ZincIngot": 0.3333333333333333
       },
       "producePerIteration": 5,
-      "producePerMinute": 0.8333333333333334,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/BrassSmelter.tsx"
+      "producePerMinute": 0.8333333333333334
     },
     {
       "kind": "building",
@@ -2095,8 +1979,7 @@
         "RiverField": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/BrocadeSpinningFactory.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -2114,8 +1997,7 @@
         "Canon": 0.03333333333333333
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.03333333333333333,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/CannoneersSchool.tsx"
+      "producePerMinute": 0.03333333333333333
     },
     {
       "kind": "building",
@@ -2135,8 +2017,7 @@
         "RiverField": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/CannonFoundry.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -2154,8 +2035,7 @@
         "Fiber": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Chandler.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -2173,8 +2053,7 @@
         "Leather": 0.5
       },
       "producePerIteration": 8,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/CobblersShop.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -2186,8 +2065,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 80,
-      "producePerMinute": 4800,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Coiffeur.tsx"
+      "producePerMinute": 4800
     },
     {
       "kind": "building",
@@ -2203,8 +2081,7 @@
         "Coal": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Cokery.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -2222,8 +2099,7 @@
         "Chocolate": 0.5
       },
       "producePerIteration": 4,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Confectionery.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -2241,8 +2117,7 @@
         "Plank": 1
       },
       "producePerIteration": 2,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Cooper.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -2260,8 +2135,7 @@
         "ArmoredHorse": 0.03333333333333333
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.03333333333333333,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/CuirassierAcademy.tsx"
+      "producePerMinute": 0.03333333333333333
     },
     {
       "kind": "building",
@@ -2279,8 +2153,7 @@
         "MetalCutting": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/FireworksMaker.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -2298,8 +2171,7 @@
         "Glass": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/GalziersWorkshop.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -2319,8 +2191,7 @@
         "Quartz": 0.625
       },
       "producePerIteration": 8,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Glassworks.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -2338,8 +2209,7 @@
         "Brandy": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/HoneyDistillery.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -2357,8 +2227,7 @@
         "Wood": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/LanceMaker.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -2370,8 +2239,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 120,
-      "producePerMinute": 7200,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/LargeThermalBath.tsx"
+      "producePerMinute": 7200
     },
     {
       "kind": "building",
@@ -2389,8 +2257,7 @@
         "Glass": 1
       },
       "producePerIteration": 8,
-      "producePerMinute": 2,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/LensGrinder.tsx"
+      "producePerMinute": 2
     },
     {
       "kind": "building",
@@ -2408,8 +2275,7 @@
         "Musket": 0.03333333333333333
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.03333333333333333,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/MusketeerSchool.tsx"
+      "producePerMinute": 0.03333333333333333
     },
     {
       "kind": "building",
@@ -2431,8 +2297,7 @@
         "RiverField": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/MusketMaker.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -2450,8 +2315,7 @@
         "BrocadeFabric": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/OrnateTailor.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -2471,8 +2335,7 @@
         "RiverField": 0.5
       },
       "producePerIteration": 2,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/PaperMill.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -2494,8 +2357,7 @@
         "RiverField": 0.25
       },
       "producePerIteration": 2,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/PlaningMill.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -2515,8 +2377,7 @@
         "RiverField": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/PowderMill.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -2532,8 +2393,7 @@
         "CoastalField": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/QuartzQuarry.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -2549,8 +2409,7 @@
         "CoastalField": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.0625,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Saltern.tsx"
+      "producePerMinute": 0.0625
     },
     {
       "kind": "building",
@@ -2562,8 +2421,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 120,
-      "producePerMinute": 7200,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Senate.tsx"
+      "producePerMinute": 7200
     },
     {
       "kind": "building",
@@ -2583,8 +2441,7 @@
         "RiverField": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/SteelFurnace.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -2596,8 +2453,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 80,
-      "producePerMinute": 4800,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Theatre.tsx"
+      "producePerMinute": 4800
     },
     {
       "kind": "building",
@@ -2615,8 +2471,7 @@
         "Horse": 0.5
       },
       "producePerIteration": 80,
-      "producePerMinute": 40,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Tiltyard.tsx"
+      "producePerMinute": 40
     },
     {
       "kind": "building",
@@ -2632,8 +2487,7 @@
         "River": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/TreasureSeeker.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -2649,8 +2503,7 @@
         "BrassIngot": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/TrumpetMaker.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -2666,8 +2519,7 @@
         "Candles": 1
       },
       "producePerIteration": 80,
-      "producePerMinute": 80,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/University.tsx"
+      "producePerMinute": 80
     },
     {
       "kind": "building",
@@ -2687,8 +2539,7 @@
         "RiverField": 0.16666666666666666
       },
       "producePerIteration": 3,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Winepress.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -2704,8 +2555,7 @@
         "Vineyard": 12
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Winery.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -2723,8 +2573,7 @@
         "Plank": 0.2
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.2,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/BootCamp.tsx"
+      "producePerMinute": 0.2
     },
     {
       "kind": "building",
@@ -2740,8 +2589,7 @@
         "Apple": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/CiderMaker.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -2753,8 +2601,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 80,
-      "producePerMinute": 4800,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/Cistern.tsx"
+      "producePerMinute": 4800
     },
     {
       "kind": "building",
@@ -2770,8 +2617,7 @@
         "Water": 2.6666666666666665
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.6666666666666666,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/FishermansHut.tsx"
+      "producePerMinute": 0.6666666666666666
     },
     {
       "kind": "building",
@@ -2787,8 +2633,7 @@
         "Forest": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 2,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/Lumberjack.tsx"
+      "producePerMinute": 2
     },
     {
       "kind": "building",
@@ -2804,8 +2649,7 @@
         "Grass": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/Piggery.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -2821,8 +2665,7 @@
         "Grass": 16
       },
       "producePerIteration": 1,
-      "producePerMinute": 2,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/PigRanch.tsx"
+      "producePerMinute": 2
     },
     {
       "kind": "building",
@@ -2834,8 +2677,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 0.057,
-      "producePerMinute": 0.057,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/PioneersHut.tsx"
+      "producePerMinute": 0.057
     },
     {
       "kind": "building",
@@ -2851,8 +2693,7 @@
         "Pigs": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/SausageMaker.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -2870,8 +2711,7 @@
         "RiverField": 2
       },
       "producePerIteration": 3,
-      "producePerMinute": 6,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/Sawmill.tsx"
+      "producePerMinute": 6
     },
     {
       "kind": "building",
@@ -2887,8 +2727,7 @@
         "Wood": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 2,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/SawWorks.tsx"
+      "producePerMinute": 2
     },
     {
       "kind": "building",
@@ -2900,8 +2739,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 36,
-      "producePerMinute": 2160,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/Tavern.tsx"
+      "producePerMinute": 2160
     },
     {
       "kind": "building",
@@ -2913,8 +2751,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 20,
-      "producePerMinute": 1200,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/Well.tsx"
+      "producePerMinute": 1200
     },
     {
       "kind": "building",
@@ -2946,8 +2783,7 @@
         "Education": 60
       },
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationColonistsHouse.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "building",
@@ -2977,8 +2813,7 @@
         "Sports": 60
       },
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationFarmersShack.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "building",
@@ -3026,8 +2861,7 @@
         "Hygiene": 60
       },
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationMerchantsMansion.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "building",
@@ -3081,8 +2915,7 @@
         "Gambling": 60
       },
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationParagonsResidence.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "building",
@@ -3106,8 +2939,7 @@
         "Community": 60
       },
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationPioneersHut.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "building",
@@ -3145,8 +2977,7 @@
         "MedicalCare": 60
       },
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationTownsmenHouse.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "building",
@@ -3194,8 +3025,7 @@
         "Entertainment": 60
       },
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationWorkersHouse.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "building",
@@ -3213,8 +3043,7 @@
         "CopperIngot": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/BoilerMaker.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -3232,8 +3061,7 @@
         "Fish": 1.5
       },
       "producePerIteration": 2,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/BoilingHouse.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -3249,8 +3077,7 @@
         "Gras": 20
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/BoulderGatherer.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -3268,8 +3095,7 @@
         "Malt": 0.25
       },
       "producePerIteration": 2,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Brewery.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -3285,8 +3111,7 @@
         "Gras": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/CattleRanch.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -3302,8 +3127,7 @@
         "Limestone": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/ChalkMaker.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -3319,8 +3143,7 @@
         "Wood": 2
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/CharcoalKiln.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -3336,8 +3159,7 @@
         "CoalDeposit": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/CoalMine.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -3353,8 +3175,7 @@
         "Leather": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/DrumMaker.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -3372,8 +3193,7 @@
         "Drum": 0.06666666666666667
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.06666666666666667,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/DrummersSchool.tsx"
+      "producePerMinute": 0.06666666666666667
     },
     {
       "kind": "building",
@@ -3385,8 +3205,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 80,
-      "producePerMinute": 4800,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Fair.tsx"
+      "producePerMinute": 4800
     },
     {
       "kind": "building",
@@ -3402,8 +3221,7 @@
         "Cattle": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Furriery.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -3419,8 +3237,7 @@
         "Hop": 4
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/HopFarm.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -3436,8 +3253,7 @@
         "Gras": 3.3333333333333335
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.16666666666666666,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/HorseBreeder.tsx"
+      "producePerMinute": 0.16666666666666666
     },
     {
       "kind": "building",
@@ -3455,8 +3271,7 @@
         "Strawberry": 0.3333333333333333
       },
       "producePerIteration": 4,
-      "producePerMinute": 0.3333333333333333,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/JamMaker.tsx"
+      "producePerMinute": 0.3333333333333333
     },
     {
       "kind": "building",
@@ -3474,8 +3289,7 @@
         "Longbow": 0.06666666666666667
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.06666666666666667,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/LongbowArcheryRange.tsx"
+      "producePerMinute": 0.06666666666666667
     },
     {
       "kind": "building",
@@ -3493,8 +3307,7 @@
         "Fiber": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Longbowyer.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -3510,8 +3323,7 @@
         "Wheat": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Malthouse.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -3527,8 +3339,7 @@
         "FishOil": 1
       },
       "producePerIteration": 24,
-      "producePerMinute": 24,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Medicus.tsx"
+      "producePerMinute": 24
     },
     {
       "kind": "building",
@@ -3544,8 +3355,7 @@
         "Horse": 0.16666666666666666
       },
       "producePerIteration": 24,
-      "producePerMinute": 4,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Paddock.tsx"
+      "producePerMinute": 4
     },
     {
       "kind": "building",
@@ -3563,8 +3373,7 @@
         "Horse": 0.06666666666666667
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.06666666666666667,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/RidingArena.tsx"
+      "producePerMinute": 0.06666666666666667
     },
     {
       "kind": "building",
@@ -3580,8 +3389,7 @@
         "RockSaltDeposit": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/RockSaltMine.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -3599,8 +3407,7 @@
         "Yarn": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Sailmaker.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -3618,8 +3425,7 @@
         "RockSalt": 0.08333333333333333
       },
       "producePerIteration": 2,
-      "producePerMinute": 0.16666666666666666,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/SaltWorks.tsx"
+      "producePerMinute": 0.16666666666666666
     },
     {
       "kind": "building",
@@ -3635,8 +3441,7 @@
         "Strawberry": 6
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/StrawberryFarm.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -3656,8 +3461,7 @@
         "RiverField": 0.05555555555555555
       },
       "producePerIteration": 3,
-      "producePerMinute": 0.16666666666666666,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Tannery.tsx"
+      "producePerMinute": 0.16666666666666666
     },
     {
       "kind": "building",
@@ -3673,8 +3477,7 @@
         "Chalk": 1
       },
       "producePerIteration": 120,
-      "producePerMinute": 120,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/TownSchool.tsx"
+      "producePerMinute": 120
     },
     {
       "kind": "building",
@@ -3692,8 +3495,7 @@
         "Gemstone": 0.125
       },
       "producePerIteration": 4,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/ArtisticBlacksmith.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -3711,8 +3513,7 @@
         "ZincIngot": 0.3333333333333333
       },
       "producePerIteration": 5,
-      "producePerMinute": 0.8333333333333334,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/BrassSmelterTropical.tsx"
+      "producePerMinute": 0.8333333333333334
     },
     {
       "kind": "building",
@@ -3730,8 +3531,7 @@
         "Buffalo": 0.25
       },
       "producePerIteration": 6,
-      "producePerMinute": 0.75,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/BuffaloButchery.tsx"
+      "producePerMinute": 0.75
     },
     {
       "kind": "building",
@@ -3747,8 +3547,7 @@
         "WaterBuffalo": 0.5
       },
       "producePerIteration": 24,
-      "producePerMinute": 12,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/BuffaloPasture.tsx"
+      "producePerMinute": 12
     },
     {
       "kind": "building",
@@ -3764,8 +3563,7 @@
         "CacaoTree": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/CacaoPlantation.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -3781,8 +3579,7 @@
         "Flowers": 1
       },
       "producePerIteration": 24,
-      "producePerMinute": 24,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/Cemetery.tsx"
+      "producePerMinute": 24
     },
     {
       "kind": "building",
@@ -3800,8 +3597,7 @@
         "Cacao": 1.5
       },
       "producePerIteration": 3,
-      "producePerMinute": 1.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/Chocolaterie.tsx"
+      "producePerMinute": 1.5
     },
     {
       "kind": "building",
@@ -3817,8 +3613,7 @@
         "CoconutPalm": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/CoconutPlantation.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -3836,8 +3631,7 @@
         "Fabric": 1.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/Costumier.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -3853,8 +3647,7 @@
         "Cotton": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/CottonPlantation.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -3870,8 +3663,7 @@
         "Costume": 1
       },
       "producePerIteration": 48,
-      "producePerMinute": 48,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/DancingSchool.tsx"
+      "producePerMinute": 48
     },
     {
       "kind": "building",
@@ -3887,8 +3679,7 @@
         "MahoganyTree": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/FineWoodLogger.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -3904,8 +3695,7 @@
         "Grass": 20
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/FlowerHouse.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -3921,8 +3711,7 @@
         "Gemstone": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/GemstoneMine.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -3942,8 +3731,7 @@
         "CopperIngot": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/GlaiveSmith.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -3961,8 +3749,7 @@
         "Glaive": 0.05
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.05,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/GlaiveTemple.tsx"
+      "producePerMinute": 0.05
     },
     {
       "kind": "building",
@@ -3978,8 +3765,7 @@
         "GoldOre": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/GoldMineTropical.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -3995,8 +3781,7 @@
         "RiverField": 0.0625
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.0625,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/GoldPanner.tsx"
+      "producePerMinute": 0.0625
     },
     {
       "kind": "building",
@@ -4014,8 +3799,7 @@
         "Gold": 0.125
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/GoldSmelterTropical.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "building",
@@ -4033,8 +3817,7 @@
         "FineWood": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/HeraldicArmourer.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -4050,8 +3833,7 @@
         "Indigo": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/IndigoPlantation.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -4069,8 +3851,7 @@
         "FineWood": 4
       },
       "producePerIteration": 8,
-      "producePerMinute": 4,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/Luthier.tsx"
+      "producePerMinute": 4
     },
     {
       "kind": "building",
@@ -4082,8 +3863,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 48,
-      "producePerMinute": 2880,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/MarketHall.tsx"
+      "producePerMinute": 2880
     },
     {
       "kind": "building",
@@ -4099,8 +3879,7 @@
         "Salpeter": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/NitrateMaker.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -4116,8 +3895,7 @@
         "Silk": 0.25
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/NobleTailor.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "building",
@@ -4133,8 +3911,7 @@
         "Wheat": 1
       },
       "producePerIteration": 24,
-      "producePerMinute": 24,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/RickyardTropical.tsx"
+      "producePerMinute": 24
     },
     {
       "kind": "building",
@@ -4152,8 +3929,7 @@
         "Shield": 0.05
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.05,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/ShieldGuardianTemple.tsx"
+      "producePerMinute": 0.05
     },
     {
       "kind": "building",
@@ -4169,8 +3945,7 @@
         "Silkworm": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/SilkPlantation.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -4188,8 +3963,7 @@
         "RiverField": 0.5
       },
       "producePerIteration": 1,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/SilkTwineMill.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "building",
@@ -4207,8 +3981,7 @@
         "Meat": 1
       },
       "producePerIteration": 1,
-      "producePerMinute": 1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/SoupKitchen.tsx"
+      "producePerMinute": 1
     },
     {
       "kind": "building",
@@ -4226,8 +3999,7 @@
         "RiverField": 0.25
       },
       "producePerIteration": 3,
-      "producePerMinute": 0.75,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/SpinningMill.tsx"
+      "producePerMinute": 0.75
     },
     {
       "kind": "building",
@@ -4239,8 +4011,7 @@
       "consumePerIteration": {},
       "consumePerMinute": {},
       "producePerIteration": 48,
-      "producePerMinute": 2880,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/Stadium.tsx"
+      "producePerMinute": 2880
     }
   ],
   "tiles": [
@@ -4251,8 +4022,7 @@
       "displayName": "Apple Trees",
       "iterationSeconds": 720,
       "producePerIteration": 3,
-      "producePerMinute": 0.25,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/AppleTrees.tsx"
+      "producePerMinute": 0.25
     },
     {
       "kind": "tile",
@@ -4261,8 +4031,7 @@
       "displayName": "Cacao Field",
       "iterationSeconds": 3600,
       "producePerIteration": 3,
-      "producePerMinute": 0.05,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CacaoField.tsx"
+      "producePerMinute": 0.05
     },
     {
       "kind": "tile",
@@ -4271,8 +4040,7 @@
       "displayName": "Clay Deposit",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/ClayDeposit.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4281,8 +4049,7 @@
       "displayName": "Cliff",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Cliff.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4291,8 +4058,7 @@
       "displayName": "Cliff Tropical",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CliffTropical.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4301,8 +4067,7 @@
       "displayName": "Coal Deposit",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoalDeposit.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4311,8 +4076,7 @@
       "displayName": "Coal Deposit North",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoalDepositNorth.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4321,8 +4085,7 @@
       "displayName": "Coal Deposit Tropical",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoalDepositTropical.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4331,8 +4094,7 @@
       "displayName": "Coastal Field",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoastalField.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4341,8 +4103,7 @@
       "displayName": "Coastal Field North",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoastalFieldNorth.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4351,8 +4112,7 @@
       "displayName": "Coastal Field Tropical",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoastalFieldTropical.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4361,8 +4121,7 @@
       "displayName": "Coconut Palm",
       "iterationSeconds": 1920,
       "producePerIteration": 2,
-      "producePerMinute": 0.0625,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoconutPalm.tsx"
+      "producePerMinute": 0.0625
     },
     {
       "kind": "tile",
@@ -4371,8 +4130,7 @@
       "displayName": "Coffee Bean Field",
       "iterationSeconds": 960,
       "producePerIteration": 1,
-      "producePerMinute": 0.0625,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoffeeBeanField.tsx"
+      "producePerMinute": 0.0625
     },
     {
       "kind": "tile",
@@ -4381,8 +4139,7 @@
       "displayName": "Conifer Forest",
       "iterationSeconds": 420,
       "producePerIteration": 2,
-      "producePerMinute": 0.2857142857142857,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/ConiferForest.tsx"
+      "producePerMinute": 0.2857142857142857
     },
     {
       "kind": "tile",
@@ -4391,8 +4148,7 @@
       "displayName": "Copper Deposit",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CopperDeposit.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4401,8 +4157,7 @@
       "displayName": "Copper Deposit Tropical",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CopperDepositTropical.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4411,8 +4166,7 @@
       "displayName": "Copper Pyrite Deposit",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CopperPyriteDeposit.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4421,8 +4175,7 @@
       "displayName": "Cotton Field",
       "iterationSeconds": 480,
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CottonField.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "tile",
@@ -4431,8 +4184,7 @@
       "displayName": "Forest",
       "iterationSeconds": 360,
       "producePerIteration": 3,
-      "producePerMinute": 0.5,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Forest.tsx"
+      "producePerMinute": 0.5
     },
     {
       "kind": "tile",
@@ -4441,8 +4193,7 @@
       "displayName": "Gemstone Deposit",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/GemstoneDeposit.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4451,8 +4202,7 @@
       "displayName": "Gold Deposit North",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/GoldDepositNorth.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4461,8 +4211,7 @@
       "displayName": "Gold Deposit Tropical",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/GoldDepositTropical.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4471,8 +4220,7 @@
       "displayName": "Grass",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Grass.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4481,8 +4229,7 @@
       "displayName": "Grass North",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/GrassNorth.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4491,8 +4238,7 @@
       "displayName": "Hop Field",
       "iterationSeconds": 960,
       "producePerIteration": 1,
-      "producePerMinute": 0.0625,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/HopField.tsx"
+      "producePerMinute": 0.0625
     },
     {
       "kind": "tile",
@@ -4501,8 +4247,7 @@
       "displayName": "Indigo Field",
       "iterationSeconds": 960,
       "producePerIteration": 1,
-      "producePerMinute": 0.0625,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/IndigoField.tsx"
+      "producePerMinute": 0.0625
     },
     {
       "kind": "tile",
@@ -4511,8 +4256,7 @@
       "displayName": "Iron Deposit",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/IronDeposit.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4521,8 +4265,7 @@
       "displayName": "Ironstone Deposit",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/IronstoneDeposit.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4531,8 +4274,7 @@
       "displayName": "Lead Deposit",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/LeadDeposit.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4541,8 +4283,7 @@
       "displayName": "Linseed Field",
       "iterationSeconds": 600,
       "producePerIteration": 1,
-      "producePerMinute": 0.1,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/LinseedField.tsx"
+      "producePerMinute": 0.1
     },
     {
       "kind": "tile",
@@ -4551,8 +4292,7 @@
       "displayName": "Mahogany Tree",
       "iterationSeconds": 1440,
       "producePerIteration": 3,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/MahoganyTree.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "tile",
@@ -4561,8 +4301,7 @@
       "displayName": "Marble Deposit",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/MarbleDeposit.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4571,8 +4310,7 @@
       "displayName": "Marble Deposit North",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/MarbleDepositNorth.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4581,8 +4319,7 @@
       "displayName": "Multberry Trees",
       "iterationSeconds": 960,
       "producePerIteration": 1,
-      "producePerMinute": 0.0625,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/MultberryTrees.tsx"
+      "producePerMinute": 0.0625
     },
     {
       "kind": "tile",
@@ -4591,8 +4328,7 @@
       "displayName": "Nitrate Field",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/NitrateField.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4601,8 +4337,7 @@
       "displayName": "Palm Trees",
       "iterationSeconds": 360,
       "producePerIteration": 2,
-      "producePerMinute": 0.3333333333333333,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/PalmTrees.tsx"
+      "producePerMinute": 0.3333333333333333
     },
     {
       "kind": "tile",
@@ -4611,8 +4346,7 @@
       "displayName": "River Field",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RiverField.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4621,8 +4355,7 @@
       "displayName": "River Field North",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RiverFieldNorth.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4631,8 +4364,7 @@
       "displayName": "River Field Tropical",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RiverFieldTropical.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4641,8 +4373,7 @@
       "displayName": "Rock Salt Deposit",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RockSaltDeposit.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4651,8 +4382,7 @@
       "displayName": "Rock Salt Deposit North",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RockSaltDepositNorth.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4661,8 +4391,7 @@
       "displayName": "Rose Field",
       "iterationSeconds": 1920,
       "producePerIteration": 1,
-      "producePerMinute": 0.03125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RoseField.tsx"
+      "producePerMinute": 0.03125
     },
     {
       "kind": "tile",
@@ -4671,8 +4400,7 @@
       "displayName": "Sperm Whale Swarm",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/SpermWhaleSwarm.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4681,8 +4409,7 @@
       "displayName": "Strawberry Field",
       "iterationSeconds": 1440,
       "producePerIteration": 1,
-      "producePerMinute": 0.041666666666666664,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/StrawberryField.tsx"
+      "producePerMinute": 0.041666666666666664
     },
     {
       "kind": "tile",
@@ -4691,8 +4418,7 @@
       "displayName": "Sugar Beet Field",
       "iterationSeconds": 2400,
       "producePerIteration": 1,
-      "producePerMinute": 0.025,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/SugarBeetField.tsx"
+      "producePerMinute": 0.025
     },
     {
       "kind": "tile",
@@ -4701,8 +4427,7 @@
       "displayName": "Sugar Cane Field",
       "iterationSeconds": 960,
       "producePerIteration": 1,
-      "producePerMinute": 0.0625,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/SugarCaneField.tsx"
+      "producePerMinute": 0.0625
     },
     {
       "kind": "tile",
@@ -4711,8 +4436,7 @@
       "displayName": "Tea Field",
       "iterationSeconds": 480,
       "producePerIteration": 1,
-      "producePerMinute": 0.125,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/TeaField.tsx"
+      "producePerMinute": 0.125
     },
     {
       "kind": "tile",
@@ -4721,8 +4445,7 @@
       "displayName": "Tobacco Field",
       "iterationSeconds": 960,
       "producePerIteration": 1,
-      "producePerMinute": 0.0625,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/TobaccoField.tsx"
+      "producePerMinute": 0.0625
     },
     {
       "kind": "tile",
@@ -4731,8 +4454,7 @@
       "displayName": "Vineyard",
       "iterationSeconds": 960,
       "producePerIteration": 1,
-      "producePerMinute": 0.0625,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Vineyard.tsx"
+      "producePerMinute": 0.0625
     },
     {
       "kind": "tile",
@@ -4741,8 +4463,7 @@
       "displayName": "Water",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Water.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4751,8 +4472,7 @@
       "displayName": "Weir",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Weir.tsx"
+      "producePerMinute": 60
     },
     {
       "kind": "tile",
@@ -4761,8 +4481,7 @@
       "displayName": "Wheat Field",
       "iterationSeconds": 960,
       "producePerIteration": 1,
-      "producePerMinute": 0.0625,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/WheatField.tsx"
+      "producePerMinute": 0.0625
     },
     {
       "kind": "tile",
@@ -4771,8 +4490,7 @@
       "displayName": "Zinc Deposit",
       "iterationSeconds": 1,
       "producePerIteration": 1,
-      "producePerMinute": 60,
-      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/ZincDeposit.tsx"
+      "producePerMinute": 60
     }
   ]
 }

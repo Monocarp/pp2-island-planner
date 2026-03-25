@@ -73,19 +73,21 @@ Does the answer **differ** for **horse vs pig vs cattle vs sheep** or for **non-
 
 **Same-type harvest overlap (e.g. two Wheat farms on one wheat field cell):**
 
-**Status:** Answered
+**Status:** Answered (revised to match game presentation)
 
-**Conclusion:** **Exclusive** — that cell counts toward **at most one** of the overlapping farms for production purposes, **not** 1/n and not double 8/8. UI may show 8/8 on both; actual harvest is a **single worker trip** per ripen cycle, so only one building “gets” that tile for the purpose of sustained output. Parser will need a **deterministic tie-break** among claimants (e.g. stable ordering by anchor) unless exact game priority is reverse-engineered; document the chosen rule in code comments.
+**Conclusion:** **Match the game’s production UI** — each building’s **footprint counts cells independently** for harvest/specific-tile inputs, so two overlapping wheat farms can **both** show **8/8** (or full need) on the same underlying tiles. Parser uses **per-building cell counts** with **no 1/n split** for non-grass spatial inputs (deposits, fields, forest, river counts, `water_tile`, etc.). **Grass** for livestock still uses **shared** logic (1/n and/or pool) per §1c.
 
-**Rationale (user):** Ripe fields are not auto-collected; a character harvests; overlap implies the tile cannot simultaneously serve two harvesters for that cycle.
+**Rationale (user):** Overlap is uncommon; **adherence to what the game shows** is the guiding principle even if simulation might arbitrate harvest workers differently.
 
-**Notes:** User walkthrough 2025 — Q1 completion pass.
+**Supersedes:** Earlier “exclusive claim per tile” hypothesis for same-type harvesters.
+
+**Notes:** Implemented in `save-tile-utilization.js` via `countIndependentSpatialCells` for all spatial inputs except pooled grass / horse linear grass.
 
 ---
 
 ## Q1 section completion
 
-**Status:** **Satisfactory for proceeding** on overlap/sharing. Subsections **1a–1d** + wheat same-type rule; **1b** remains “linear unless counterexample.”
+**Status:** **Satisfactory for proceeding** on overlap/sharing. Subsections **1a–1d** + revised same-type harvest rule; **1b** remains “linear unless counterexample.”
 
 ---
 

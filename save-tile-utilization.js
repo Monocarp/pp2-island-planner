@@ -1,13 +1,12 @@
 // ===== SAVE ANALYSIS: TILE INPUT UTILIZATION =====
-// Grass pool (horse/cattle/pig/sheep): buildings whose footprints overlap share one grass budget:
-//   groupMax = min(|union of footprint cells|, sum of each building's grass need from data.js)
-//   usedGrass = distinct cells in the union where at least one group member can gather grass
-//   each member gets tileUtil = min(1, usedGrass / groupMax)
-// Other tile resources: overlapping claimants get 1/n per tile (legacy).
+// HorseBreeder: linear grass — output scales as producePerMinute × (utilizedGrassCells / grassNeed);
+//   rickyard ×2 applied separately in save-analysis (not folded into tileUtil).
+// Cattle/pig/sheep grass pools: connected overlap components; cattle also island-wide merge (see below).
+// Non-grass spatial inputs + water_tile: count matching cells per building only (matches in-game footprint
+// UI — overlapping same-type harvesters each get full credit per cell). Grass for pig/sheep/cattle: pool + 1/m in union.
 
-/** Planner ids that share grass pools when footprints touch (game entity ids remap before lookup). */
+/** Planner ids that use aggregate grass pools (not linear per-building horse math). */
 const GRASS_POOL_PLANNER_IDS = {
-  HorseBreeder: true,
   CattleRanch: true,
   PigRanch: true,
   SheepFarm: true,
@@ -126,7 +125,7 @@ function buildGrassPoolRatiosByAnchor(island, deps) {
   for (let i = 0; i < island.buildings.length; i++) {
     const b = island.buildings[i];
     const plannerId = b.id;
-    if (!GRASS_POOL_PLANNER_IDS[plannerId]) continue;
+    if (!GRASS_POOL_PLANNER_IDS[plannerId]) continue; // HorseBreeder: per-building linear, not pooled
     const building = d.getBuildingData(plannerId);
     if (!building || !building.inputs || !building.inputs.grass) continue;
     const need = building.inputs.grass;
@@ -156,11 +155,8 @@ function buildGrassPoolRatiosByAnchor(island, deps) {
     }
   }
 
-  /**
-   * Horse breeders / cattle ranches: aggregate grass pool across the whole island (max = sum of grass needs
-   * capped by union size), even when footprints do not touch. Other grass livestock stay footprint-connected only.
-   */
-  const ISLAND_WIDE_GRASS_POOL_TYPES = { HorseBreeder: true, CattleRanch: true };
+  /** Cattle ranches: one aggregate grass pool per island (sum of needs capped by union). */
+  const ISLAND_WIDE_GRASS_POOL_TYPES = { CattleRanch: true };
   const byType = new Map();
   for (let i = 0; i < n; i++) {
     const pid = members[i].plannerId;
@@ -244,6 +240,54 @@ function buildGrassPoolRatiosByAnchor(island, deps) {
   return out;
 }
 
+/** Raw count of gatherable grass cells in this building's footprint (no 1/n split). */
+function countGatherableGrassCellsInFootprint(island, plannerBuildingId, anchorX, anchorY, deps) {
+  const d = deps || defaultTileUtilDeps();
+  const fp = d.FOOTPRINTS && d.FOOTPRINTS[plannerBuildingId];
+  const fcg = d.footprintCellCountsForGathering;
+  if (!fp || !island || !fcg) return 0;
+  const { width, height, cells } = island;
+  const gopts = geomOptsFromDeps(d);
+  let n = 0;
+  for (let i = 0; i < fp.length; i++) {
+    const fx = anchorX + fp[i][0];
+    const fy = anchorY + fp[i][1];
+    if (fx < 0 || fx >= width || fy < 0 || fy >= height) continue;
+    const cell = cells[fy][fx];
+    if (fcg(cell, fx, fy, 'grass', anchorX, anchorY, width, height, gopts)) n++;
+  }
+  return n;
+}
+
+/**
+ * Per-building count of footprint cells that match resId (game UI style: no 1/n split between buildings).
+ * Out-of-bounds water_tile still counts via cellProvidesWaterTile rules.
+ */
+function countIndependentSpatialCells(island, plannerBuildingId, anchorX, anchorY, resId, deps) {
+  const d = deps || defaultTileUtilDeps();
+  const fp = d.FOOTPRINTS && d.FOOTPRINTS[plannerBuildingId];
+  const fcg = d.footprintCellCountsForGathering;
+  if (!fp || !island || !fcg) return 0;
+  const { width, height, cells } = island;
+  const gopts = geomOptsFromDeps(d);
+  let n = 0;
+  for (let i = 0; i < fp.length; i++) {
+    const fx = anchorX + fp[i][0];
+    const fy = anchorY + fp[i][1];
+    if (fx < 0 || fx >= width || fy < 0 || fy >= height) {
+      if (resId === 'water_tile') {
+        const offMapWater = { terrain: 'water', deposit: null, building: null };
+        if (fcg(offMapWater, fx, fy, resId, anchorX, anchorY, width, height, gopts)) n++;
+      }
+      continue;
+    }
+    const cell = cells[fy][fx];
+    if (fcg(cell, fx, fy, resId, anchorX, anchorY, width, height, gopts)) n++;
+  }
+  return n;
+}
+
+/** Grass livestock overlap: 1/n per cell (claimants map). */
 function effectiveSpatialInputUnits(island, plannerBuildingId, anchorX, anchorY, resId, needed, claimantsMap, deps) {
   const d = deps || defaultTileUtilDeps();
   const fp = d.FOOTPRINTS && d.FOOTPRINTS[plannerBuildingId];
@@ -320,10 +364,14 @@ function computeTileUtilizationForProducer(island, plannerBuildingId, xy, claima
 
     let cappedRatio;
     let effective;
-    if (resId === 'grass' && useGrassPool) {
+    if (resId === 'grass' && plannerBuildingId === 'HorseBreeder') {
+      const raw = countGatherableGrassCellsInFootprint(island, plannerBuildingId, bx, by, d);
+      cappedRatio = needed > 0 ? Math.min(1, raw / needed) : 1;
+      effective = raw;
+    } else if (resId === 'grass' && useGrassPool) {
       cappedRatio = poolRatio;
       effective = cappedRatio * needed;
-    } else {
+    } else if (resId === 'grass') {
       const u = effectiveSpatialInputUnits(
         island,
         plannerBuildingId,
@@ -336,6 +384,10 @@ function computeTileUtilizationForProducer(island, plannerBuildingId, xy, claima
       );
       effective = u.effective;
       cappedRatio = u.cappedRatio;
+    } else {
+      const raw = countIndependentSpatialCells(island, plannerBuildingId, bx, by, resId, d);
+      cappedRatio = needed > 0 ? Math.min(1, raw / needed) : 1;
+      effective = raw;
     }
     spatialRatios.push(cappedRatio);
     breakdown.push({ resId, needed, effectiveUnits: effective, ratio: cappedRatio });
@@ -358,6 +410,8 @@ if (typeof module !== 'undefined' && module.exports) {
     buildSpatialTileClaimantsMap,
     buildGrassPoolRatiosByAnchor,
     computeTileUtilizationForProducer,
+    countGatherableGrassCellsInFootprint,
+    countIndependentSpatialCells,
     defaultTileUtilDeps,
     GRASS_POOL_PLANNER_IDS,
   };

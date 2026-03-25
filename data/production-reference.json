@@ -1,0 +1,4778 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-03-25T01:03:17.147Z",
+  "source": {
+    "repository": "https://github.com/ElQDuck/paragon-pioneers-2-calculator",
+    "productionChainPath": "src/pages/production-chain",
+    "commit": "98f74bcbb6029f621ee9d4d7ca1c207da46e7e22",
+    "localRoot": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain"
+  },
+  "warnings": [],
+  "buildings": [
+    {
+      "kind": "building",
+      "id": "ArcheryRange",
+      "infoExport": "ARCHERY_RANGE_INFO",
+      "tier": "colonists",
+      "displayName": "Archery Range",
+      "iterationSeconds": 300,
+      "consumePerIteration": {
+        "Militia": 1,
+        "Bow": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "Bow": 0.2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.2,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/ArcheryRange.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "AshHouse",
+      "infoExport": "ASH_HOUSE_INFO",
+      "tier": "colonists",
+      "displayName": "Ash House",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Wood": 2
+      },
+      "consumePerMinute": {
+        "Wood": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/AshHouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Bakery",
+      "infoExport": "BAKERY_INFO",
+      "tier": "colonists",
+      "displayName": "Bakery",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Flour": 1
+      },
+      "consumePerMinute": {
+        "Flour": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Bakery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Barracks",
+      "infoExport": "BARRACKS_INFO",
+      "tier": "colonists",
+      "displayName": "Barracks",
+      "iterationSeconds": 600,
+      "consumePerIteration": {
+        "Militia": 2,
+        "CopperSword": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "CopperSword": 0.1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Barracks.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BerserkerHall",
+      "infoExport": "BERSERKER_HALL_INFO",
+      "tier": "colonists",
+      "displayName": "Berserker Hall",
+      "iterationSeconds": 600,
+      "consumePerIteration": {
+        "Militia": 2,
+        "CopperAxe": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "CopperAxe": 0.1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/BerserkerHall.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Bowyer",
+      "infoExport": "BOWYER_INFO",
+      "tier": "colonists",
+      "displayName": "Bowyer",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Wood": 3,
+        "Fiber": 2
+      },
+      "consumePerMinute": {
+        "Wood": 0.75,
+        "Fiber": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Bowyer.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CopperArmory",
+      "infoExport": "COPPER_ARMORY_INFO",
+      "tier": "colonists",
+      "displayName": "Copper Armory",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Wood": 4,
+        "CopperIngot": 1
+      },
+      "consumePerMinute": {
+        "Wood": 0.5,
+        "CopperIngot": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/CopperArmory.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CopperAxesmith",
+      "infoExport": "COPPER_AXESMITH_INFO",
+      "tier": "colonists",
+      "displayName": "Copper Axesmith",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Wood": 4,
+        "CopperIngot": 1
+      },
+      "consumePerMinute": {
+        "Wood": 0.5,
+        "CopperIngot": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/CopperAxesmith.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CopperMine",
+      "infoExport": "COPPER_MINE_INFO",
+      "tier": "colonists",
+      "displayName": "Copper Mine",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "CopperDeposit": 1
+      },
+      "consumePerMinute": {
+        "CopperDeposit": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/CopperMine.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CopperSmelter",
+      "infoExport": "COPPER_SMELTER_INFO",
+      "tier": "colonists",
+      "displayName": "Copper Smelter",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Wood": 4,
+        "Copper": 1
+      },
+      "consumePerMinute": {
+        "Wood": 0.5,
+        "Copper": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/CopperSmelter.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "FlourMill",
+      "infoExport": "FLOUR_MILL_INFO",
+      "tier": "colonists",
+      "displayName": "Flour Mill",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Wheat": 2,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Wheat": 1,
+        "RiverField": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/FlourMill.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "FlourWindmill",
+      "infoExport": "FLOUR_WINDMILL_INFO",
+      "tier": "colonists",
+      "displayName": "Flour Windmill",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Wheat": 2
+      },
+      "consumePerMinute": {
+        "Wheat": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/FlourWindmill.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "HarborTavern",
+      "infoExport": "HARBOR_TAVERN_INFO",
+      "tier": "colonists",
+      "displayName": "Harbor Tavern",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 65,
+      "producePerMinute": 3900,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/HarborTavern.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "LimeKiln",
+      "infoExport": "LIME_KILN_INFO",
+      "tier": "colonists",
+      "displayName": "Lime Kiln",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Wood": 4,
+        "Limestone": 1
+      },
+      "consumePerMinute": {
+        "Wood": 2,
+        "Limestone": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/LimeKiln.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "LinseedFarm",
+      "infoExport": "LINSEED_FARM_INFO",
+      "tier": "colonists",
+      "displayName": "Linseed Farm",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Linseed": 1
+      },
+      "consumePerMinute": {
+        "Linseed": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/LinseedFarm.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "MortarBatchWorks",
+      "infoExport": "MORTAR_BATCH_WORKS_INFO",
+      "tier": "colonists",
+      "displayName": "Mortar Batch Works",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Quicklime": 1,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Quicklime": 0.25,
+        "RiverField": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/MortarBatchWorks.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "RenderingWorks",
+      "infoExport": "RENDERING_WORKS_INFO",
+      "tier": "colonists",
+      "displayName": "Rendering Works",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Pigs": 1
+      },
+      "consumePerMinute": {
+        "Pigs": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/RenderingWorks.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Rickyard",
+      "infoExport": "RICKYARD_INFO",
+      "tier": "colonists",
+      "displayName": "Rickyard",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Wheat": 1
+      },
+      "consumePerMinute": {
+        "Wheat": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Rickyard.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Ropery",
+      "infoExport": "ROPERY_INFO",
+      "tier": "colonists",
+      "displayName": "Ropery",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Fiber": 1
+      },
+      "consumePerMinute": {
+        "Fiber": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Ropery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "School",
+      "infoExport": "SCHOOL_INFO",
+      "tier": "colonists",
+      "displayName": "School",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 24,
+      "producePerMinute": 1440,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/School.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SheepFarm",
+      "infoExport": "SHEEP_FARM_INFO",
+      "tier": "colonists",
+      "displayName": "Sheep Farm",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Grass": 4
+      },
+      "consumePerMinute": {
+        "Grass": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/SheepFarm.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SoapMaker",
+      "infoExport": "SOAP_MAKER_INFO",
+      "tier": "colonists",
+      "displayName": "Soap Maker",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Potash": 1,
+        "Tallow": 1
+      },
+      "consumePerMinute": {
+        "Potash": 0.5,
+        "Tallow": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/SoapMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Stonecutter",
+      "infoExport": "STONECUTTER_INFO",
+      "tier": "colonists",
+      "displayName": "Stonecutter",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Cliff": 1
+      },
+      "consumePerMinute": {
+        "Cliff": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Stonecutter.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "TextileFactory",
+      "infoExport": "TEXTILE_FACTORY_INFO",
+      "tier": "colonists",
+      "displayName": "Textile Factory",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Yarn": 4,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Yarn": 1,
+        "RiverField": 0.25
+      },
+      "producePerIteration": 3,
+      "producePerMinute": 0.75,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/TextileFactory.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Weaver",
+      "infoExport": "WEAVER_INFO",
+      "tier": "colonists",
+      "displayName": "Weaver",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Yarn": 2
+      },
+      "consumePerMinute": {
+        "Yarn": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/Weaver.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "WheatFarm",
+      "infoExport": "WHEAT_FARM_INFO",
+      "tier": "colonists",
+      "displayName": "Wheat Farm",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Wheat": 1
+      },
+      "consumePerMinute": {
+        "Wheat": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/colonists/WheatFarm.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Apothecary",
+      "infoExport": "APOTHECARY_INFO",
+      "tier": "farmers",
+      "displayName": "Apothecary",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Leather": 1,
+        "Rum": 3
+      },
+      "consumePerMinute": {
+        "Leather": 0.25,
+        "Rum": 0.75
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/Apothecary.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BallMaker",
+      "infoExport": "BALL_MAKER_INFO",
+      "tier": "farmers",
+      "displayName": "Ball Maker",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Leather": 1
+      },
+      "consumePerMinute": {
+        "Leather": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/BallMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BeachFishermansHut",
+      "infoExport": "BEACH_FISHERMANS_HUT_INFO",
+      "tier": "farmers",
+      "displayName": "Beach Fishermans Hut",
+      "iterationSeconds": 90,
+      "consumePerIteration": {
+        "CoastalField": 4
+      },
+      "consumePerMinute": {
+        "CoastalField": 2.6666666666666665
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.6666666666666666,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/BeachFishermansHut.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Brickyard",
+      "infoExport": "BRICKYARD_INFO",
+      "tier": "farmers",
+      "displayName": "Brickyard",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Coal": 1,
+        "Clay": 2
+      },
+      "consumePerMinute": {
+        "Coal": 0.25,
+        "Clay": 0.5
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/Brickyard.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CigarManufacture",
+      "infoExport": "CIGAR_MANUFACTURE_INFO",
+      "tier": "farmers",
+      "displayName": "Cigar Manufacture",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Tobacco": 2
+      },
+      "consumePerMinute": {
+        "Tobacco": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CigarManufacture.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "ClayPit",
+      "infoExport": "CLAY_PIT_INFO",
+      "tier": "farmers",
+      "displayName": "Clay Pit",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Clay": 1
+      },
+      "consumePerMinute": {
+        "Clay": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/ClayPit.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CoalMineTropical",
+      "infoExport": "COAL_MINE_TROPICAL_INFO",
+      "tier": "farmers",
+      "displayName": "Coal Mine Tropical",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Coal": 1
+      },
+      "consumePerMinute": {
+        "Coal": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CoalMineTropical.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CoffeeHouse",
+      "infoExport": "COFFEE_HOUSE_INFO",
+      "tier": "farmers",
+      "displayName": "Coffee House",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Coffee": 1
+      },
+      "consumePerMinute": {
+        "Coffee": 0.25
+      },
+      "producePerIteration": 20,
+      "producePerMinute": 5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CoffeeHouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CoffeePlantation",
+      "infoExport": "COFFEE_PLANTATION_INFO",
+      "tier": "farmers",
+      "displayName": "Coffee Plantation",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "CoffeeBean": 1
+      },
+      "consumePerMinute": {
+        "CoffeeBean": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CoffeePlantation.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CopperMineTropical",
+      "infoExport": "COPPER_MINE_TROPICAL_INFO",
+      "tier": "farmers",
+      "displayName": "Copper Mine Tropical",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Copper": 1
+      },
+      "consumePerMinute": {
+        "Copper": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CopperMineTropical.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CopperSmelterTropical",
+      "infoExport": "COPPER_SMELTER_TROPICAL_INFO",
+      "tier": "farmers",
+      "displayName": "Copper Smelter Tropical",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Coal": 1,
+        "Copper": 1
+      },
+      "consumePerMinute": {
+        "Coal": 0.125,
+        "Copper": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CopperSmelterTropical.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CrocodileRanch",
+      "infoExport": "CROCODILE_RANCH_INFO",
+      "tier": "farmers",
+      "displayName": "Crocodile Ranch",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "RiverField": 2
+      },
+      "consumePerMinute": {
+        "RiverField": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/CrocodileRanch.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Dairy",
+      "infoExport": "DAIRY_INFO",
+      "tier": "farmers",
+      "displayName": "Dairy",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Milk": 2
+      },
+      "consumePerMinute": {
+        "Milk": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/Dairy.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Drywell",
+      "infoExport": "DRYWELL_INFO",
+      "tier": "farmers",
+      "displayName": "Drywell",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 4,
+      "producePerMinute": 240,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/Drywell.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "FarmersShack",
+      "infoExport": "FARMERS_SHACK_INFO",
+      "tier": "farmers",
+      "displayName": "Farmers Shack",
+      "iterationSeconds": 60,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 0.057,
+      "producePerMinute": 0.057,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/FarmersShack.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "FiberMaker",
+      "infoExport": "FIBER_MAKER_INFO",
+      "tier": "farmers",
+      "displayName": "Fiber Maker",
+      "iterationSeconds": 30,
+      "consumePerIteration": {
+        "PalmTree": 1
+      },
+      "consumePerMinute": {
+        "PalmTree": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 2,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/FiberMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "FieldSurgeonHouse",
+      "infoExport": "FIELD_SURGEON_HOUSE_INFO",
+      "tier": "farmers",
+      "displayName": "Field Surgeon House",
+      "iterationSeconds": 900,
+      "consumePerIteration": {
+        "Slinger": 3,
+        "Bandages": 1
+      },
+      "consumePerMinute": {
+        "Slinger": 0.2,
+        "Bandages": 0.06666666666666667
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.06666666666666667,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/FieldSurgeonHouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "GoatFarm",
+      "infoExport": "GOAT_FARM_INFO",
+      "tier": "farmers",
+      "displayName": "Goat Farm",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Mountain": 4
+      },
+      "consumePerMinute": {
+        "Mountain": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/GoatFarm.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PikemenBarracks",
+      "infoExport": "PIKEMEN_BARRACKS_INFO",
+      "tier": "farmers",
+      "displayName": "Pikemen Barracks",
+      "iterationSeconds": 900,
+      "consumePerIteration": {
+        "Slinger": 3,
+        "Pike": 1
+      },
+      "consumePerMinute": {
+        "Slinger": 0.2,
+        "Pike": 0.06666666666666667
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.06666666666666667,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/PikemenBarracks.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PoleturnersWorkshop",
+      "infoExport": "POLETURNERS_WORKSHOP_INFO",
+      "tier": "farmers",
+      "displayName": "Poleturners Workshop",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Coal": 1,
+        "CopperIngot": 1
+      },
+      "consumePerMinute": {
+        "Coal": 0.125,
+        "CopperIngot": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/PoleturnersWorkshop.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "RoastHouse",
+      "infoExport": "ROAST_HOUSE_INFO",
+      "tier": "farmers",
+      "displayName": "Roast House",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "CoffeeBean": 2
+      },
+      "consumePerMinute": {
+        "CoffeeBean": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/RoastHouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "RoperyTropical",
+      "infoExport": "ROPERY_TROPICAL_INFO",
+      "tier": "farmers",
+      "displayName": "Ropery Tropical",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Fiber": 1
+      },
+      "consumePerMinute": {
+        "Fiber": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/RoperyTropical.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "RumDistillery",
+      "infoExport": "RUM_DISTILLERY_INFO",
+      "tier": "farmers",
+      "displayName": "Rum Distillery",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "SugarCane": 2
+      },
+      "consumePerMinute": {
+        "SugarCane": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/RumDistillery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SalternTropical",
+      "infoExport": "SALTERN_TROPICAL_INFO",
+      "tier": "farmers",
+      "displayName": "Saltern Tropical",
+      "iterationSeconds": 960,
+      "consumePerIteration": {
+        "CoastalField": 2
+      },
+      "consumePerMinute": {
+        "CoastalField": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/SalternTropical.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SportsGround",
+      "infoExport": "SPORTS_GROUND_INFO",
+      "tier": "farmers",
+      "displayName": "Sports Ground",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Ball": 1
+      },
+      "consumePerMinute": {
+        "Ball": 0.5
+      },
+      "producePerIteration": 40,
+      "producePerMinute": 20,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/SportsGround.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SugarCanePlantation",
+      "infoExport": "SUGAR_CANE_PLANTATION_INFO",
+      "tier": "farmers",
+      "displayName": "Sugar Cane Plantation",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "SugarCane": 1
+      },
+      "consumePerMinute": {
+        "SugarCane": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/SugarCanePlantation.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SugarMill",
+      "infoExport": "SUGAR_MILL_INFO",
+      "tier": "farmers",
+      "displayName": "Sugar Mill",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "SugarCane": 2,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "SugarCane": 1,
+        "RiverField": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/SugarMill.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SugarWindmill",
+      "infoExport": "SUGAR_WINDMILL_INFO",
+      "tier": "farmers",
+      "displayName": "Sugar Windmill",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "SugarCane": 2
+      },
+      "consumePerMinute": {
+        "SugarCane": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/SugarWindmill.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "TeaPlantation",
+      "infoExport": "TEA_PLANTATION_INFO",
+      "tier": "farmers",
+      "displayName": "Tea Plantation",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Tea": 1
+      },
+      "consumePerMinute": {
+        "Tea": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/TeaPlantation.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "TobaccoFarm",
+      "infoExport": "TOBACCO_FARM_INFO",
+      "tier": "farmers",
+      "displayName": "Tobacco Farm",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Tobacco": 1
+      },
+      "consumePerMinute": {
+        "Tobacco": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/TobaccoFarm.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "WaterBuffaloRanch",
+      "infoExport": "WATER_BUFFALO_RANCH_INFO",
+      "tier": "farmers",
+      "displayName": "Water Buffalo Ranch",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Grass": 2,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Grass": 0.5,
+        "RiverField": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/WaterBuffaloRanch.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "WhimHouse",
+      "infoExport": "WHIM_HOUSE_INFO",
+      "tier": "farmers",
+      "displayName": "Whim House",
+      "iterationSeconds": 90,
+      "consumePerIteration": {
+        "WaterBuffalo": 1
+      },
+      "consumePerMinute": {
+        "WaterBuffalo": 0.6666666666666666
+      },
+      "producePerIteration": 76,
+      "producePerMinute": 50.666666666666664,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/farmers/WhimHouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Apiary",
+      "infoExport": "APIARY_INFO",
+      "tier": "merchants",
+      "displayName": "Apiary",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Gras": 8
+      },
+      "consumePerMinute": {
+        "Gras": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Apiary.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "ArcherAcademy",
+      "infoExport": "ARCHER_ACADEMY_INFO",
+      "tier": "merchants",
+      "displayName": "Archer Academy",
+      "iterationSeconds": 1200,
+      "consumePerIteration": {
+        "Militia": 4,
+        "CompositeBow": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "CompositeBow": 0.05
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.05,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/ArcherAcademy.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Bathhouse",
+      "infoExport": "BATHHOUSE_INFO",
+      "tier": "merchants",
+      "displayName": "Bathhouse",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Fabric": 1,
+        "Soap": 1
+      },
+      "consumePerMinute": {
+        "Fabric": 0.25,
+        "Soap": 0.25
+      },
+      "producePerIteration": 48,
+      "producePerMinute": 12,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Bathhouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BrandyDistillery",
+      "infoExport": "BRANDY_DISTILLERY_INFO",
+      "tier": "merchants",
+      "displayName": "Brandy Distillery",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Wood": 8,
+        "Cider": 12
+      },
+      "consumePerMinute": {
+        "Wood": 1,
+        "Cider": 1.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/BrandyDistillery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Butchery",
+      "infoExport": "BUTCHERY_INFO",
+      "tier": "merchants",
+      "displayName": "Butchery",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Salt": 1,
+        "Cattle": 2
+      },
+      "consumePerMinute": {
+        "Salt": 0.125,
+        "Cattle": 0.25
+      },
+      "producePerIteration": 4,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Butchery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "ChickenFarm",
+      "infoExport": "CHICKEN_FARM_INFO",
+      "tier": "merchants",
+      "displayName": "Chicken Farm",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Gras": 8
+      },
+      "consumePerMinute": {
+        "Gras": 4
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/ChickenFarm.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CoiningPress",
+      "infoExport": "COINING_PRESS_INFO",
+      "tier": "merchants",
+      "displayName": "Coining Press",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "GoldIngot": 1
+      },
+      "consumePerMinute": {
+        "GoldIngot": 0.25
+      },
+      "producePerIteration": 7,
+      "producePerMinute": 1.75,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/CoiningPress.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CompositeBowyer",
+      "infoExport": "COMPOSITE_BOWYER_INFO",
+      "tier": "merchants",
+      "displayName": "Composite Bowyer",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Bow": 1,
+        "Cattle": 2
+      },
+      "consumePerMinute": {
+        "Bow": 0.25,
+        "Cattle": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/CompositeBowyer.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CrossbowMaker",
+      "infoExport": "CROSSBOW_MAKER_INFO",
+      "tier": "merchants",
+      "displayName": "Crossbow Maker",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Fiber": 2,
+        "IronIngot": 1,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Fiber": 0.5,
+        "IronIngot": 0.25,
+        "RiverField": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/CrossbowMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CrossbowShootingRange",
+      "infoExport": "CROSSBOW_SHOOTING_RANGE_INFO",
+      "tier": "merchants",
+      "displayName": "Crossbow Shooting Range",
+      "iterationSeconds": 1200,
+      "consumePerIteration": {
+        "Militia": 4,
+        "Crossbow": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "Crossbow": 0.05
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.05,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/CrossbowShootingRange.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CuringHouse",
+      "infoExport": "CURING_HOUSE_INFO",
+      "tier": "merchants",
+      "displayName": "Curing House",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Honey": 1,
+        "Tobacco": 2
+      },
+      "consumePerMinute": {
+        "Honey": 0.5,
+        "Tobacco": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/CuringHouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "DeepCopperMine",
+      "infoExport": "DEEP_COPPER_MINE_INFO",
+      "tier": "merchants",
+      "displayName": "Deep Copper Mine",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "CopperDeposit": 1
+      },
+      "consumePerMinute": {
+        "CopperDeposit": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/DeepCopperMine.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "EssenceDistillery",
+      "infoExport": "ESSENCE_DISTILLERY_INFO",
+      "tier": "merchants",
+      "displayName": "Essence Distillery",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Wood": 4,
+        "Rose": 4
+      },
+      "consumePerMinute": {
+        "Wood": 0.5,
+        "Rose": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/EssenceDistillery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "FeltmakingMill",
+      "infoExport": "FELTMAKING_MILL_INFO",
+      "tier": "merchants",
+      "displayName": "Feltmaking Mill",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Soap": 2,
+        "Yarn": 4,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Soap": 0.25,
+        "Yarn": 0.5,
+        "RiverField": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/FeltmakingMill.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "ForestWardensCabin",
+      "infoExport": "FOREST_WARDENS_CABIN_INFO",
+      "tier": "merchants",
+      "displayName": "Forest Wardens Cabin",
+      "iterationSeconds": 30,
+      "consumePerIteration": {
+        "Forest": 1
+      },
+      "consumePerMinute": {
+        "Forest": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 2,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/ForestWardensCabin.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "GoldSmelter",
+      "infoExport": "GOLD_SMELTER_INFO",
+      "tier": "merchants",
+      "displayName": "Gold Smelter",
+      "iterationSeconds": 960,
+      "consumePerIteration": {
+        "Coal": 1,
+        "Gold": 2
+      },
+      "consumePerMinute": {
+        "Coal": 0.0625,
+        "Gold": 0.125
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/GoldSmelter.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Goldsmith",
+      "infoExport": "GOLDSMITH_INFO",
+      "tier": "merchants",
+      "displayName": "Goldsmith",
+      "iterationSeconds": 960,
+      "consumePerIteration": {
+        "Coal": 1,
+        "GoldIngot": 2
+      },
+      "consumePerMinute": {
+        "Coal": 0.0625,
+        "GoldIngot": 0.125
+      },
+      "producePerIteration": 6,
+      "producePerMinute": 0.375,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Goldsmith.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "HattersShop",
+      "infoExport": "HATTERS_SHOP_INFO",
+      "tier": "merchants",
+      "displayName": "Hatters Shop",
+      "iterationSeconds": 960,
+      "consumePerIteration": {
+        "Felt": 1
+      },
+      "consumePerMinute": {
+        "Felt": 0.0625
+      },
+      "producePerIteration": 4,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/HattersShop.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Hospital",
+      "infoExport": "HOSPITAL_INFO",
+      "tier": "merchants",
+      "displayName": "Hospital",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "FishOil": 2
+      },
+      "consumePerMinute": {
+        "FishOil": 2
+      },
+      "producePerIteration": 120,
+      "producePerMinute": 120,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Hospital.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "IronArmory",
+      "infoExport": "IRON_ARMORY_INFO",
+      "tier": "merchants",
+      "displayName": "Iron Armory",
+      "iterationSeconds": 960,
+      "consumePerIteration": {
+        "Coal": 1,
+        "IronIngot": 2,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Coal": 0.0625,
+        "IronIngot": 0.125,
+        "RiverField": 0.0625
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/IronArmory.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "IronMine",
+      "infoExport": "IRON_MINE_INFO",
+      "tier": "merchants",
+      "displayName": "Iron Mine",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "IronDeposit": 1
+      },
+      "consumePerMinute": {
+        "IronDeposit": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/IronMine.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "IronSmelter",
+      "infoExport": "IRON_SMELTER_INFO",
+      "tier": "merchants",
+      "displayName": "Iron Smelter",
+      "iterationSeconds": 960,
+      "consumePerIteration": {
+        "Coal": 1,
+        "Iron": 2
+      },
+      "consumePerMinute": {
+        "Coal": 0.0625,
+        "Iron": 0.125
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/IronSmelter.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "KnightBarracks",
+      "infoExport": "KNIGHT_BARRACKS_INFO",
+      "tier": "merchants",
+      "displayName": "Knight Barracks",
+      "iterationSeconds": 1200,
+      "consumePerIteration": {
+        "Militia": 4,
+        "Sword": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "Sword": 0.05
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.05,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/KnightBarracks.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "MarbleQuarry",
+      "infoExport": "MARBLE_QUARRY_INFO",
+      "tier": "merchants",
+      "displayName": "Marble Quarry",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "MarbleDeposit": 1
+      },
+      "consumePerMinute": {
+        "MarbleDeposit": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/MarbleQuarry.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PastryManufacture",
+      "infoExport": "PASTRY_MANUFACTURE_INFO",
+      "tier": "merchants",
+      "displayName": "Pastry Manufacture",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Meat": 2,
+        "Flour": 1,
+        "Egg": 3
+      },
+      "consumePerMinute": {
+        "Meat": 0.5,
+        "Flour": 0.25,
+        "Egg": 0.75
+      },
+      "producePerIteration": 4,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/PastryManufacture.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Perfumery",
+      "infoExport": "PERFUMERY_INFO",
+      "tier": "merchants",
+      "displayName": "Perfumery",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Ambergris": 1,
+        "Brandy": 2,
+        "RoseWater": 2
+      },
+      "consumePerMinute": {
+        "Ambergris": 0.125,
+        "Brandy": 0.25,
+        "RoseWater": 0.25
+      },
+      "producePerIteration": 10,
+      "producePerMinute": 1.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Perfumery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PipemakersShop",
+      "infoExport": "PIPEMAKERS_SHOP_INFO",
+      "tier": "merchants",
+      "displayName": "Pipemakers Shop",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "FineWood": 1,
+        "PipeTobacco": 2
+      },
+      "consumePerMinute": {
+        "FineWood": 0.25,
+        "PipeTobacco": 0.5
+      },
+      "producePerIteration": 4,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/PipemakersShop.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "RoseCultivation",
+      "infoExport": "ROSE_CULTIVATION_INFO",
+      "tier": "merchants",
+      "displayName": "Rose Cultivation",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Rose": 8
+      },
+      "consumePerMinute": {
+        "Rose": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/RoseCultivation.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SugarBeetFarm",
+      "infoExport": "SUGAR_BEET_FARM_INFO",
+      "tier": "merchants",
+      "displayName": "Sugar Beet Farm",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "SugarBeet": 20
+      },
+      "consumePerMinute": {
+        "SugarBeet": 10
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/SugarBeetFarm.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Toolmaker",
+      "infoExport": "TOOLMAKER_INFO",
+      "tier": "merchants",
+      "displayName": "Toolmaker",
+      "iterationSeconds": 960,
+      "consumePerIteration": {
+        "Coal": 1,
+        "IronIngot": 2
+      },
+      "consumePerMinute": {
+        "Coal": 0.0625,
+        "IronIngot": 0.125
+      },
+      "producePerIteration": 4,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Toolmaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Townhall",
+      "infoExport": "TOWNHALL_INFO",
+      "tier": "merchants",
+      "displayName": "Townhall",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Honeycomb": 1
+      },
+      "consumePerMinute": {
+        "Honeycomb": 0.5
+      },
+      "producePerIteration": 24,
+      "producePerMinute": 12,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/merchants/Townhall.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "AmbergrisProduction",
+      "infoExport": "AMBERGRIS_PRODUCTION_INFO",
+      "tier": "northern-islands",
+      "displayName": "Ambergris Production",
+      "iterationSeconds": 1920,
+      "consumePerIteration": {
+        "SpermWhale": 2
+      },
+      "consumePerMinute": {
+        "SpermWhale": 0.0625
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.03125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/AmbergrisProduction.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BrassSmelterNorth",
+      "infoExport": "BRASS_SMELTER_NORTH_INFO",
+      "tier": "northern-islands",
+      "displayName": "Brass Smelter North",
+      "iterationSeconds": 360,
+      "consumePerIteration": {
+        "CopperIngot": 3,
+        "ZincIngot": 2
+      },
+      "consumePerMinute": {
+        "CopperIngot": 0.5,
+        "ZincIngot": 0.3333333333333333
+      },
+      "producePerIteration": 5,
+      "producePerMinute": 0.8333333333333334,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/BrassSmelterNorth.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CaviarFactory",
+      "infoExport": "CAVIAR_FACTORY_INFO",
+      "tier": "northern-islands",
+      "displayName": "Caviar Factory",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Salt": 1,
+        "Sturgeon": 1
+      },
+      "consumePerMinute": {
+        "Salt": 0.125,
+        "Sturgeon": 0.125
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/CaviarFactory.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CoalMineNorth",
+      "infoExport": "COAL_MINE_NORTH_INFO",
+      "tier": "northern-islands",
+      "displayName": "Coal Mine North",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Coal": 1
+      },
+      "consumePerMinute": {
+        "Coal": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/CoalMineNorth.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "ConiferLumberjack",
+      "infoExport": "CONIFER_LUMBERJACK_INFO",
+      "tier": "northern-islands",
+      "displayName": "Conifer Lumberjack",
+      "iterationSeconds": 30,
+      "consumePerIteration": {
+        "ConiferForest": 1
+      },
+      "consumePerMinute": {
+        "ConiferForest": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 2,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/ConiferLumberjack.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CopperMineNorth",
+      "infoExport": "COPPER_MINE_NORTH_INFO",
+      "tier": "northern-islands",
+      "displayName": "Copper Mine North",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Copper": 1
+      },
+      "consumePerMinute": {
+        "Copper": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/CopperMineNorth.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CopperSmelterNorth",
+      "infoExport": "COPPER_SMELTER_NORTH_INFO",
+      "tier": "northern-islands",
+      "displayName": "Copper Smelter North",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Wood": 2,
+        "Copper": 1
+      },
+      "consumePerMinute": {
+        "Wood": 0.5,
+        "Copper": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/CopperSmelterNorth.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "FurTrapper",
+      "infoExport": "FUR_TRAPPER_INFO",
+      "tier": "northern-islands",
+      "displayName": "Fur Trapper",
+      "iterationSeconds": 360,
+      "consumePerIteration": {
+        "Grass": 7
+      },
+      "consumePerMinute": {
+        "Grass": 1.1666666666666667
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.16666666666666666,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/FurTrapper.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "GoldMineNorth",
+      "infoExport": "GOLD_MINE_NORTH_INFO",
+      "tier": "northern-islands",
+      "displayName": "Gold Mine North",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Gold": 1
+      },
+      "consumePerMinute": {
+        "Gold": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/GoldMineNorth.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "GoldSmelterNorth",
+      "infoExport": "GOLD_SMELTER_NORTH_INFO",
+      "tier": "northern-islands",
+      "displayName": "Gold Smelter North",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Wood": 2,
+        "GoldOre": 1
+      },
+      "consumePerMinute": {
+        "Wood": 0.25,
+        "GoldOre": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/GoldSmelterNorth.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "HeatingPlant",
+      "infoExport": "HEATING_PLANT_INFO",
+      "tier": "northern-islands",
+      "displayName": "Heating Plant",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Wood": 1
+      },
+      "consumePerMinute": {
+        "Wood": 0.5
+      },
+      "producePerIteration": 8,
+      "producePerMinute": 4,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/HeatingPlant.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "IronMineNorth",
+      "infoExport": "IRON_MINE_NORTH_INFO",
+      "tier": "northern-islands",
+      "displayName": "Iron Mine North",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Iron": 1
+      },
+      "consumePerMinute": {
+        "Iron": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/IronMineNorth.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "IronSmelterNorth",
+      "infoExport": "IRON_SMELTER_NORTH_INFO",
+      "tier": "northern-islands",
+      "displayName": "Iron Smelter North",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Coal": 1,
+        "Iron": 2
+      },
+      "consumePerMinute": {
+        "Coal": 0.125,
+        "Iron": 0.25
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/IronSmelterNorth.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "LargeHeatingPlant",
+      "infoExport": "LARGE_HEATING_PLANT_INFO",
+      "tier": "northern-islands",
+      "displayName": "Large Heating Plant",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Coal": 1
+      },
+      "consumePerMinute": {
+        "Coal": 0.5
+      },
+      "producePerIteration": 20,
+      "producePerMinute": 10,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/LargeHeatingPlant.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "LeadMine",
+      "infoExport": "LEAD_MINE_INFO",
+      "tier": "northern-islands",
+      "displayName": "Lead Mine",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Lead": 1
+      },
+      "consumePerMinute": {
+        "Lead": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/LeadMine.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "LeadSmelter",
+      "infoExport": "LEAD_SMELTER_INFO",
+      "tier": "northern-islands",
+      "displayName": "Lead Smelter",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Wood": 2,
+        "Lead": 1
+      },
+      "consumePerMinute": {
+        "Wood": 0.5,
+        "Lead": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/LeadSmelter.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "MarbleQuarryNorth",
+      "infoExport": "MARBLE_QUARRY_NORTH_INFO",
+      "tier": "northern-islands",
+      "displayName": "Marble Quarry North",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Marble": 1
+      },
+      "consumePerMinute": {
+        "Marble": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/MarbleQuarryNorth.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "RockSaltMineNorth",
+      "infoExport": "ROCK_SALT_MINE_NORTH_INFO",
+      "tier": "northern-islands",
+      "displayName": "Rock Salt Mine North",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "RockSalt": 1
+      },
+      "consumePerMinute": {
+        "RockSalt": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/RockSaltMineNorth.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SalmonFishermansHut",
+      "infoExport": "SALMON_FISHERMANS_HUT_INFO",
+      "tier": "northern-islands",
+      "displayName": "Salmon Fishermans Hut",
+      "iterationSeconds": 45,
+      "consumePerIteration": {
+        "CoastalField": 4
+      },
+      "consumePerMinute": {
+        "CoastalField": 5.333333333333333
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1.3333333333333333,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/SalmonFishermansHut.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SaltWorksNorth",
+      "infoExport": "SALT_WORKS_NORTH_INFO",
+      "tier": "northern-islands",
+      "displayName": "Salt Works North",
+      "iterationSeconds": 720,
+      "consumePerIteration": {
+        "Coal": 1,
+        "RockSalt": 1
+      },
+      "consumePerMinute": {
+        "Coal": 0.08333333333333333,
+        "RockSalt": 0.08333333333333333
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 0.16666666666666666,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/SaltWorksNorth.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SturgeonFarm",
+      "infoExport": "STURGEON_FARM_INFO",
+      "tier": "northern-islands",
+      "displayName": "Sturgeon Farm",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "RiverField": 2
+      },
+      "consumePerMinute": {
+        "RiverField": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/SturgeonFarm.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Whaler",
+      "infoExport": "WHALER_INFO",
+      "tier": "northern-islands",
+      "displayName": "Whaler",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "SpermWhale": 1
+      },
+      "consumePerMinute": {
+        "SpermWhale": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/Whaler.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "ZincMine",
+      "infoExport": "ZINC_MINE_NORTH_INFO",
+      "tier": "northern-islands",
+      "displayName": "Zinc Mine",
+      "iterationSeconds": 180,
+      "consumePerIteration": {
+        "Zinc": 1
+      },
+      "consumePerMinute": {
+        "Zinc": 0.3333333333333333
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.3333333333333333,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/ZincMine.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "ZincSmelter",
+      "infoExport": "ZINC_SMELTER_INFO",
+      "tier": "northern-islands",
+      "displayName": "Zinc Smelter",
+      "iterationSeconds": 360,
+      "consumePerIteration": {
+        "Wood": 2,
+        "Zinc": 1
+      },
+      "consumePerMinute": {
+        "Wood": 0.3333333333333333,
+        "Zinc": 0.16666666666666666
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.16666666666666666,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/northern-islands/ZincSmelter.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Armorsmith",
+      "infoExport": "ARMORSMITH_INFO",
+      "tier": "paragons",
+      "displayName": "Armorsmith",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Horse": 1,
+        "Steel": 1,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Horse": 0.25,
+        "Steel": 0.25,
+        "RiverField": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Armorsmith.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Bookbinder",
+      "infoExport": "BOOKBINDER_INFO",
+      "tier": "paragons",
+      "displayName": "Bookbinder",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Dye": 1,
+        "Paper": 8
+      },
+      "consumePerMinute": {
+        "Dye": 0.5,
+        "Paper": 4
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Bookbinder.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BrassSmelter",
+      "infoExport": "BRASS_SMELTER_INFO",
+      "tier": "paragons",
+      "displayName": "Brass Smelter",
+      "iterationSeconds": 360,
+      "consumePerIteration": {
+        "CopperIngot": 3,
+        "ZincIngot": 2
+      },
+      "consumePerMinute": {
+        "CopperIngot": 0.5,
+        "ZincIngot": 0.3333333333333333
+      },
+      "producePerIteration": 5,
+      "producePerMinute": 0.8333333333333334,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/BrassSmelter.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BrocadeSpinningFactory",
+      "infoExport": "BROCADE_SPINNING_FACTORY_INFO",
+      "tier": "paragons",
+      "displayName": "Brocade Spinning Factory",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "GoldIngot": 1,
+        "SilkFabric": 1,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "GoldIngot": 1,
+        "SilkFabric": 1,
+        "RiverField": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/BrocadeSpinningFactory.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CannoneersSchool",
+      "infoExport": "CANNONEERS_SCHOOL_INFO",
+      "tier": "paragons",
+      "displayName": "Cannoneers School",
+      "iterationSeconds": 1800,
+      "consumePerIteration": {
+        "Militia": 6,
+        "Canon": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "Canon": 0.03333333333333333
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.03333333333333333,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/CannoneersSchool.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CannonFoundry",
+      "infoExport": "CANNON_FOUNDRY_INFO",
+      "tier": "paragons",
+      "displayName": "Cannon Foundry",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Gunpowder": 1,
+        "Steel": 1,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Gunpowder": 0.125,
+        "Steel": 0.125,
+        "RiverField": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/CannonFoundry.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Chandler",
+      "infoExport": "CHANDLER_INFO",
+      "tier": "paragons",
+      "displayName": "Chandler",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Honey": 3,
+        "Fiber": 1
+      },
+      "consumePerMinute": {
+        "Honey": 0.75,
+        "Fiber": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Chandler.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CobblersShop",
+      "infoExport": "COBBLERS_SHOP_INFO",
+      "tier": "paragons",
+      "displayName": "Cobblers Shop",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Brass": 1,
+        "Leather": 4
+      },
+      "consumePerMinute": {
+        "Brass": 0.125,
+        "Leather": 0.5
+      },
+      "producePerIteration": 8,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/CobblersShop.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Coiffeur",
+      "infoExport": "COIFFEUR_INFO",
+      "tier": "paragons",
+      "displayName": "Coiffeur",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 80,
+      "producePerMinute": 4800,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Coiffeur.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Cokery",
+      "infoExport": "COKERY_INFO",
+      "tier": "paragons",
+      "displayName": "Cokery",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Coal": 2
+      },
+      "consumePerMinute": {
+        "Coal": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Cokery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Confectionery",
+      "infoExport": "CONFECTIONERY_INFO",
+      "tier": "paragons",
+      "displayName": "Confectionery",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Liqueur": 1,
+        "Chocolate": 2
+      },
+      "consumePerMinute": {
+        "Liqueur": 0.25,
+        "Chocolate": 0.5
+      },
+      "producePerIteration": 4,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Confectionery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Cooper",
+      "infoExport": "COOPER_INFO",
+      "tier": "paragons",
+      "displayName": "Cooper",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "IronIngot": 1,
+        "Plank": 8
+      },
+      "consumePerMinute": {
+        "IronIngot": 0.125,
+        "Plank": 1
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Cooper.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CuirassierAcademy",
+      "infoExport": "CUIRASSIER_ACADEMY_INFO",
+      "tier": "paragons",
+      "displayName": "Cuirassier Academy",
+      "iterationSeconds": 1800,
+      "consumePerIteration": {
+        "Militia": 6,
+        "ArmoredHorse": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "ArmoredHorse": 0.03333333333333333
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.03333333333333333,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/CuirassierAcademy.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "FireworksMaker",
+      "infoExport": "FIREWORKS_MAKER_INFO",
+      "tier": "paragons",
+      "displayName": "Fireworks Maker",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Gunpowder": 2,
+        "MetalCutting": 2
+      },
+      "consumePerMinute": {
+        "Gunpowder": 0.5,
+        "MetalCutting": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/FireworksMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "GalziersWorkshop",
+      "infoExport": "GALZIERS_WORKSHOP_INFO",
+      "tier": "paragons",
+      "displayName": "Galziers Workshop",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "LeadIngot": 1,
+        "Glass": 4
+      },
+      "consumePerMinute": {
+        "LeadIngot": 0.25,
+        "Glass": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/GalziersWorkshop.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Glassworks",
+      "infoExport": "GLASSWORKS_INFO",
+      "tier": "paragons",
+      "displayName": "Glassworks",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Limestone": 1,
+        "Potash": 2,
+        "Quartz": 5
+      },
+      "consumePerMinute": {
+        "Limestone": 0.125,
+        "Potash": 0.25,
+        "Quartz": 0.625
+      },
+      "producePerIteration": 8,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Glassworks.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "HoneyDistillery",
+      "infoExport": "HONEY_DISTILLERY_INFO",
+      "tier": "paragons",
+      "displayName": "Honey Distillery",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Honey": 2,
+        "Brandy": 1
+      },
+      "consumePerMinute": {
+        "Honey": 0.5,
+        "Brandy": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/HoneyDistillery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "LanceMaker",
+      "infoExport": "LANCE_MAKER_INFO",
+      "tier": "paragons",
+      "displayName": "Lance Maker",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Dye": 2,
+        "Wood": 8
+      },
+      "consumePerMinute": {
+        "Dye": 0.5,
+        "Wood": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/LanceMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "LargeThermalBath",
+      "infoExport": "LARGE_THERMAL_BATH_INFO",
+      "tier": "paragons",
+      "displayName": "Large Thermal Bath",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 120,
+      "producePerMinute": 7200,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/LargeThermalBath.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "LensGrinder",
+      "infoExport": "LENS_GRINDER_INFO",
+      "tier": "paragons",
+      "displayName": "Lens Grinder",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Brass": 1,
+        "Glass": 4
+      },
+      "consumePerMinute": {
+        "Brass": 0.25,
+        "Glass": 1
+      },
+      "producePerIteration": 8,
+      "producePerMinute": 2,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/LensGrinder.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "MusketeerSchool",
+      "infoExport": "MUSKETEER_SCHOOL_INFO",
+      "tier": "paragons",
+      "displayName": "Musketeer School",
+      "iterationSeconds": 1800,
+      "consumePerIteration": {
+        "Militia": 6,
+        "Musket": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "Musket": 0.03333333333333333
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.03333333333333333,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/MusketeerSchool.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "MusketMaker",
+      "infoExport": "MUSKET_MAKER_INFO",
+      "tier": "paragons",
+      "displayName": "Musket Maker",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Gunpowder": 1,
+        "BrassIngot": 1,
+        "Steel": 1,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Gunpowder": 0.125,
+        "BrassIngot": 0.125,
+        "Steel": 0.125,
+        "RiverField": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/MusketMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "OrnateTailor",
+      "infoExport": "ORNATE_TAILOR_INFO",
+      "tier": "paragons",
+      "displayName": "Ornate Tailor",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Fur": 1,
+        "BrocadeFabric": 1
+      },
+      "consumePerMinute": {
+        "Fur": 0.5,
+        "BrocadeFabric": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/OrnateTailor.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PaperMill",
+      "infoExport": "PAPER_MILL_INFO",
+      "tier": "paragons",
+      "displayName": "Paper Mill",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Wood": 2,
+        "Quicklime": 1,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Wood": 1,
+        "Quicklime": 0.5,
+        "RiverField": 0.5
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/PaperMill.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PlaningMill",
+      "infoExport": "PLANING_MILL_INFO",
+      "tier": "paragons",
+      "displayName": "Planing Mill",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "ZincIngot": 1,
+        "IronIngot": 1,
+        "CopperIngot": 1,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "ZincIngot": 0.25,
+        "IronIngot": 0.25,
+        "CopperIngot": 0.25,
+        "RiverField": 0.25
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/PlaningMill.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PowderMill",
+      "infoExport": "POWDER_MILL_INFO",
+      "tier": "paragons",
+      "displayName": "Powder Mill",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Coal": 1,
+        "Saltpeter": 1,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Coal": 0.25,
+        "Saltpeter": 0.25,
+        "RiverField": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/PowderMill.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "QuartzQuarry",
+      "infoExport": "QUARTZ_QUARRY_INFO",
+      "tier": "paragons",
+      "displayName": "Quartz Quarry",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "CoastalField": 4
+      },
+      "consumePerMinute": {
+        "CoastalField": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/QuartzQuarry.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Saltern",
+      "infoExport": "SALTERN_INFO",
+      "tier": "paragons",
+      "displayName": "Saltern",
+      "iterationSeconds": 960,
+      "consumePerIteration": {
+        "CoastalField": 2
+      },
+      "consumePerMinute": {
+        "CoastalField": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Saltern.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Senate",
+      "infoExport": "SENATE_INFO",
+      "tier": "paragons",
+      "displayName": "Senate",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 120,
+      "producePerMinute": 7200,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Senate.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SteelFurnace",
+      "infoExport": "STEEL_FURNACE_INFO",
+      "tier": "paragons",
+      "displayName": "Steel Furnace",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Coke": 1,
+        "IronIngot": 1,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Coke": 0.25,
+        "IronIngot": 0.25,
+        "RiverField": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/SteelFurnace.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Theatre",
+      "infoExport": "THEATRE_INFO",
+      "tier": "paragons",
+      "displayName": "Theatre",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 80,
+      "producePerMinute": 4800,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Theatre.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Tiltyard",
+      "infoExport": "TILTYARD_INFO",
+      "tier": "paragons",
+      "displayName": "Tiltyard",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Lance": 1,
+        "Horse": 1
+      },
+      "consumePerMinute": {
+        "Lance": 0.5,
+        "Horse": 0.5
+      },
+      "producePerIteration": 80,
+      "producePerMinute": 40,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Tiltyard.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "TreasureSeeker",
+      "infoExport": "TREASURE_SEEKER_INFO",
+      "tier": "paragons",
+      "displayName": "Treasure Seeker",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "River": 2
+      },
+      "consumePerMinute": {
+        "River": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/TreasureSeeker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "TrumpetMaker",
+      "infoExport": "TRUMPET_MAKER_INFO",
+      "tier": "paragons",
+      "displayName": "Trumpet Maker",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "BrassIngot": 1
+      },
+      "consumePerMinute": {
+        "BrassIngot": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/TrumpetMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "University",
+      "infoExport": "UNIVERSITY_INFO",
+      "tier": "paragons",
+      "displayName": "University",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Candles": 1
+      },
+      "consumePerMinute": {
+        "Candles": 1
+      },
+      "producePerIteration": 80,
+      "producePerMinute": 80,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/University.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Winepress",
+      "infoExport": "WINEPRESS_INFO",
+      "tier": "paragons",
+      "displayName": "Winepress",
+      "iterationSeconds": 360,
+      "consumePerIteration": {
+        "Barrel": 1,
+        "Grape": 4,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Barrel": 0.16666666666666666,
+        "Grape": 0.6666666666666666,
+        "RiverField": 0.16666666666666666
+      },
+      "producePerIteration": 3,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Winepress.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Winery",
+      "infoExport": "WINERY_INFO",
+      "tier": "paragons",
+      "displayName": "Winery",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Vineyard": 12
+      },
+      "consumePerMinute": {
+        "Vineyard": 12
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/paragons/Winery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BootCamp",
+      "infoExport": "BOOT_CAMP_INFO",
+      "tier": "pioneers",
+      "displayName": "Boot Camp",
+      "iterationSeconds": 300,
+      "consumePerIteration": {
+        "Militia": 1,
+        "Plank": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "Plank": 0.2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.2,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/BootCamp.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CiderMaker",
+      "infoExport": "CIDER_MAKER_INFO",
+      "tier": "pioneers",
+      "displayName": "Cider Maker",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Apple": 1
+      },
+      "consumePerMinute": {
+        "Apple": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/CiderMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Cistern",
+      "infoExport": "CISTERN_INFO",
+      "tier": "pioneers",
+      "displayName": "Cistern",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 80,
+      "producePerMinute": 4800,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/Cistern.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "FishermansHut",
+      "infoExport": "FISHERMANS_HUT_INFO",
+      "tier": "pioneers",
+      "displayName": "Fishermans Hut",
+      "iterationSeconds": 90,
+      "consumePerIteration": {
+        "Water": 4
+      },
+      "consumePerMinute": {
+        "Water": 2.6666666666666665
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.6666666666666666,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/FishermansHut.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Lumberjack",
+      "infoExport": "LUMBERJACK_INFO",
+      "tier": "pioneers",
+      "displayName": "Lumberjack",
+      "iterationSeconds": 30,
+      "consumePerIteration": {
+        "Forest": 1
+      },
+      "consumePerMinute": {
+        "Forest": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 2,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/Lumberjack.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Piggery",
+      "infoExport": "PIGGERY_INFO",
+      "tier": "pioneers",
+      "displayName": "Piggery",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Grass": 4
+      },
+      "consumePerMinute": {
+        "Grass": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/Piggery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PigRanch",
+      "infoExport": "PIG_RANCH_INFO",
+      "tier": "pioneers",
+      "displayName": "Pig Ranch",
+      "iterationSeconds": 30,
+      "consumePerIteration": {
+        "Grass": 8
+      },
+      "consumePerMinute": {
+        "Grass": 16
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 2,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/PigRanch.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PioneersHut",
+      "infoExport": "PIONEERS_HUT_INFO",
+      "tier": "pioneers",
+      "displayName": "Pioneers Hut",
+      "iterationSeconds": 60,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 0.057,
+      "producePerMinute": 0.057,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/PioneersHut.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SausageMaker",
+      "infoExport": "SAUSAGE_MAKER_INFO",
+      "tier": "pioneers",
+      "displayName": "Sausage Maker",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Pigs": 1
+      },
+      "consumePerMinute": {
+        "Pigs": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/SausageMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Sawmill",
+      "infoExport": "SAWMILL_INFO",
+      "tier": "pioneers",
+      "displayName": "Sawmill",
+      "iterationSeconds": 30,
+      "consumePerIteration": {
+        "Wood": 2,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Wood": 4,
+        "RiverField": 2
+      },
+      "producePerIteration": 3,
+      "producePerMinute": 6,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/Sawmill.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SawWorks",
+      "infoExport": "SAW_WORKS_INFO",
+      "tier": "pioneers",
+      "displayName": "Saw Works",
+      "iterationSeconds": 30,
+      "consumePerIteration": {
+        "Wood": 1
+      },
+      "consumePerMinute": {
+        "Wood": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 2,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/SawWorks.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Tavern",
+      "infoExport": "TAVERN_INFO",
+      "tier": "pioneers",
+      "displayName": "Tavern",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 36,
+      "producePerMinute": 2160,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/Tavern.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Well",
+      "infoExport": "WELL_INFO",
+      "tier": "pioneers",
+      "displayName": "Well",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 20,
+      "producePerMinute": 1200,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/pioneers/Well.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PopulationColonistsHouse",
+      "infoExport": "POPULATION_COLONISTS_HOUSE_INFO",
+      "tier": "population",
+      "displayName": "Population Colonists House",
+      "iterationSeconds": 1,
+      "consumePerIteration": {
+        "Fish": 0.003968253968253968,
+        "Water": 1,
+        "Sausage": 0.001388888888888889,
+        "Cider": 0.0015873015873015873,
+        "Community": 1,
+        "Soap": 0.0011904761904761906,
+        "Fabric": 0.000744047619047619,
+        "Bread": 0.0008928571428571428,
+        "Education": 1
+      },
+      "consumePerMinute": {
+        "Fish": 0.23809523809523808,
+        "Water": 60,
+        "Sausage": 0.08333333333333334,
+        "Cider": 0.09523809523809523,
+        "Community": 60,
+        "Soap": 0.07142857142857144,
+        "Fabric": 0.044642857142857144,
+        "Bread": 0.05357142857142857,
+        "Education": 60
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationColonistsHouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PopulationFarmersShack",
+      "infoExport": "POPULATION_FARMERS_SHACK_INFO",
+      "tier": "population",
+      "displayName": "Population Farmers Shack",
+      "iterationSeconds": 1,
+      "consumePerIteration": {
+        "Fish": 0.0030303030303030303,
+        "Tea": 0.0014285714285714286,
+        "Water": 1,
+        "Rum": 0.0005291005291005291,
+        "Cheese": 0.0008849557522123894,
+        "Cigar": 0.0010526315789473684,
+        "Community": 1,
+        "Sports": 1
+      },
+      "consumePerMinute": {
+        "Fish": 0.18181818181818182,
+        "Tea": 0.08571428571428572,
+        "Water": 60,
+        "Rum": 0.03174603174603175,
+        "Cheese": 0.05309734513274336,
+        "Cigar": 0.06315789473684211,
+        "Community": 60,
+        "Sports": 60
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationFarmersShack.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PopulationMerchantsMansion",
+      "infoExport": "POPULATION_MERCHANTS_MANSION_INFO",
+      "tier": "population",
+      "displayName": "Population Merchants Mansion",
+      "iterationSeconds": 1,
+      "consumePerIteration": {
+        "Cauldron": 0.0005506607929515419,
+        "Beer": 0.0013966480446927375,
+        "Leather": 0.0011312217194570137,
+        "Coffee": 0.0011961722488038277,
+        "Jam": 0.0018656716417910447,
+        "Water": 1,
+        "Community": 1,
+        "Education": 1,
+        "MedicalCare": 1,
+        "Hat": 0.003125,
+        "Pipe": 0.002777777777777778,
+        "Pastry": 0.003125,
+        "Caviar": 0.0006944444444444445,
+        "GoldJewelry": 0.0020161290322580645,
+        "Perfume": 0.0020161290322580645,
+        "Administration": 1,
+        "Hygiene": 1
+      },
+      "consumePerMinute": {
+        "Cauldron": 0.03303964757709252,
+        "Beer": 0.08379888268156425,
+        "Leather": 0.06787330316742082,
+        "Coffee": 0.07177033492822966,
+        "Jam": 0.11194029850746269,
+        "Water": 60,
+        "Community": 60,
+        "Education": 60,
+        "MedicalCare": 60,
+        "Hat": 0.1875,
+        "Pipe": 0.16666666666666669,
+        "Pastry": 0.1875,
+        "Caviar": 0.04166666666666667,
+        "GoldJewelry": 0.12096774193548387,
+        "Perfume": 0.12096774193548387,
+        "Administration": 60,
+        "Hygiene": 60
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationMerchantsMansion.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PopulationParagonsResidence",
+      "infoExport": "POPULATION_PARAGONS_RESIDENCE_INFO",
+      "tier": "population",
+      "displayName": "Population Paragons Residence",
+      "iterationSeconds": 1,
+      "consumePerIteration": {
+        "Pastry": 0.00375,
+        "Pipe": 0.0033333333333333335,
+        "Caviar": 0.0008333333333333334,
+        "GoldJewelry": 0.0024193548387096775,
+        "Perfume": 0.0024193548387096775,
+        "Community": 1,
+        "Education": 1,
+        "MedicalCare": 1,
+        "Administration": 1,
+        "Hygiene": 1,
+        "Shoe": 0.004901960784313725,
+        "Glasses": 0.004901960784313725,
+        "Book": 0.0017157563625965113,
+        "ChocolateCandy": 0.0029411764705882353,
+        "NobleGarment": 0.0017157563625965113,
+        "Wine": 0.003676470588235294,
+        "Coiffeur": 1,
+        "Entertainment": 1,
+        "HigherEducation": 1,
+        "Gambling": 1
+      },
+      "consumePerMinute": {
+        "Pastry": 0.225,
+        "Pipe": 0.2,
+        "Caviar": 0.05,
+        "GoldJewelry": 0.14516129032258066,
+        "Perfume": 0.14516129032258066,
+        "Community": 60,
+        "Education": 60,
+        "MedicalCare": 60,
+        "Administration": 60,
+        "Hygiene": 60,
+        "Shoe": 0.29411764705882354,
+        "Glasses": 0.29411764705882354,
+        "Book": 0.10294538175579068,
+        "ChocolateCandy": 0.17647058823529413,
+        "NobleGarment": 0.10294538175579068,
+        "Wine": 0.22058823529411764,
+        "Coiffeur": 60,
+        "Entertainment": 60,
+        "HigherEducation": 60,
+        "Gambling": 60
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationParagonsResidence.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PopulationPioneersHut",
+      "infoExport": "POPULATION_PIONEERS_HUT_INFO",
+      "tier": "population",
+      "displayName": "Population Pioneers Hut",
+      "iterationSeconds": 1,
+      "consumePerIteration": {
+        "Fish": 0.0026455026455026454,
+        "Water": 1,
+        "Sausage": 0.000925925925925926,
+        "Cider": 0.0010582010582010583,
+        "Community": 1
+      },
+      "consumePerMinute": {
+        "Fish": 0.15873015873015872,
+        "Water": 60,
+        "Sausage": 0.05555555555555556,
+        "Cider": 0.0634920634920635,
+        "Community": 60
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationPioneersHut.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PopulationTownsmenHouse",
+      "infoExport": "POPULATION_TOWNSMEN_HOUSE_INFO",
+      "tier": "population",
+      "displayName": "Population Townsmen House",
+      "iterationSeconds": 1,
+      "consumePerIteration": {
+        "Soap": 0.0015873015873015873,
+        "Fabric": 0.000992063492063492,
+        "Bread": 0.0011904761904761906,
+        "Water": 1,
+        "Community": 1,
+        "Education": 1,
+        "Cauldron": 0.0004405286343612335,
+        "Beer": 0.0011173184357541898,
+        "Leather": 0.0009049773755656109,
+        "Coffee": 0.0009569377990430622,
+        "Jam": 0.0014925373134328358,
+        "MedicalCare": 1
+      },
+      "consumePerMinute": {
+        "Soap": 0.09523809523809523,
+        "Fabric": 0.05952380952380952,
+        "Bread": 0.07142857142857144,
+        "Water": 60,
+        "Community": 60,
+        "Education": 60,
+        "Cauldron": 0.02643171806167401,
+        "Beer": 0.0670391061452514,
+        "Leather": 0.05429864253393665,
+        "Coffee": 0.05741626794258373,
+        "Jam": 0.08955223880597016,
+        "MedicalCare": 60
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationTownsmenHouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "PopulationWorkersHouse",
+      "infoExport": "POPULATION_WORKERS_HOUSE_INFO",
+      "tier": "population",
+      "displayName": "Population Workers House",
+      "iterationSeconds": 1,
+      "consumePerIteration": {
+        "Fish": 0.006060606060606061,
+        "Tea": 0.002857142857142857,
+        "Rum": 0.0010582010582010583,
+        "Cheese": 0.0017699115044247787,
+        "Cigar": 0.002105263157894737,
+        "Water": 1,
+        "Community": 1,
+        "Sports": 1,
+        "Beer": 0.0012195121951219512,
+        "Chocolate": 0.0016260162601626016,
+        "Stew": 0.0036363636363636364,
+        "Mojo": 0.0016260162601626016,
+        "Garment": 0.0016260162601626016,
+        "Guitar": 0.0024390243902439024,
+        "Trading": 1,
+        "Cemetery": 1,
+        "Entertainment": 1
+      },
+      "consumePerMinute": {
+        "Fish": 0.36363636363636365,
+        "Tea": 0.17142857142857143,
+        "Rum": 0.0634920634920635,
+        "Cheese": 0.10619469026548672,
+        "Cigar": 0.12631578947368421,
+        "Water": 60,
+        "Community": 60,
+        "Sports": 60,
+        "Beer": 0.07317073170731707,
+        "Chocolate": 0.0975609756097561,
+        "Stew": 0.21818181818181817,
+        "Mojo": 0.0975609756097561,
+        "Garment": 0.0975609756097561,
+        "Guitar": 0.14634146341463414,
+        "Trading": 60,
+        "Cemetery": 60,
+        "Entertainment": 60
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/population/PopulationWorkersHouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BoilerMaker",
+      "infoExport": "BOILER_MAKER_INFO",
+      "tier": "townsmen",
+      "displayName": "Boiler Maker",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Wood": 4,
+        "CopperIngot": 1
+      },
+      "consumePerMinute": {
+        "Wood": 0.5,
+        "CopperIngot": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/BoilerMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BoilingHouse",
+      "infoExport": "BOILING_HOUSE_INFO",
+      "tier": "townsmen",
+      "displayName": "Boiling House",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Coal": 1,
+        "Fish": 6
+      },
+      "consumePerMinute": {
+        "Coal": 0.25,
+        "Fish": 1.5
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/BoilingHouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BoulderGatherer",
+      "infoExport": "BOULDER_GATHERER_INFO",
+      "tier": "townsmen",
+      "displayName": "Boulder Gatherer",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Gras": 20
+      },
+      "consumePerMinute": {
+        "Gras": 20
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/BoulderGatherer.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Brewery",
+      "infoExport": "BREWERY_INFO",
+      "tier": "townsmen",
+      "displayName": "Brewery",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Hop": 3,
+        "Malt": 1
+      },
+      "consumePerMinute": {
+        "Hop": 0.75,
+        "Malt": 0.25
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Brewery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CattleRanch",
+      "infoExport": "CATTLE_RANCH_INFO",
+      "tier": "townsmen",
+      "displayName": "Cattle Ranch",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Gras": 8
+      },
+      "consumePerMinute": {
+        "Gras": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/CattleRanch.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "ChalkMaker",
+      "infoExport": "CHALK_MAKER_INFO",
+      "tier": "townsmen",
+      "displayName": "Chalk Maker",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Limestone": 1
+      },
+      "consumePerMinute": {
+        "Limestone": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/ChalkMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CharcoalKiln",
+      "infoExport": "CHARCOAL_KILN_INFO",
+      "tier": "townsmen",
+      "displayName": "Charcoal Kiln",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Wood": 8
+      },
+      "consumePerMinute": {
+        "Wood": 2
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/CharcoalKiln.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CoalMine",
+      "infoExport": "COAL_MINE_INFO",
+      "tier": "townsmen",
+      "displayName": "Coal Mine",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "CoalDeposit": 1
+      },
+      "consumePerMinute": {
+        "CoalDeposit": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/CoalMine.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "DrumMaker",
+      "infoExport": "DRUM_MAKER_INFO",
+      "tier": "townsmen",
+      "displayName": "Drum Maker",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Leather": 1
+      },
+      "consumePerMinute": {
+        "Leather": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/DrumMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "DrummersSchool",
+      "infoExport": "DRUMMERS_SCHOOL_INFO",
+      "tier": "townsmen",
+      "displayName": "Drummers School",
+      "iterationSeconds": 900,
+      "consumePerIteration": {
+        "Militia": 3,
+        "Drum": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "Drum": 0.06666666666666667
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.06666666666666667,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/DrummersSchool.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Fair",
+      "infoExport": "FAIR_INFO",
+      "tier": "townsmen",
+      "displayName": "Fair",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 80,
+      "producePerMinute": 4800,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Fair.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Furriery",
+      "infoExport": "FURRIERY_INFO",
+      "tier": "townsmen",
+      "displayName": "Furriery",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Cattle": 1
+      },
+      "consumePerMinute": {
+        "Cattle": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Furriery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "HopFarm",
+      "infoExport": "HOP_FARM_INFO",
+      "tier": "townsmen",
+      "displayName": "Hop Farm",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Hop": 8
+      },
+      "consumePerMinute": {
+        "Hop": 4
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/HopFarm.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "HorseBreeder",
+      "infoExport": "HORSE_BREEDER_INFO",
+      "tier": "townsmen",
+      "displayName": "Horse Breeder",
+      "iterationSeconds": 360,
+      "consumePerIteration": {
+        "Gras": 20
+      },
+      "consumePerMinute": {
+        "Gras": 3.3333333333333335
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.16666666666666666,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/HorseBreeder.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "JamMaker",
+      "infoExport": "JAM_MAKER_INFO",
+      "tier": "townsmen",
+      "displayName": "Jam Maker",
+      "iterationSeconds": 720,
+      "consumePerIteration": {
+        "Sugar": 1,
+        "Strawberry": 4
+      },
+      "consumePerMinute": {
+        "Sugar": 0.08333333333333333,
+        "Strawberry": 0.3333333333333333
+      },
+      "producePerIteration": 4,
+      "producePerMinute": 0.3333333333333333,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/JamMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "LongbowArcheryRange",
+      "infoExport": "LONGBOW_ARCHERY_RANGE_INFO",
+      "tier": "townsmen",
+      "displayName": "Longbow Archery Range",
+      "iterationSeconds": 900,
+      "consumePerIteration": {
+        "Militia": 3,
+        "Longbow": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "Longbow": 0.06666666666666667
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.06666666666666667,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/LongbowArcheryRange.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Longbowyer",
+      "infoExport": "LONGBOWYER_INFO",
+      "tier": "townsmen",
+      "displayName": "Longbowyer",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Wood": 10,
+        "Fiber": 2
+      },
+      "consumePerMinute": {
+        "Wood": 2.5,
+        "Fiber": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Longbowyer.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Malthouse",
+      "infoExport": "MALTHOUSE_INFO",
+      "tier": "townsmen",
+      "displayName": "Malthouse",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Wheat": 2
+      },
+      "consumePerMinute": {
+        "Wheat": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Malthouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Medicus",
+      "infoExport": "MEDICUS_INFO",
+      "tier": "townsmen",
+      "displayName": "Medicus",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "FishOil": 1
+      },
+      "consumePerMinute": {
+        "FishOil": 1
+      },
+      "producePerIteration": 24,
+      "producePerMinute": 24,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Medicus.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Paddock",
+      "infoExport": "PADDOCK_INFO",
+      "tier": "townsmen",
+      "displayName": "Paddock",
+      "iterationSeconds": 360,
+      "consumePerIteration": {
+        "Horse": 1
+      },
+      "consumePerMinute": {
+        "Horse": 0.16666666666666666
+      },
+      "producePerIteration": 24,
+      "producePerMinute": 4,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Paddock.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "RidingArena",
+      "infoExport": "RIDING_ARENA_INFO",
+      "tier": "townsmen",
+      "displayName": "Riding Arena",
+      "iterationSeconds": 900,
+      "consumePerIteration": {
+        "Militia": 3,
+        "Horse": 1
+      },
+      "consumePerMinute": {
+        "Militia": 0.2,
+        "Horse": 0.06666666666666667
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.06666666666666667,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/RidingArena.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "RockSaltMine",
+      "infoExport": "ROCK_SALT_MINE_INFO",
+      "tier": "townsmen",
+      "displayName": "Rock Salt Mine",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "RockSaltDeposit": 1
+      },
+      "consumePerMinute": {
+        "RockSaltDeposit": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/RockSaltMine.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Sailmaker",
+      "infoExport": "SAILMAKER_INFO",
+      "tier": "townsmen",
+      "displayName": "Sailmaker",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Rope": 1,
+        "Yarn": 2
+      },
+      "consumePerMinute": {
+        "Rope": 0.25,
+        "Yarn": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Sailmaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SaltWorks",
+      "infoExport": "SALT_WORKS_INFO",
+      "tier": "townsmen",
+      "displayName": "Salt Works",
+      "iterationSeconds": 720,
+      "consumePerIteration": {
+        "Coal": 1,
+        "RockSalt": 1
+      },
+      "consumePerMinute": {
+        "Coal": 0.08333333333333333,
+        "RockSalt": 0.08333333333333333
+      },
+      "producePerIteration": 2,
+      "producePerMinute": 0.16666666666666666,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/SaltWorks.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "StrawberryFarm",
+      "infoExport": "STRAWBERRY_FARM_INFO",
+      "tier": "townsmen",
+      "displayName": "Strawberry Farm",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Strawberry": 12
+      },
+      "consumePerMinute": {
+        "Strawberry": 6
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/StrawberryFarm.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Tannery",
+      "infoExport": "TANNERY_INFO",
+      "tier": "townsmen",
+      "displayName": "Tannery",
+      "iterationSeconds": 1080,
+      "consumePerIteration": {
+        "Salt": 1,
+        "Leather": 3,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Salt": 0.05555555555555555,
+        "Leather": 0.16666666666666666,
+        "RiverField": 0.05555555555555555
+      },
+      "producePerIteration": 3,
+      "producePerMinute": 0.16666666666666666,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/Tannery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "TownSchool",
+      "infoExport": "TOWN_SCHOOL_INFO",
+      "tier": "townsmen",
+      "displayName": "Town School",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Chalk": 1
+      },
+      "consumePerMinute": {
+        "Chalk": 1
+      },
+      "producePerIteration": 120,
+      "producePerMinute": 120,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/townsmen/TownSchool.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "ArtisticBlacksmith",
+      "infoExport": "ARTISTIC_BLACKSMITH_INFO",
+      "tier": "workers",
+      "displayName": "Artistic Blacksmith",
+      "iterationSeconds": 960,
+      "consumePerIteration": {
+        "GoldIngot": 1,
+        "Gemstone": 2
+      },
+      "consumePerMinute": {
+        "GoldIngot": 0.0625,
+        "Gemstone": 0.125
+      },
+      "producePerIteration": 4,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/ArtisticBlacksmith.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BrassSmelterTropical",
+      "infoExport": "BRASS_SMELTER_TROPICAL_INFO",
+      "tier": "workers",
+      "displayName": "Brass Smelter Tropical",
+      "iterationSeconds": 360,
+      "consumePerIteration": {
+        "CopperIngot": 3,
+        "ZincIngot": 2
+      },
+      "consumePerMinute": {
+        "CopperIngot": 0.5,
+        "ZincIngot": 0.3333333333333333
+      },
+      "producePerIteration": 5,
+      "producePerMinute": 0.8333333333333334,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/BrassSmelterTropical.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BuffaloButchery",
+      "infoExport": "BUFFALO_BUTCHERY_INFO",
+      "tier": "workers",
+      "displayName": "Buffalo Butchery",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Salt": 1,
+        "Buffalo": 2
+      },
+      "consumePerMinute": {
+        "Salt": 0.125,
+        "Buffalo": 0.25
+      },
+      "producePerIteration": 6,
+      "producePerMinute": 0.75,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/BuffaloButchery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "BuffaloPasture",
+      "infoExport": "BUFFALO_PASTURE_INFO",
+      "tier": "workers",
+      "displayName": "Buffalo Pasture",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "WaterBuffalo": 1
+      },
+      "consumePerMinute": {
+        "WaterBuffalo": 0.5
+      },
+      "producePerIteration": 24,
+      "producePerMinute": 12,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/BuffaloPasture.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CacaoPlantation",
+      "infoExport": "CACAO_PLANTATION_INFO",
+      "tier": "workers",
+      "displayName": "Cacao Plantation",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "CacaoTree": 1
+      },
+      "consumePerMinute": {
+        "CacaoTree": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/CacaoPlantation.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Cemetery",
+      "infoExport": "CEMETERY_INFO",
+      "tier": "workers",
+      "displayName": "Cemetery",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Flowers": 1
+      },
+      "consumePerMinute": {
+        "Flowers": 1
+      },
+      "producePerIteration": 24,
+      "producePerMinute": 24,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/Cemetery.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Chocolaterie",
+      "infoExport": "CHOCOLATERIE_INFO",
+      "tier": "workers",
+      "displayName": "Chocolaterie",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Sugar": 1,
+        "Cacao": 3
+      },
+      "consumePerMinute": {
+        "Sugar": 0.5,
+        "Cacao": 1.5
+      },
+      "producePerIteration": 3,
+      "producePerMinute": 1.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/Chocolaterie.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CoconutPlantation",
+      "infoExport": "COCONUT_PLANTATION_INFO",
+      "tier": "workers",
+      "displayName": "Coconut Plantation",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "CoconutPalm": 1
+      },
+      "consumePerMinute": {
+        "CoconutPalm": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/CoconutPlantation.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Costumier",
+      "infoExport": "COSTUMIER_INFO",
+      "tier": "workers",
+      "displayName": "Costumier",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Dye": 2,
+        "Fabric": 3
+      },
+      "consumePerMinute": {
+        "Dye": 1,
+        "Fabric": 1.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/Costumier.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "CottonPlantation",
+      "infoExport": "COTTON_PLANTATION_INFO",
+      "tier": "workers",
+      "displayName": "Cotton Plantation",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Cotton": 1
+      },
+      "consumePerMinute": {
+        "Cotton": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/CottonPlantation.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "DancingSchool",
+      "infoExport": "DANCING_SCHOOL_INFO",
+      "tier": "workers",
+      "displayName": "Dancing School",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Costume": 1
+      },
+      "consumePerMinute": {
+        "Costume": 1
+      },
+      "producePerIteration": 48,
+      "producePerMinute": 48,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/DancingSchool.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "FineWoodLogger",
+      "infoExport": "FINE_WOOD_LOGGER_INFO",
+      "tier": "workers",
+      "displayName": "Fine Wood Logger",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "MahoganyTree": 1
+      },
+      "consumePerMinute": {
+        "MahoganyTree": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/FineWoodLogger.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "FlowerHouse",
+      "infoExport": "FLOWER_HOUSE_INFO",
+      "tier": "workers",
+      "displayName": "Flower House",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Grass": 20
+      },
+      "consumePerMinute": {
+        "Grass": 20
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/FlowerHouse.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "GemstoneMine",
+      "infoExport": "GEMSTONE_MINE_INFO",
+      "tier": "workers",
+      "displayName": "Gemstone Mine",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Gemstone": 1
+      },
+      "consumePerMinute": {
+        "Gemstone": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/GemstoneMine.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "GlaiveSmith",
+      "infoExport": "GLAIVE_SMITH_INFO",
+      "tier": "workers",
+      "displayName": "Glaive Smith",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "FineWood": 1,
+        "Gemstone": 2,
+        "CopperIngot": 1
+      },
+      "consumePerMinute": {
+        "FineWood": 0.125,
+        "Gemstone": 0.25,
+        "CopperIngot": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/GlaiveSmith.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "GlaiveTemple",
+      "infoExport": "GLAIVE_TEMPLE_INFO",
+      "tier": "workers",
+      "displayName": "Glaive Temple",
+      "iterationSeconds": 1200,
+      "consumePerIteration": {
+        "Slinger": 4,
+        "Glaive": 1
+      },
+      "consumePerMinute": {
+        "Slinger": 0.2,
+        "Glaive": 0.05
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.05,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/GlaiveTemple.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "GoldMineTropical",
+      "infoExport": "GOLD_MINE_TROPICAL_INFO",
+      "tier": "workers",
+      "displayName": "Gold Mine Tropical",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "GoldOre": 1
+      },
+      "consumePerMinute": {
+        "GoldOre": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/GoldMineTropical.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "GoldPanner",
+      "infoExport": "GOLD_PANNER_INFO",
+      "tier": "workers",
+      "displayName": "Gold Panner",
+      "iterationSeconds": 960,
+      "consumePerIteration": {
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "RiverField": 0.0625
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/GoldPanner.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "GoldSmelterTropical",
+      "infoExport": "GOLD_SMELTER_TROPICAL_INFO",
+      "tier": "workers",
+      "displayName": "Gold Smelter Tropical",
+      "iterationSeconds": 480,
+      "consumePerIteration": {
+        "Fiber": 4,
+        "Gold": 1
+      },
+      "consumePerMinute": {
+        "Fiber": 0.5,
+        "Gold": 0.125
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/GoldSmelterTropical.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "HeraldicArmourer",
+      "infoExport": "HERALDIC_ARMOURER_INFO",
+      "tier": "workers",
+      "displayName": "Heraldic Armourer",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "GoldIngot": 1,
+        "FineWood": 2
+      },
+      "consumePerMinute": {
+        "GoldIngot": 0.5,
+        "FineWood": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/HeraldicArmourer.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "IndigoPlantation",
+      "infoExport": "INDIGO_PLANTATION_INFO",
+      "tier": "workers",
+      "displayName": "Indigo Plantation",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Indigo": 1
+      },
+      "consumePerMinute": {
+        "Indigo": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/IndigoPlantation.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Luthier",
+      "infoExport": "LUTHIER_INFO",
+      "tier": "workers",
+      "displayName": "Luthier",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Brass": 1,
+        "FineWood": 8
+      },
+      "consumePerMinute": {
+        "Brass": 0.5,
+        "FineWood": 4
+      },
+      "producePerIteration": 8,
+      "producePerMinute": 4,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/Luthier.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "MarketHall",
+      "infoExport": "MARKET_HALL_INFO",
+      "tier": "workers",
+      "displayName": "Market Hall",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 48,
+      "producePerMinute": 2880,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/MarketHall.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "NitrateMaker",
+      "infoExport": "NITRATE_MAKER_INFO",
+      "tier": "workers",
+      "displayName": "Nitrate Maker",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Salpeter": 1
+      },
+      "consumePerMinute": {
+        "Salpeter": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/NitrateMaker.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "NobleTailor",
+      "infoExport": "NOBLE_TAILOR_INFO",
+      "tier": "workers",
+      "displayName": "Noble Tailor",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Silk": 1
+      },
+      "consumePerMinute": {
+        "Silk": 0.25
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/NobleTailor.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "RickyardTropical",
+      "infoExport": "RICKYARD_TROPICAL_INFO",
+      "tier": "workers",
+      "displayName": "Rickyard Tropical",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Wheat": 1
+      },
+      "consumePerMinute": {
+        "Wheat": 1
+      },
+      "producePerIteration": 24,
+      "producePerMinute": 24,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/RickyardTropical.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "ShieldGuardianTemple",
+      "infoExport": "SHIELD_GUARDIAN_TEMPLE_INFO",
+      "tier": "workers",
+      "displayName": "Shield Guardian Temple",
+      "iterationSeconds": 1200,
+      "consumePerIteration": {
+        "Slinger": 4,
+        "Shield": 1
+      },
+      "consumePerMinute": {
+        "Slinger": 0.2,
+        "Shield": 0.05
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.05,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/ShieldGuardianTemple.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SilkPlantation",
+      "infoExport": "SILK_PLANTATION_INFO",
+      "tier": "workers",
+      "displayName": "Silk Plantation",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Silkworm": 1
+      },
+      "consumePerMinute": {
+        "Silkworm": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/SilkPlantation.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SilkTwineMill",
+      "infoExport": "SILK_TWINE_MILL_INFO",
+      "tier": "workers",
+      "displayName": "Silk Twine Mill",
+      "iterationSeconds": 120,
+      "consumePerIteration": {
+        "Silk": 2,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Silk": 1,
+        "RiverField": 0.5
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/SilkTwineMill.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SoupKitchen",
+      "infoExport": "SOUP_KITCHEN_INFO",
+      "tier": "workers",
+      "displayName": "Soup Kitchen",
+      "iterationSeconds": 60,
+      "consumePerIteration": {
+        "Coconut": 1,
+        "Meat": 1
+      },
+      "consumePerMinute": {
+        "Coconut": 1,
+        "Meat": 1
+      },
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/SoupKitchen.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "SpinningMill",
+      "infoExport": "SPINNING_MILL_INFO",
+      "tier": "workers",
+      "displayName": "Spinning Mill",
+      "iterationSeconds": 240,
+      "consumePerIteration": {
+        "Yarn": 4,
+        "RiverField": 1
+      },
+      "consumePerMinute": {
+        "Yarn": 1,
+        "RiverField": 0.25
+      },
+      "producePerIteration": 3,
+      "producePerMinute": 0.75,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/SpinningMill.tsx"
+    },
+    {
+      "kind": "building",
+      "id": "Stadium",
+      "infoExport": "STADIUM_INFO",
+      "tier": "workers",
+      "displayName": "Stadium",
+      "iterationSeconds": 1,
+      "consumePerIteration": {},
+      "consumePerMinute": {},
+      "producePerIteration": 48,
+      "producePerMinute": 2880,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/buildings/workers/Stadium.tsx"
+    }
+  ],
+  "tiles": [
+    {
+      "kind": "tile",
+      "id": "AppleTrees",
+      "infoExport": "APPLE_TREES_INFO",
+      "displayName": "Apple Trees",
+      "iterationSeconds": 720,
+      "producePerIteration": 3,
+      "producePerMinute": 0.25,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/AppleTrees.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CacaoField",
+      "infoExport": "CACAO_FIELD_INFO",
+      "displayName": "Cacao Field",
+      "iterationSeconds": 3600,
+      "producePerIteration": 3,
+      "producePerMinute": 0.05,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CacaoField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "ClayDeposit",
+      "infoExport": "CLAY_DEPOSIT_INFO",
+      "displayName": "Clay Deposit",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/ClayDeposit.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "Cliff",
+      "infoExport": "CLIFF_INFO",
+      "displayName": "Cliff",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Cliff.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CliffTropical",
+      "infoExport": "CLIFF_TROPICAL_INFO",
+      "displayName": "Cliff Tropical",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CliffTropical.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CoalDeposit",
+      "infoExport": "COAL_DEPOSIT_INFO",
+      "displayName": "Coal Deposit",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoalDeposit.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CoalDepositNorth",
+      "infoExport": "COAL_DEPOSIT_NORTH_INFO",
+      "displayName": "Coal Deposit North",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoalDepositNorth.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CoalDepositTropical",
+      "infoExport": "COAL_DEPOSIT_TROPICAL_INFO",
+      "displayName": "Coal Deposit Tropical",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoalDepositTropical.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CoastalField",
+      "infoExport": "COASTAL_FIELD_INFO",
+      "displayName": "Coastal Field",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoastalField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CoastalFieldNorth",
+      "infoExport": "COASTAL_FIELD_NORTH_INFO",
+      "displayName": "Coastal Field North",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoastalFieldNorth.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CoastalFieldTropical",
+      "infoExport": "COASTAL_FIELD_TROPICAL_INFO",
+      "displayName": "Coastal Field Tropical",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoastalFieldTropical.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CoconutPalm",
+      "infoExport": "COCONUT_PALM_INFO",
+      "displayName": "Coconut Palm",
+      "iterationSeconds": 1920,
+      "producePerIteration": 2,
+      "producePerMinute": 0.0625,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoconutPalm.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CoffeeBeanField",
+      "infoExport": "COFFEE_BEAN_FIELD_INFO",
+      "displayName": "Coffee Bean Field",
+      "iterationSeconds": 960,
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoffeeBeanField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "ConiferForest",
+      "infoExport": "CONIFER_FOREST_INFO",
+      "displayName": "Conifer Forest",
+      "iterationSeconds": 420,
+      "producePerIteration": 2,
+      "producePerMinute": 0.2857142857142857,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/ConiferForest.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CopperDeposit",
+      "infoExport": "COPPER_DEPOSIT_INFO",
+      "displayName": "Copper Deposit",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CopperDeposit.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CopperDepositTropical",
+      "infoExport": "COPPER_DEPOSIT_TROPICAL_INFO",
+      "displayName": "Copper Deposit Tropical",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CopperDepositTropical.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CopperPyriteDeposit",
+      "infoExport": "COPPER_PYRITE_DEPOSIT_INFO",
+      "displayName": "Copper Pyrite Deposit",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CopperPyriteDeposit.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "CottonField",
+      "infoExport": "COTTON_FIELD_INFO",
+      "displayName": "Cotton Field",
+      "iterationSeconds": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CottonField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "Forest",
+      "infoExport": "FOREST_INFO",
+      "displayName": "Forest",
+      "iterationSeconds": 360,
+      "producePerIteration": 3,
+      "producePerMinute": 0.5,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Forest.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "GemstoneDeposit",
+      "infoExport": "GEMSTONE_DEPOSIT_INFO",
+      "displayName": "Gemstone Deposit",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/GemstoneDeposit.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "GoldDepositNorth",
+      "infoExport": "GOLD_DEPOSIT_NORTH_INFO",
+      "displayName": "Gold Deposit North",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/GoldDepositNorth.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "GoldDepositTropical",
+      "infoExport": "GOLD_DEPOSIT_TROPICAL_INFO",
+      "displayName": "Gold Deposit Tropical",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/GoldDepositTropical.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "Grass",
+      "infoExport": "GRASS_INFO",
+      "displayName": "Grass",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Grass.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "GrassNorth",
+      "infoExport": "GRASS_NORTH_INFO",
+      "displayName": "Grass North",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/GrassNorth.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "HopField",
+      "infoExport": "HOP_FIELD_INFO",
+      "displayName": "Hop Field",
+      "iterationSeconds": 960,
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/HopField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "IndigoField",
+      "infoExport": "INDIGO_FIELD_INFO",
+      "displayName": "Indigo Field",
+      "iterationSeconds": 960,
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/IndigoField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "IronDeposit",
+      "infoExport": "IRON_DEPOSIT_INFO",
+      "displayName": "Iron Deposit",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/IronDeposit.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "IronstoneDeposit",
+      "infoExport": "IRONSTONE_DEPOSIT_INFO",
+      "displayName": "Ironstone Deposit",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/IronstoneDeposit.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "LeadDeposit",
+      "infoExport": "LEAD_DEPOSIT_INFO",
+      "displayName": "Lead Deposit",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/LeadDeposit.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "LinseedField",
+      "infoExport": "LINSEED_FIELD_INFO",
+      "displayName": "Linseed Field",
+      "iterationSeconds": 600,
+      "producePerIteration": 1,
+      "producePerMinute": 0.1,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/LinseedField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "MahoganyTree",
+      "infoExport": "MAHOGANY_TREE_INFO",
+      "displayName": "Mahogany Tree",
+      "iterationSeconds": 1440,
+      "producePerIteration": 3,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/MahoganyTree.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "MarbleDeposit",
+      "infoExport": "MARBLE_DEPOSIT_INFO",
+      "displayName": "Marble Deposit",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/MarbleDeposit.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "MarbleDepositNorth",
+      "infoExport": "MARBLE_DEPOSIT_NORTH_INFO",
+      "displayName": "Marble Deposit North",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/MarbleDepositNorth.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "MultberryTrees",
+      "infoExport": "MULTBERRY_TREES_INFO",
+      "displayName": "Multberry Trees",
+      "iterationSeconds": 960,
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/MultberryTrees.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "NitrateField",
+      "infoExport": "NITRATE_FIELD_INFO",
+      "displayName": "Nitrate Field",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/NitrateField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "PalmTrees",
+      "infoExport": "PALM_TREES_INFO",
+      "displayName": "Palm Trees",
+      "iterationSeconds": 360,
+      "producePerIteration": 2,
+      "producePerMinute": 0.3333333333333333,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/PalmTrees.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "RiverField",
+      "infoExport": "RIVER_FIELD_INFO",
+      "displayName": "River Field",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RiverField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "RiverFieldNorth",
+      "infoExport": "RIVER_FIELD_NORTH_INFO",
+      "displayName": "River Field North",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RiverFieldNorth.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "RiverFieldTropical",
+      "infoExport": "RIVER_FIELD_TROPICAL_INFO",
+      "displayName": "River Field Tropical",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RiverFieldTropical.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "RockSaltDeposit",
+      "infoExport": "ROCK_SALT_DEPOSIT_INFO",
+      "displayName": "Rock Salt Deposit",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RockSaltDeposit.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "RockSaltDepositNorth",
+      "infoExport": "ROCK_SALT_DEPOSIT_NORTH_INFO",
+      "displayName": "Rock Salt Deposit North",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RockSaltDepositNorth.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "RoseField",
+      "infoExport": "ROSE_FIELD_INFO",
+      "displayName": "Rose Field",
+      "iterationSeconds": 1920,
+      "producePerIteration": 1,
+      "producePerMinute": 0.03125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RoseField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "SpermWhaleSwarm",
+      "infoExport": "SPERM_WHALE_SWARM_INFO",
+      "displayName": "Sperm Whale Swarm",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/SpermWhaleSwarm.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "StrawberryField",
+      "infoExport": "STRAWBERRY_FIELD_INFO",
+      "displayName": "Strawberry Field",
+      "iterationSeconds": 1440,
+      "producePerIteration": 1,
+      "producePerMinute": 0.041666666666666664,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/StrawberryField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "SugarBeetField",
+      "infoExport": "SUGAR_BEET_FIELD_INFO",
+      "displayName": "Sugar Beet Field",
+      "iterationSeconds": 2400,
+      "producePerIteration": 1,
+      "producePerMinute": 0.025,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/SugarBeetField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "SugarCaneField",
+      "infoExport": "SUGAR_CANE_FIELD_INFO",
+      "displayName": "Sugar Cane Field",
+      "iterationSeconds": 960,
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/SugarCaneField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "TeaField",
+      "infoExport": "TEA_FIELD_INFO",
+      "displayName": "Tea Field",
+      "iterationSeconds": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/TeaField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "TobaccoField",
+      "infoExport": "TOBACCO_FIELD_INFO",
+      "displayName": "Tobacco Field",
+      "iterationSeconds": 960,
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/TobaccoField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "Vineyard",
+      "infoExport": "VINEYARD_INFO",
+      "displayName": "Vineyard",
+      "iterationSeconds": 960,
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Vineyard.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "Water",
+      "infoExport": "WATER_INFO",
+      "displayName": "Water",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Water.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "Weir",
+      "infoExport": "WEIR_INFO",
+      "displayName": "Weir",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Weir.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "WheatField",
+      "infoExport": "WHEAT_FIELD_INFO",
+      "displayName": "Wheat Field",
+      "iterationSeconds": 960,
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/WheatField.tsx"
+    },
+    {
+      "kind": "tile",
+      "id": "ZincDeposit",
+      "infoExport": "ZINC_DEPOSIT_INFO",
+      "displayName": "Zinc Deposit",
+      "iterationSeconds": 1,
+      "producePerIteration": 1,
+      "producePerMinute": 60,
+      "sourceFile": "vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/ZincDeposit.tsx"
+    }
+  ]
+}

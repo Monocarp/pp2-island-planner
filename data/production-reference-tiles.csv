@@ -1,0 +1,54 @@
+id,displayName,iterationSeconds,producePerIteration,producePerMinute,sourceFile
+AppleTrees,Apple Trees,720,3,0.25,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/AppleTrees.tsx
+CacaoField,Cacao Field,3600,3,0.05,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CacaoField.tsx
+ClayDeposit,Clay Deposit,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/ClayDeposit.tsx
+Cliff,Cliff,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Cliff.tsx
+CliffTropical,Cliff Tropical,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CliffTropical.tsx
+CoalDeposit,Coal Deposit,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoalDeposit.tsx
+CoalDepositNorth,Coal Deposit North,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoalDepositNorth.tsx
+CoalDepositTropical,Coal Deposit Tropical,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoalDepositTropical.tsx
+CoastalField,Coastal Field,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoastalField.tsx
+CoastalFieldNorth,Coastal Field North,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoastalFieldNorth.tsx
+CoastalFieldTropical,Coastal Field Tropical,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoastalFieldTropical.tsx
+CoconutPalm,Coconut Palm,1920,2,0.0625,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoconutPalm.tsx
+CoffeeBeanField,Coffee Bean Field,960,1,0.0625,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CoffeeBeanField.tsx
+ConiferForest,Conifer Forest,420,2,0.2857142857142857,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/ConiferForest.tsx
+CopperDeposit,Copper Deposit,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CopperDeposit.tsx
+CopperDepositTropical,Copper Deposit Tropical,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CopperDepositTropical.tsx
+CopperPyriteDeposit,Copper Pyrite Deposit,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CopperPyriteDeposit.tsx
+CottonField,Cotton Field,480,1,0.125,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/CottonField.tsx
+Forest,Forest,360,3,0.5,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Forest.tsx
+GemstoneDeposit,Gemstone Deposit,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/GemstoneDeposit.tsx
+GoldDepositNorth,Gold Deposit North,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/GoldDepositNorth.tsx
+GoldDepositTropical,Gold Deposit Tropical,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/GoldDepositTropical.tsx
+Grass,Grass,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Grass.tsx
+GrassNorth,Grass North,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/GrassNorth.tsx
+HopField,Hop Field,960,1,0.0625,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/HopField.tsx
+IndigoField,Indigo Field,960,1,0.0625,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/IndigoField.tsx
+IronDeposit,Iron Deposit,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/IronDeposit.tsx
+IronstoneDeposit,Ironstone Deposit,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/IronstoneDeposit.tsx
+LeadDeposit,Lead Deposit,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/LeadDeposit.tsx
+LinseedField,Linseed Field,600,1,0.1,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/LinseedField.tsx
+MahoganyTree,Mahogany Tree,1440,3,0.125,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/MahoganyTree.tsx
+MarbleDeposit,Marble Deposit,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/MarbleDeposit.tsx
+MarbleDepositNorth,Marble Deposit North,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/MarbleDepositNorth.tsx
+MultberryTrees,Multberry Trees,960,1,0.0625,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/MultberryTrees.tsx
+NitrateField,Nitrate Field,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/NitrateField.tsx
+PalmTrees,Palm Trees,360,2,0.3333333333333333,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/PalmTrees.tsx
+RiverField,River Field,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RiverField.tsx
+RiverFieldNorth,River Field North,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RiverFieldNorth.tsx
+RiverFieldTropical,River Field Tropical,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RiverFieldTropical.tsx
+RockSaltDeposit,Rock Salt Deposit,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RockSaltDeposit.tsx
+RockSaltDepositNorth,Rock Salt Deposit North,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RockSaltDepositNorth.tsx
+RoseField,Rose Field,1920,1,0.03125,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/RoseField.tsx
+SpermWhaleSwarm,Sperm Whale Swarm,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/SpermWhaleSwarm.tsx
+StrawberryField,Strawberry Field,1440,1,0.041666666666666664,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/StrawberryField.tsx
+SugarBeetField,Sugar Beet Field,2400,1,0.025,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/SugarBeetField.tsx
+SugarCaneField,Sugar Cane Field,960,1,0.0625,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/SugarCaneField.tsx
+TeaField,Tea Field,480,1,0.125,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/TeaField.tsx
+TobaccoField,Tobacco Field,960,1,0.0625,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/TobaccoField.tsx
+Vineyard,Vineyard,960,1,0.0625,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Vineyard.tsx
+Water,Water,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Water.tsx
+Weir,Weir,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/Weir.tsx
+WheatField,Wheat Field,960,1,0.0625,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/WheatField.tsx
+ZincDeposit,Zinc Deposit,1,1,60,vendor/paragon-pioneers-2-calculator/src/pages/production-chain/tiles/ZincDeposit.tsx

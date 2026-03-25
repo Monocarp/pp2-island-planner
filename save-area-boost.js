@@ -47,17 +47,11 @@
     var plannerId = resolved && resolved.plannerBuildingId;
     var comps = ent.components;
 
-    var tileUtil =
-      opts && typeof opts.tileUtilizationFactor === 'number' && isFinite(opts.tileUtilizationFactor)
-        ? opts.tileUtilizationFactor
-        : 1;
-    var fullTileUtilization = tileUtil >= 1 - 1e-9;
-
     var inSilo = anchorInsideAnyBoostFootprint(xy, siloAnchors);
     var inPaddock = anchorInsideAnyBoostFootprint(xy, paddockAnchors);
 
     var rickyardEligible = inSilo && isRickyardLivestockEligible(bid, plannerId);
-    var rickyardApplies = rickyardEligible && fullTileUtilization;
+    var rickyardApplies = rickyardEligible;
     var paddockApplies = inPaddock && entityHasHarvesterComponent(comps) && !rickyardEligible;
 
     var mult = rickyardApplies || paddockApplies ? 2 : 1;

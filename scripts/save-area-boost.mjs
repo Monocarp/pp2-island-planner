@@ -41,9 +41,9 @@ export function entityHasHarvesterComponent(components) {
 }
 
 /**
- * Rickyard ×2 matches in-game UI when only producers with **full** grass/tile inputs are boosted;
- * partial utilization still gets nameplate × tiles but no rickyard multiplier on that building.
- * @param {{ tileUtilizationFactor?: number }} [opts]
+ * Rickyard ×2: eligible livestock in a silo 5×5 get ×2 on **base** output. Tile utilization (used/max)
+ * scales base production elsewhere (tileUtil × areaMult); boost does not require full utilization.
+ * @param {{ tileUtilizationFactor?: number }} [opts] reserved / ignored (call sites pass tile util for consistency)
  * @returns {{ multiplier: number, siloBoosted: boolean, paddockBoosted: boolean, insideSiloFootprint?: boolean }}
  */
 export function computeAreaBoost(ent, resolved, siloAnchors, paddockAnchors, opts) {
@@ -52,17 +52,11 @@ export function computeAreaBoost(ent, resolved, siloAnchors, paddockAnchors, opt
   const plannerId = resolved && resolved.plannerBuildingId;
   const comps = ent.components;
 
-  const tileUtil =
-    opts && typeof opts.tileUtilizationFactor === 'number' && Number.isFinite(opts.tileUtilizationFactor)
-      ? opts.tileUtilizationFactor
-      : 1;
-  const fullTileUtilization = tileUtil >= 1 - 1e-9;
-
   const inSilo = anchorInsideAnyBoostFootprint(xy, siloAnchors);
   const inPaddock = anchorInsideAnyBoostFootprint(xy, paddockAnchors);
 
   const rickyardEligible = inSilo && isRickyardLivestockEligible(bid, plannerId);
-  const rickyardApplies = rickyardEligible && fullTileUtilization;
+  const rickyardApplies = rickyardEligible;
   const paddockApplies =
     inPaddock && entityHasHarvesterComponent(comps) && !rickyardEligible;
 

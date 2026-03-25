@@ -963,19 +963,14 @@
           html += '<td>' + escapeHtml(combinedOutStr) + '</td>';
           html += '<td class="num">' + escapeHtml(cdDisplay) + '</td>';
           var boostedN = 0;
-          var inSiloAreaN = 0;
           var paddockBoostedN = 0;
           for (var ib = 0; ib < instances.length; ib++) {
             if (instances[ib].siloBoosted) boostedN++;
-            if (instances[ib].insideSiloFootprint) inSiloAreaN++;
             if (instances[ib].paddockBoosted) paddockBoostedN++;
           }
           var sumNotes = [];
           if (boostedN === icount && icount > 0) sumNotes.push('all silo boosted');
           else if (boostedN > 0) sumNotes.push(boostedN + '/' + icount + ' silo boosted');
-          if (inSiloAreaN > 0 && inSiloAreaN !== boostedN) {
-            sumNotes.push(inSiloAreaN + '/' + icount + ' in silo 5×5 (×2 only if tile util full)');
-          }
           if (paddockBoostedN === icount && icount > 0) sumNotes.push('all paddock boosted');
           else if (paddockBoostedN > 0) sumNotes.push(paddockBoostedN + '/' + icount + ' paddock boosted');
           var tileMin = null;
@@ -1007,7 +1002,6 @@
               );
               var n2 = [];
               if (inst.siloBoosted) n2.push('silo ×' + roundRate(inst.siloMultiplier || 1));
-              else if (inst.insideSiloFootprint) n2.push('in silo 5×5 (no ×2: partial tile util)');
               if (inst.paddockBoosted) n2.push('paddock ×' + roundRate(inst.paddockMultiplier || 1));
               if (
                 typeof inst.tileUtilizationFactor === 'number' &&

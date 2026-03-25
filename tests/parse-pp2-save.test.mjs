@@ -41,7 +41,7 @@ test('minimal save: research id 4 present', () => {
   assert.strictEqual(r.researchCompleted[0].researchId, 4);
 });
 
-test('rickyard: ×2 only when tile utilization is full (partial grass in silo area stays ×1)', () => {
+test('rickyard: ×2 in silo 5×5 even when tile utilization is partial (boost × base)', () => {
   const ent = { id: 'PigRanch', xy: [1, 0], components: { gatherer: {} } };
   const resolved = { plannerBuildingId: 'PigRanch' };
   const siloAnchors = [[0, 0]];
@@ -50,9 +50,9 @@ test('rickyard: ×2 only when tile utilization is full (partial grass in silo ar
     2
   );
   const partial = computeAreaBoost(ent, resolved, siloAnchors, [], { tileUtilizationFactor: 0.75 });
-  assert.strictEqual(partial.multiplier, 1);
+  assert.strictEqual(partial.multiplier, 2);
   assert.strictEqual(partial.insideSiloFootprint, true);
-  assert.strictEqual(partial.siloBoosted, false);
+  assert.strictEqual(partial.siloBoosted, true);
 });
 
 test('rickyard: pig anchor inside Silo 5×5 gets ×2; outside Chebyshev 2 does not', () => {
@@ -69,7 +69,7 @@ test('rickyard: pig anchor inside Silo 5×5 gets ×2; outside Chebyshev 2 does n
   assert.ok(Math.abs(away.totalOutputPerMinute - 2) < 1e-5);
 });
 
-test('new_bursting_cay: cattle at (17,14) is inside silo 5×5 at (15,13) but not siloBoosted when tile util partial', () => {
+test('new_bursting_cay: cattle at (17,14) in silo 5×5 at (15,13) is siloBoosted with partial tile util', () => {
   const p = path.join(__dirname, '..', 'data', 'new_bursting_cay.json');
   const island = JSON.parse(fs.readFileSync(p, 'utf8'));
   const save = { SaveFileVersion: 20, IslandManager: { islands: [island] } };
@@ -79,8 +79,9 @@ test('new_bursting_cay: cattle at (17,14) is inside silo 5×5 at (15,13) but not
   );
   assert.ok(row);
   assert.strictEqual(row.insideSiloFootprint, true);
-  assert.strictEqual(row.siloBoosted, false);
+  assert.strictEqual(row.siloBoosted, true);
   assert.ok(Math.abs(row.tileUtilizationFactor - 0.75) < 1e-5);
+  assert.ok(Math.abs(row.multiplier - 1.5) < 1e-5);
 });
 
 test('tile overlap: adjacent 3×3 ranches split shared grass 50/50 (6 effective / 8 needed → 0.75)', () => {

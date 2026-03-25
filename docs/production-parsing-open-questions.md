@@ -135,9 +135,11 @@ Does the answer **differ** for **horse vs pig vs cattle vs sheep** or for **non-
 
 **Question:** For **each** boosted building type, does rickyard ×2 apply only at **full** spatial utilization, or also when **partial** (e.g. horse at 16/20 grass in silo — user example doubled the **linear-scaled** output)?
 
-**Status:** Open
+**Status:** Answered
 
-**Notes:** Horses may differ from pigs/cattle/sheep; document per category once confirmed.
+**Conclusion:** Rickyard ×2 applies whenever the anchor is in the silo footprint; **base** output is already scaled by tile utilization (used/max), then ×2 is applied to that base. Same rule for pigs/cattle/sheep/horses unless UI proves otherwise.
+
+**Notes:** Prior “full util only” gate was incorrect; removed from `save-area-boost.mjs` / `save-area-boost.js`.
 
 ---
 

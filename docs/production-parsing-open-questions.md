@@ -51,9 +51,35 @@ Does the answer **differ** for **horse vs pig vs cattle vs sheep** or for **non-
 - When **two footprints can both use** the same cell for their spatial input (e.g. pigs and sheep on **grass**), each building gets **1/n** of that cell toward its effective supply when **n** buildings share it (two → **50% each**).
 - Some pairs **cannot** share: the cell is **one crop or the other** (e.g. **strawberry farm vs coffee field** — strawberries **or** coffee beans, not split 50/50). Those exclusions should be **explicitly marked** in data (or an adjunct table), not inferred only by heuristics.
 
-**Follow-up for implementation:** Define **compatibility groups** (or pairwise exclusions) for tile-resource / deposit types so the parser knows when to apply **1/n** vs **exclusive claim**.
+**Follow-up for implementation:** Derive sharing from **input semantics** (see **§1d**), not only a hand-maintained exclusion table. Strawberry vs coffee remains a concrete example of **one cell, one deposit type** — incompatible goods.
 
 **Notes:** User answered 1c directly; overlaps with old §5 — see §5 status below.
+
+### 1d — Generic grass vs specific tile/deposit in footprint (refines 1c)
+
+**Question:** When can two buildings **share** a footprint cell for supply purposes vs when is the cell **exclusive** or **typed**?
+
+**Status:** Answered (one edge case noted)
+
+**Conclusion:**
+
+1. **Harvest / specific-resource buildings** (examples: Wheat farm, Lumberjack, Cider maker, Hop farm): the footprint has a fixed shape (e.g. wheat: **3×3 with anchor excluded → 9 cells** in the user’s description), but a cell **only counts** toward that building’s input if it actually holds the **required** tile/deposit (e.g. **wheat field**, **forest**, **apple trees**, **hop field**). Logic is the same idea for all such **harvested-crop / specific-tile** producers.
+
+2. **Livestock on grass** (sheep, pig, cattle, etc.): there is **no** specific deposit type inside the footprint — they use **grass** (generic). Those footprints **can overlap** with **similar** types (pig + sheep) or **same** type (two sheep farms), and **shared grass** uses the **1/n** split from §1c.
+
+3. **Mutually exclusive deposits on one cell:** two buildings that require **different** specific resources (e.g. **strawberry** vs **coffee**) **cannot** both use the same cell — the save/schema reflects **one** deposit per cell, so it is **one** crop or the other, not a 50/50 split.
+
+4. **Save / schema:** Cell occupancy for specific resources should be readable from save-derived grid (`deposit` / terrain + entities) once the mapping is understood.
+
+**Edge case (open until confirmed):** Two **Wheat** farms overlapping on a cell that is **wheat field** — is that **1/n** between them like grass, or **exclusive** to one building? *Not stated in this round; confirm if UI differs.*
+
+**Notes:** User walkthrough 2025 — Q1 completion pass.
+
+---
+
+## Q1 section completion
+
+**Status:** **Satisfactory for proceeding** on overlap/sharing **subject to** resolving the wheat×wheat edge case if needed during implementation. Subsections **1a–1d** capture the agreed model; **1b** remains “linear unless counterexample.”
 
 ---
 

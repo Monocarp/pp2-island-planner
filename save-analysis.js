@@ -396,6 +396,22 @@
       var uid = island.UID || '';
       var entities = island.GameEntities || [];
 
+      var reconstructed = null;
+      var tileClaimantsMap = null;
+      if (typeof buildPlannerIslandFromSaveIsland === 'function') {
+        var gridWarn = [];
+        reconstructed = buildPlannerIslandFromSaveIsland(island, { getBuildingData: getBuildingData, warnings: gridWarn });
+        for (var gw = 0; gw < gridWarn.length; gw++) warnings.push(gridWarn[gw]);
+        if (
+          reconstructed &&
+          reconstructed.island &&
+          typeof buildSpatialTileClaimantsMap === 'function' &&
+          typeof computeTileUtilizationForProducer === 'function'
+        ) {
+          tileClaimantsMap = buildSpatialTileClaimantsMap(reconstructed.island, null);
+        }
+      }
+
       var siloPositions = [];
       for (var ei = 0; ei < entities.length; ei++) {
         var e0 = entities[ei];
@@ -449,7 +465,22 @@
           resolved.rateSource === 'saveOutputs' || resolved.rateSource === 'saveFallback';
         var siloMult = !liveTimerRate && siloBoosted ? (boostTable[bid] != null ? boostTable[bid] : defaultBoost) : 1.0;
         var paddockMult = !liveTimerRate && paddockBoosted ? (paddockTable[bid] != null ? paddockTable[bid] : 1.0) : 1.0;
-        var mult = siloMult * paddockMult;
+        var tileUtil = 1;
+        var spatialBreakdown = null;
+        if (reconstructed && reconstructed.island && tileClaimantsMap) {
+          var tu = computeTileUtilizationForProducer(
+            reconstructed.island,
+            resolved.plannerBuildingId,
+            xy,
+            tileClaimantsMap,
+            null
+          );
+          if (tu && typeof tu.tileUtilizationFactor === 'number' && isFinite(tu.tileUtilizationFactor)) {
+            tileUtil = tu.tileUtilizationFactor;
+            spatialBreakdown = tu.spatialBreakdown;
+          }
+        }
+        var mult = siloMult * paddockMult * tileUtil;
         var byResourceId = resolved.byResourceId;
         var scaled = {};
         var scaledTotal = 0;
@@ -464,6 +495,7 @@
         buildingSummaries.push({
           buildingId: bid,
           plannerBuildingId: resolved.plannerBuildingId,
+          gameEntityId: bid,
           xy: xy,
           componentKey: resolved.timerInfo.componentKey,
           cooldownSeconds: resolved.cooldownSeconds,
@@ -471,6 +503,8 @@
           siloMultiplier: siloMult,
           paddockBoosted: paddockBoosted,
           paddockMultiplier: paddockMult,
+          tileUtilizationFactor: tileUtil,
+          spatialInputBreakdown: spatialBreakdown,
           multiplier: mult,
           rateSource: resolved.rateSource,
           outputPerMinuteByResourceId: enrichResourceNames(scaled, resourceNames),
@@ -984,6 +1018,22 @@
           else if (boostedN > 0) sumNotes.push(boostedN + '/' + icount + ' silo boosted');
           if (paddockBoostedN === icount && icount > 0) sumNotes.push('all paddock boosted');
           else if (paddockBoostedN > 0) sumNotes.push(paddockBoostedN + '/' + icount + ' paddock boosted');
+          var tileMin = null;
+          var tileMax = null;
+          for (var it = 0; it < instances.length; it++) {
+            var tf = instances[it].tileUtilizationFactor;
+            if (typeof tf === 'number' && isFinite(tf)) {
+              if (tileMin === null || tf < tileMin) tileMin = tf;
+              if (tileMax === null || tf > tileMax) tileMax = tf;
+            }
+          }
+          if (tileMin !== null && tileMin < 0.999) {
+            if (icount > 1 && tileMax !== null && Math.abs(tileMax - tileMin) > 1e-6) {
+              sumNotes.push('tile util ' + roundRate(tileMin) + '–' + roundRate(tileMax));
+            } else {
+              sumNotes.push('tile util ×' + roundRate(tileMin));
+            }
+          }
           html += '<td>' + escapeHtml(sumNotes.join(' · ') || '—') + '</td>';
           html += '</tr>';
           if (showToggle) {
@@ -998,6 +1048,13 @@
               var n2 = [];
               if (inst.siloBoosted) n2.push('silo ×' + roundRate(inst.siloMultiplier || 1));
               if (inst.paddockBoosted) n2.push('paddock ×' + roundRate(inst.paddockMultiplier || 1));
+              if (
+                typeof inst.tileUtilizationFactor === 'number' &&
+                isFinite(inst.tileUtilizationFactor) &&
+                inst.tileUtilizationFactor < 0.999
+              ) {
+                n2.push('tile ×' + roundRate(inst.tileUtilizationFactor));
+              }
               var xyStr =
                 Array.isArray(inst.xy) && inst.xy.length >= 2 ? '(' + inst.xy[0] + ', ' + inst.xy[1] + ')' : '—';
               html +=

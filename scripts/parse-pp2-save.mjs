@@ -11,10 +11,20 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
+import { createRequire } from 'module';
 import { resolveEntityProduction } from './save-production-core.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
+const require = createRequire(import.meta.url);
+
+let saveTilesHelpers = null;
+function getSaveTilesHelpers() {
+  if (!saveTilesHelpers) {
+    saveTilesHelpers = require(path.join(REPO_ROOT, 'scripts', 'save-analysis-tiles-node.cjs'));
+  }
+  return saveTilesHelpers;
+}
 
 function loadJsonOptional(relPath, fallback = null) {
   const p = path.join(REPO_ROOT, relPath);
@@ -139,10 +149,21 @@ export function parsePp2SaveJson(save, options = {}) {
   const islands = [];
   const globalProductionByResource = {};
 
+  const tiles = options.skipTileUtilization ? null : getSaveTilesHelpers();
+
   for (const island of save.IslandManager?.islands || []) {
     const name = island.Name || '';
     const uid = island.UID || '';
     const entities = island.GameEntities || [];
+
+    let reconstructed = null;
+    let tileClaimantsMap = null;
+    if (tiles) {
+      const gridWarn = [];
+      reconstructed = tiles.reconstructIslandFromSaveSlice(island, gridWarn);
+      for (const w of gridWarn) warnings.push(w);
+      tileClaimantsMap = tiles.tileClaimantsForReconstructedIsland(reconstructed.island);
+    }
 
     const siloPositions = entities
       .filter(e => e.id && String(e.id).includes(siloNeedle))
@@ -191,7 +212,21 @@ export function parsePp2SaveJson(save, options = {}) {
         resolved.rateSource === 'saveOutputs' || resolved.rateSource === 'saveFallback';
       const siloMult = !liveTimerRate && siloBoosted ? (boostTable[bid] ?? defaultBoost) : 1.0;
       const paddockMult = !liveTimerRate && paddockBoosted ? (paddockTable[bid] ?? 1.0) : 1.0;
-      const mult = siloMult * paddockMult;
+      let tileUtil = 1;
+      let spatialBreakdown = null;
+      if (reconstructed && tileClaimantsMap) {
+        const tu = tiles.tileUtilizationForEntity(
+          reconstructed.island,
+          resolved.plannerBuildingId,
+          xy,
+          tileClaimantsMap
+        );
+        if (tu && typeof tu.tileUtilizationFactor === 'number' && Number.isFinite(tu.tileUtilizationFactor)) {
+          tileUtil = tu.tileUtilizationFactor;
+          spatialBreakdown = tu.spatialBreakdown;
+        }
+      }
+      const mult = siloMult * paddockMult * tileUtil;
       const byResourceId = resolved.byResourceId;
       const scaled = {};
       let scaledTotal = 0;
@@ -205,6 +240,7 @@ export function parsePp2SaveJson(save, options = {}) {
       const row = {
         buildingId: bid,
         plannerBuildingId: resolved.plannerBuildingId,
+        gameEntityId: bid,
         xy,
         componentKey: resolved.timerInfo.componentKey,
         cooldownSeconds: resolved.cooldownSeconds,
@@ -212,6 +248,8 @@ export function parsePp2SaveJson(save, options = {}) {
         siloMultiplier: siloMult,
         paddockBoosted,
         paddockMultiplier: paddockMult,
+        tileUtilizationFactor: tileUtil,
+        spatialInputBreakdown: spatialBreakdown,
         multiplier: mult,
         rateSource: resolved.rateSource,
         outputPerMinuteByResourceId: enrichResourceNames(scaled, resourceNames),
@@ -232,6 +270,8 @@ export function parsePp2SaveJson(save, options = {}) {
           liveTimerRate,
           siloMultiplier: siloMult,
           paddockMultiplier: paddockMult,
+          tileUtilizationFactor: tileUtil,
+          spatialInputBreakdown: spatialBreakdown,
           multiplier: mult,
           outputs: scaled,
         });

@@ -6,10 +6,39 @@ Tracker for game-accurate save/UI production math. **Work through one item at a 
 
 ---
 
-## 1. Universal linear model?
+## 1. How spatial inputs map to production rate (split into clear sub-questions)
 
-**Question:** Does **every** building with spatial tile inputs use the same **linear** scaling  
-`output ≈ nameplate × (utilizedTiles / inputs[resId])` **per spatial input** (then combine multi-input buildings somehow), or do some use **steps**, **floors**, **shared pools** between buildings, or other formulas?
+These are **separate**; the game might answer “yes” to one and “no” to another. We need answers **per sub-question**, ideally with examples.
+
+### 1a — One formula family vs many
+
+**Question:** Is there a **single** rule family for “spatial input → production multiplier” that applies to **all** producers with tile/deposit-style `inputs` (grass, forest, water_tile, deposits, fields, river counts, etc.)?
+
+Or does the game use **different** rules **by building category** (e.g. livestock gatherers vs crop harvesters vs mines vs fishers), even if each category is internally consistent?
+
+**Status:** Open
+
+**Notes:**
+
+### 1b — Linear vs stepped / threshold
+
+Fix **one** spatial input with need **N** from `inputs` and nameplate **R** at full satisfaction.
+
+**Question:** Is effective output always **R × (U / N)** where **U** = number of **usable** cells that count for that input (0 ≤ U ≤ N), **continuous** in U?
+
+Or does output change in **steps** (only certain U values matter), use **ceil/floor**, or hit a **hard cap** below R even when U ≥ N?
+
+**Status:** Open
+
+**Notes:**
+
+### 1c — Independence vs shared supply (overlap between buildings)
+
+Consider two buildings whose **footprints overlap** on the same map cell that counts as a valid tile for **both** (e.g. same grass cell inside two ranches).
+
+**Question:** Does each building **independently** count that cell toward its own U (so the cell “counts twice” for world supply), or does the game **split** or **share** that cell between buildings (so combined grass use is capped), or something else?
+
+Does the answer **differ** for **horse vs pig vs cattle vs sheep** or for **non-livestock** spatial producers?
 
 **Status:** Open
 

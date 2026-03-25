@@ -41,20 +41,30 @@ export function entityHasHarvesterComponent(components) {
 }
 
 /**
- * @returns {{ multiplier: number, siloBoosted: boolean, paddockBoosted: boolean }}
+ * Rickyard ×2 matches in-game UI when only producers with **full** grass/tile inputs are boosted;
+ * partial utilization still gets nameplate × tiles but no rickyard multiplier on that building.
+ * @param {{ tileUtilizationFactor?: number }} [opts]
+ * @returns {{ multiplier: number, siloBoosted: boolean, paddockBoosted: boolean, insideSiloFootprint?: boolean }}
  */
-export function computeAreaBoost(ent, resolved, siloAnchors, paddockAnchors) {
+export function computeAreaBoost(ent, resolved, siloAnchors, paddockAnchors, opts) {
   const xy = ent.xy;
   const bid = ent.id;
   const plannerId = resolved && resolved.plannerBuildingId;
   const comps = ent.components;
 
+  const tileUtil =
+    opts && typeof opts.tileUtilizationFactor === 'number' && Number.isFinite(opts.tileUtilizationFactor)
+      ? opts.tileUtilizationFactor
+      : 1;
+  const fullTileUtilization = tileUtil >= 1 - 1e-9;
+
   const inSilo = anchorInsideAnyBoostFootprint(xy, siloAnchors);
   const inPaddock = anchorInsideAnyBoostFootprint(xy, paddockAnchors);
 
-  const rickyardApplies = inSilo && isRickyardLivestockEligible(bid, plannerId);
+  const rickyardEligible = inSilo && isRickyardLivestockEligible(bid, plannerId);
+  const rickyardApplies = rickyardEligible && fullTileUtilization;
   const paddockApplies =
-    inPaddock && entityHasHarvesterComponent(comps) && !rickyardApplies;
+    inPaddock && entityHasHarvesterComponent(comps) && !rickyardEligible;
 
   const mult = rickyardApplies || paddockApplies ? 2 : 1;
 
@@ -62,5 +72,6 @@ export function computeAreaBoost(ent, resolved, siloAnchors, paddockAnchors) {
     multiplier: mult,
     siloBoosted: rickyardApplies,
     paddockBoosted: paddockApplies,
+    insideSiloFootprint: inSilo && rickyardEligible,
   };
 }

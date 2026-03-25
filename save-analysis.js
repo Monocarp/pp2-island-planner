@@ -407,15 +407,6 @@
         if (!resolved) continue;
 
         var xy = ent.xy;
-        var areaBoost =
-          typeof computeSaveAreaBoost === 'function'
-            ? computeSaveAreaBoost(ent, resolved, siloPositions, paddockPositions)
-            : { multiplier: 1, siloBoosted: false, paddockBoosted: false };
-        var siloBoosted = areaBoost.siloBoosted;
-        var paddockBoosted = areaBoost.paddockBoosted;
-        var areaMult = areaBoost.multiplier != null && isFinite(areaBoost.multiplier) ? areaBoost.multiplier : 1;
-        var siloMult = siloBoosted ? 2 : 1;
-        var paddockMult = paddockBoosted ? 2 : 1;
         var tileUtil = 1;
         var spatialBreakdown = null;
         if (reconstructed && reconstructed.island && tileClaimantsMap) {
@@ -431,6 +422,17 @@
             spatialBreakdown = tu.spatialBreakdown;
           }
         }
+        var areaBoost =
+          typeof computeSaveAreaBoost === 'function'
+            ? computeSaveAreaBoost(ent, resolved, siloPositions, paddockPositions, {
+                tileUtilizationFactor: tileUtil,
+              })
+            : { multiplier: 1, siloBoosted: false, paddockBoosted: false };
+        var siloBoosted = areaBoost.siloBoosted;
+        var paddockBoosted = areaBoost.paddockBoosted;
+        var areaMult = areaBoost.multiplier != null && isFinite(areaBoost.multiplier) ? areaBoost.multiplier : 1;
+        var siloMult = siloBoosted ? 2 : 1;
+        var paddockMult = paddockBoosted ? 2 : 1;
         var mult = areaMult * tileUtil;
         var byResourceId = resolved.byResourceId;
         var scaled = {};

@@ -41,17 +41,24 @@
     return !!(components && components.harvester && typeof components.harvester === 'object');
   }
 
-  function computeAreaBoost(ent, resolved, siloAnchors, paddockAnchors) {
+  function computeAreaBoost(ent, resolved, siloAnchors, paddockAnchors, opts) {
     var xy = ent.xy;
     var bid = ent.id;
     var plannerId = resolved && resolved.plannerBuildingId;
     var comps = ent.components;
 
+    var tileUtil =
+      opts && typeof opts.tileUtilizationFactor === 'number' && isFinite(opts.tileUtilizationFactor)
+        ? opts.tileUtilizationFactor
+        : 1;
+    var fullTileUtilization = tileUtil >= 1 - 1e-9;
+
     var inSilo = anchorInsideAnyBoostFootprint(xy, siloAnchors);
     var inPaddock = anchorInsideAnyBoostFootprint(xy, paddockAnchors);
 
-    var rickyardApplies = inSilo && isRickyardLivestockEligible(bid, plannerId);
-    var paddockApplies = inPaddock && entityHasHarvesterComponent(comps) && !rickyardApplies;
+    var rickyardEligible = inSilo && isRickyardLivestockEligible(bid, plannerId);
+    var rickyardApplies = rickyardEligible && fullTileUtilization;
+    var paddockApplies = inPaddock && entityHasHarvesterComponent(comps) && !rickyardEligible;
 
     var mult = rickyardApplies || paddockApplies ? 2 : 1;
 
@@ -59,6 +66,7 @@
       multiplier: mult,
       siloBoosted: rickyardApplies,
       paddockBoosted: paddockApplies,
+      insideSiloFootprint: inSilo && rickyardEligible,
     };
   }
 

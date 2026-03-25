@@ -179,12 +179,6 @@ export function parsePp2SaveJson(save, options = {}) {
       if (!resolved) continue;
 
       const xy = ent.xy;
-      const areaBoost = computeAreaBoost(ent, resolved, siloPositions, paddockPositions);
-      const siloBoosted = areaBoost.siloBoosted;
-      const paddockBoosted = areaBoost.paddockBoosted;
-      const areaMult = Number.isFinite(areaBoost.multiplier) ? areaBoost.multiplier : 1;
-      const siloMult = siloBoosted ? 2 : 1;
-      const paddockMult = paddockBoosted ? 2 : 1;
       let tileUtil = 1;
       let spatialBreakdown = null;
       if (reconstructed && tileClaimantsMap) {
@@ -199,6 +193,14 @@ export function parsePp2SaveJson(save, options = {}) {
           spatialBreakdown = tu.spatialBreakdown;
         }
       }
+      const areaBoost = computeAreaBoost(ent, resolved, siloPositions, paddockPositions, {
+        tileUtilizationFactor: tileUtil,
+      });
+      const siloBoosted = areaBoost.siloBoosted;
+      const paddockBoosted = areaBoost.paddockBoosted;
+      const areaMult = Number.isFinite(areaBoost.multiplier) ? areaBoost.multiplier : 1;
+      const siloMult = siloBoosted ? 2 : 1;
+      const paddockMult = paddockBoosted ? 2 : 1;
       const mult = areaMult * tileUtil;
       const byResourceId = resolved.byResourceId;
       const scaled = {};

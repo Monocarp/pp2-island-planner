@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "description": "Rickyard (save id contains 'Silo') and Paddock: 5×5 footprint (Chebyshev ≤2 from anchor). ×2 on collector output if collector anchor lies inside; no stacking. Rickyard: pigs/cattle/sheep/horses only. Paddock: entities with harvester component. OutputResources.balance is stock, not batch — prefer planner fallback for UI-aligned rates.",
+  "description": "Rickyard (save id contains 'Silo') and Paddock: 5×5 (Chebyshev ≤2). Rickyard ×2 only if full tile utilization for that building. Paddock ×2 for harvester in footprint, not if rickyard-eligible in silo footprint. No stacking. OutputResources.balance is stock — prefer planner fallback for UI-aligned rates.",
   "siloEntityIdContains": "Silo",
   "paddockEntityIdContains": "Paddock",
   "skipEntityIdSubstrings": [],

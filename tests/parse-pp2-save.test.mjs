@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { parsePp2SaveJson } from '../scripts/parse-pp2-save.mjs';
+import { computeAreaBoost } from '../scripts/save-area-boost.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE = path.join(__dirname, 'fixtures', 'minimal-save.json');
@@ -38,6 +39,20 @@ test('minimal save: research id 4 present', () => {
   const save = JSON.parse(fs.readFileSync(FIXTURE, 'utf8'));
   const r = parsePp2SaveJson(save, {});
   assert.strictEqual(r.researchCompleted[0].researchId, 4);
+});
+
+test('rickyard: ×2 only when tile utilization is full (partial grass in silo area stays ×1)', () => {
+  const ent = { id: 'PigRanch', xy: [1, 0], components: { gatherer: {} } };
+  const resolved = { plannerBuildingId: 'PigRanch' };
+  const siloAnchors = [[0, 0]];
+  assert.strictEqual(
+    computeAreaBoost(ent, resolved, siloAnchors, [], { tileUtilizationFactor: 1 }).multiplier,
+    2
+  );
+  assert.strictEqual(
+    computeAreaBoost(ent, resolved, siloAnchors, [], { tileUtilizationFactor: 0.75 }).multiplier,
+    1
+  );
 });
 
 test('rickyard: pig anchor inside Silo 5×5 gets ×2; outside Chebyshev 2 does not', () => {

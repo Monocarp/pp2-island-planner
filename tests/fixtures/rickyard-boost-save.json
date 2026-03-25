@@ -17,7 +17,7 @@
           { "id": "Silo", "xy": [5, 5] },
           {
             "id": "PigRanch",
-            "xy": [5, 5],
+            "xy": [5, 6],
             "components": {
               "gatherer": { "Timer": { "Cooldown": 30 } }
             }

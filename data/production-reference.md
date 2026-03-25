@@ -1,6 +1,6 @@
 # Production / consumption reference
 
-Generated: **2026-03-25T01:03:17.147Z**
+Generated: **2026-03-25T01:11:01.009Z**
 Source: [ElQDuck/paragon-pioneers-2-calculator](https://github.com/ElQDuck/paragon-pioneers-2-calculator) (`src/pages/production-chain`)
 Vendor commit: `98f74bcbb6029f621ee9d4d7ca1c207da46e7e22`
 

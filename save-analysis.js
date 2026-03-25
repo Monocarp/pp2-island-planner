@@ -344,13 +344,157 @@
     return n.toFixed(2);
   }
 
-  function formatPopulationTiers(tiers) {
-    if (!tiers || typeof tiers !== 'object') return '—';
-    var parts = [];
-    for (var k in tiers) {
-      if (Object.prototype.hasOwnProperty.call(tiers, k)) parts.push(escapeHtml(k) + ': ' + escapeHtml(tiers[k]));
+  /** PP2 temperate/tropical tier indices → labels (see data.js tiers). */
+  var POPULATION_TIER_LABELS = [
+    'Pioneers',
+    'Colonists',
+    'Townsmen',
+    'Merchants',
+    'Paragons',
+    'Farmers',
+    'Workers',
+  ];
+
+  function populationTierLabel(tierKey) {
+    var n = typeof tierKey === 'number' ? tierKey : parseInt(String(tierKey), 10);
+    if (!isNaN(n) && n >= 0 && n < POPULATION_TIER_LABELS.length) return POPULATION_TIER_LABELS[n];
+    if (tierKey != null && tierKey !== '') return 'Tier ' + tierKey;
+    return '—';
+  }
+
+  /**
+   * Normalize MaxPopulationCount from save: array of { key, value } or legacy scalar.
+   * @returns {{ rows: Array<{tierKey: *, tierLabel: string, cap: number}>, total: number } | null }
+   */
+  function normalizePopulationCaps(raw) {
+    if (raw == null) return null;
+    if (typeof raw === 'number' && isFinite(raw)) {
+      return { rows: [{ tierKey: null, tierLabel: 'Total', cap: raw }], total: raw };
     }
-    return parts.length ? parts.join(' · ') : '—';
+    if (Array.isArray(raw)) {
+      var rows = [];
+      var total = 0;
+      for (var i = 0; i < raw.length; i++) {
+        var entry = raw[i];
+        if (!entry || typeof entry !== 'object') continue;
+        var k = entry.key != null ? entry.key : entry.tier != null ? entry.tier : i;
+        var v = entry.value != null ? entry.value : entry.cap != null ? entry.cap : entry.balance;
+        if (typeof v !== 'number' || !isFinite(v)) continue;
+        rows.push({ tierKey: k, tierLabel: populationTierLabel(k), cap: v });
+        total += v;
+      }
+      if (!rows.length) return null;
+      rows.sort(function (a, b) {
+        var ak = typeof a.tierKey === 'number' ? a.tierKey : 99;
+        var bk = typeof b.tierKey === 'number' ? b.tierKey : 99;
+        return ak - bk;
+      });
+      return { rows: rows, total: total };
+    }
+    return null;
+  }
+
+  /** One-line breakdown for card subtitle. */
+  function formatPopulationCapsSummary(rows) {
+    if (!rows || !rows.length) return '';
+    var parts = [];
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      parts.push(escapeHtml(r.tierLabel) + ': ' + escapeHtml(String(r.cap)));
+    }
+    return parts.join(' · ');
+  }
+
+  /** Legacy PopulationTiers object or array (plain text; escape when inserting into HTML). */
+  function formatLegacyPopulationTiers(tiers) {
+    if (tiers == null) return '';
+    if (Array.isArray(tiers)) {
+      if (!tiers.length) return '';
+      var lines = [];
+      for (var i = 0; i < tiers.length; i++) {
+        var t = tiers[i];
+        if (t && typeof t === 'object') {
+          var norm = normalizePopulationCaps([t]);
+          if (norm && norm.rows[0]) {
+            lines.push(norm.rows[0].tierLabel + ': ' + norm.rows[0].cap);
+          } else {
+            try {
+              lines.push(JSON.stringify(t));
+            } catch (e) {
+              lines.push(String(t));
+            }
+          }
+        } else lines.push(String(t));
+      }
+      return lines.join(' · ');
+    }
+    if (typeof tiers === 'object') {
+      var parts = [];
+      for (var k in tiers) {
+        if (!Object.prototype.hasOwnProperty.call(tiers, k)) continue;
+        var val = tiers[k];
+        if (val != null && typeof val === 'object') {
+          try {
+            parts.push(k + ': ' + JSON.stringify(val));
+          } catch (e2) {
+            parts.push(k + ': [object]');
+          }
+        } else {
+          parts.push(k + ': ' + val);
+        }
+      }
+      return parts.length ? parts.join(' · ') : '';
+    }
+    return '';
+  }
+
+  function formatBuildingOutputs(outputPerMinuteByResourceId, multiplier) {
+    var outs = [];
+    var o = outputPerMinuteByResourceId || {};
+    var mult = multiplier != null && isFinite(multiplier) ? multiplier : 1;
+    for (var ok in o) {
+      if (!Object.prototype.hasOwnProperty.call(o, ok)) continue;
+      if (ok === '_fallback') continue;
+      var oi = o[ok];
+      var on = oi && oi.name ? oi.name + ' ' : '';
+      var pm = oi && typeof oi.perMinute === 'number' ? oi.perMinute : 0;
+      outs.push(on + '(' + ok + '): ' + roundRate(pm));
+    }
+    if (!outs.length && o._fallback != null) {
+      var fb = o._fallback;
+      outs.push('combined: ' + roundRate((fb && fb.perMinute != null ? fb.perMinute : 0) * mult));
+    }
+    return outs.join(', ') || '—';
+  }
+
+  function combineGroupOutputs(instances) {
+    var combined = {};
+    for (var i = 0; i < instances.length; i++) {
+      var b = instances[i];
+      var o = b.outputPerMinuteByResourceId || {};
+      for (var k in o) {
+        if (!Object.prototype.hasOwnProperty.call(o, k)) continue;
+        var oi = o[k];
+        var pm = oi && typeof oi.perMinute === 'number' ? oi.perMinute : 0;
+        if (k === '_fallback') {
+          combined._fallback = (combined._fallback || 0) + pm;
+          continue;
+        }
+        if (!combined[k]) combined[k] = { perMinute: 0, name: oi ? oi.name : null };
+        combined[k].perMinute += pm;
+        if (!combined[k].name && oi && oi.name) combined[k].name = oi.name;
+      }
+    }
+    var wrapped = {};
+    for (var ck in combined) {
+      if (!Object.prototype.hasOwnProperty.call(combined, ck)) continue;
+      if (ck === '_fallback') {
+        wrapped._fallback = { perMinute: combined._fallback, name: null };
+      } else {
+        wrapped[ck] = combined[ck];
+      }
+    }
+    return wrapped;
   }
 
   function renderAnalysis(result, fileLabel, catalogsLoaded) {
@@ -370,6 +514,11 @@
       prodBuildingCount += (islands[i].productionBuildings || []).length;
     }
 
+    var popCapsNorm = normalizePopulationCaps(pop.maxPopulationCount);
+    var popCapCardValue = popCapsNorm ? String(popCapsNorm.total) : '—';
+    var popCapCardSub = popCapsNorm && popCapsNorm.rows.length ? formatPopulationCapsSummary(popCapsNorm.rows) : '';
+    var legacyTiersText = formatLegacyPopulationTiers(pop.populationTiers);
+
     var html = '';
 
     if (result.warnings && result.warnings.length) {
@@ -381,10 +530,13 @@
     }
 
     html += '<div class="save-analysis-cards">';
-    html +=
-      '<div class="save-analysis-card"><div class="save-analysis-card-label">Population cap</div><div class="save-analysis-card-value">' +
-      escapeHtml(pop.maxPopulationCount != null ? pop.maxPopulationCount : '—') +
-      '</div></div>';
+    html += '<div class="save-analysis-card"><div class="save-analysis-card-label">Population cap (total)</div><div class="save-analysis-card-value">';
+    html += escapeHtml(popCapCardValue);
+    html += '</div>';
+    if (popCapCardSub) {
+      html += '<div class="save-analysis-card-sub">' + popCapCardSub + '</div>';
+    }
+    html += '</div>';
     html +=
       '<div class="save-analysis-card"><div class="save-analysis-card-label">Research done</div><div class="save-analysis-card-value">' +
       research.length +
@@ -424,8 +576,32 @@
       html += '<p style="font-size:0.78rem;color:#888;margin:-8px 0 20px;">Loaded: <strong>' + escapeHtml(fileLabel) + '</strong></p>';
     }
 
-    html += '<div class="save-analysis-section"><h3>Population tiers</h3>';
-    html += '<p style="font-size:0.85rem;color:#ccc;line-height:1.5;">' + formatPopulationTiers(pop.populationTiers) + '</p></div>';
+    if (popCapsNorm && popCapsNorm.rows.length) {
+      html += '<div class="save-analysis-section"><h3>Population caps</h3>';
+      html += '<div class="save-analysis-table-wrap"><table class="save-analysis-table"><thead><tr>';
+      html += '<th>Tier</th><th class="num">Cap</th></tr></thead><tbody>';
+      for (var pc = 0; pc < popCapsNorm.rows.length; pc++) {
+        var pr = popCapsNorm.rows[pc];
+        html +=
+          '<tr><td>' +
+          escapeHtml(pr.tierLabel) +
+          '</td><td class="num">' +
+          escapeHtml(String(pr.cap)) +
+          '</td></tr>';
+      }
+      html += '</tbody></table></div>';
+      if (legacyTiersText) {
+        html +=
+          '<p style="font-size:0.78rem;color:#888;margin-top:12px;line-height:1.45;"><strong>Population tiers (extra)</strong> — ' +
+          escapeHtml(legacyTiersText) +
+          '</p>';
+      }
+      html += '</div>';
+    } else if (legacyTiersText) {
+      html += '<div class="save-analysis-section"><h3>Population tiers</h3>';
+      html +=
+        '<p style="font-size:0.85rem;color:#ccc;line-height:1.5;">' + escapeHtml(legacyTiersText) + '</p></div>';
+    }
 
     html += '<div class="save-analysis-section"><h3>Global resource stocks</h3>';
     var stockEntries = [];
@@ -537,40 +713,112 @@
         isl.siloCount +
         ' silos</span></summary>';
       html += '<div class="save-analysis-island-body"><div class="save-analysis-table-wrap"><table class="save-analysis-table"><thead><tr>';
-      html += '<th>Building</th><th>Outputs (/min)</th><th>Cooldown</th><th>Notes</th></tr></thead><tbody>';
-      for (var pbi = 0; pbi < pb.length; pbi++) {
-        var b = pb[pbi];
-        var outs = [];
-        for (var ok in b.outputPerMinuteByResourceId) {
-          if (!Object.prototype.hasOwnProperty.call(b.outputPerMinuteByResourceId, ok)) continue;
-          if (ok === '_fallback') continue;
-          var oi = b.outputPerMinuteByResourceId[ok];
-          var on = oi.name ? oi.name + ' ' : '';
-          outs.push(on + '(' + ok + '): ' + roundRate(oi.perMinute));
+      html +=
+        '<th style="width:40px;"></th><th>Building</th><th>Outputs (/min)</th><th>Cooldown</th><th>Notes</th></tr></thead><tbody>';
+      if (!pb.length) {
+        html += '<tr><td colspan="5" style="color:#888;">No production buildings detected</td></tr>';
+      } else {
+        var groupsMap = {};
+        var groupOrder = [];
+        for (var pbx = 0; pbx < pb.length; pbx++) {
+          var bKey = pb[pbx].buildingId || '—';
+          if (!groupsMap[bKey]) {
+            groupsMap[bKey] = [];
+            groupOrder.push(bKey);
+          }
+          groupsMap[bKey].push(pb[pbx]);
         }
-        if (!outs.length && b.outputPerMinuteByResourceId._fallback != null) {
-          outs.push('combined: ' + roundRate(b.outputPerMinuteByResourceId._fallback.perMinute * (b.multiplier || 1)));
+        for (var gi = 0; gi < groupOrder.length; gi++) {
+          var bid = groupOrder[gi];
+          var instances = groupsMap[bid];
+          var combinedOutMap = combineGroupOutputs(instances);
+          var groupId = 'p-' + isi + '-' + gi;
+          var icount = instances.length;
+          var showToggle = icount > 1;
+          var combinedOutStr = formatBuildingOutputs(combinedOutMap);
+          var cd0 = instances[0].cooldownSeconds;
+          var sameCd = true;
+          for (var icd = 1; icd < instances.length; icd++) {
+            if (instances[icd].cooldownSeconds !== cd0) sameCd = false;
+          }
+          var cdDisplay = sameCd && cd0 != null ? cd0 + 's' : 'varies';
+          html += '<tr class="sa-prod-summary">';
+          html += '<td>';
+          if (showToggle) {
+            html +=
+              '<button type="button" class="sa-prod-toggle header-btn" style="padding:2px 8px;font-size:0.75rem;min-width:28px;" aria-expanded="false" data-sa-group="' +
+              escapeHtml(groupId) +
+              '" onclick="window.toggleSaveAnalysisProdDetail(this)">▸</button>';
+          } else {
+            html += '<span style="display:inline-block;width:28px"></span>';
+          }
+          html += '</td>';
+          html +=
+            '<td>' +
+            escapeHtml(bid) +
+            (icount > 1 ? ' <span class="save-analysis-badge">' + icount + '×</span>' : '') +
+            '</td>';
+          html += '<td>' + escapeHtml(combinedOutStr) + '</td>';
+          html += '<td class="num">' + escapeHtml(cdDisplay) + '</td>';
+          var boostedN = 0;
+          for (var ib = 0; ib < instances.length; ib++) {
+            if (instances[ib].siloBoosted) boostedN++;
+          }
+          var sumNotes = [];
+          if (boostedN === icount && icount > 0) sumNotes.push('all silo boosted');
+          else if (boostedN > 0) sumNotes.push(boostedN + '/' + icount + ' silo boosted');
+          html += '<td>' + escapeHtml(sumNotes.join(' · ') || '—') + '</td>';
+          html += '</tr>';
+          if (showToggle) {
+            for (var ii3 = 0; ii3 < instances.length; ii3++) {
+              var inst = instances[ii3];
+              var instOut = formatBuildingOutputs(inst.outputPerMinuteByResourceId, inst.multiplier);
+              var n2 = [];
+              if (inst.siloBoosted) n2.push('silo ×' + roundRate(inst.multiplier || 1));
+              var xyStr =
+                Array.isArray(inst.xy) && inst.xy.length >= 2 ? '(' + inst.xy[0] + ', ' + inst.xy[1] + ')' : '—';
+              html +=
+                '<tr class="sa-prod-detail" data-sa-detail-for="' +
+                escapeHtml(groupId) +
+                '" style="display:none;background:rgba(0,0,0,0.12)">';
+              html += '<td></td>';
+              html +=
+                '<td style="padding-left:10px;font-size:0.78rem;color:#aaa;">' + escapeHtml(xyStr) + '</td>';
+              html += '<td>' + escapeHtml(instOut) + '</td>';
+              html +=
+                '<td class="num">' +
+                escapeHtml(inst.cooldownSeconds != null ? inst.cooldownSeconds + 's' : '—') +
+                '</td>';
+              html += '<td>' + escapeHtml(n2.join(' ') || '—') + '</td>';
+              html += '</tr>';
+            }
+          }
         }
-        var notes = [];
-        if (b.siloBoosted) notes.push('silo ×' + roundRate(b.multiplier || 1));
-        html +=
-          '<tr><td>' +
-          escapeHtml(b.buildingId || '—') +
-          '</td><td>' +
-          escapeHtml(outs.join(', ') || '—') +
-          '</td><td class="num">' +
-          escapeHtml(b.cooldownSeconds != null ? b.cooldownSeconds + 's' : '—') +
-          '</td><td>' +
-          escapeHtml(notes.join(' ') || '—') +
-          '</td></tr>';
       }
-      if (!pb.length) html += '<tr><td colspan="4" style="color:#888;">No production buildings detected</td></tr>';
       html += '</tbody></table></div></div></details>';
     }
     if (!islands.length) html += '<p class="save-analysis-empty-state">No islands in save.</p>';
 
     el.innerHTML = html;
   }
+
+  window.toggleSaveAnalysisProdDetail = function (btn) {
+    if (!btn) return;
+    var id = btn.getAttribute('data-sa-group');
+    if (!id) return;
+    var expanded = btn.getAttribute('aria-expanded') === 'true';
+    var next = !expanded;
+    btn.setAttribute('aria-expanded', next ? 'true' : 'false');
+    btn.textContent = next ? '▾' : '▸';
+    var tbody = btn.closest('tbody');
+    if (!tbody) return;
+    var rows = tbody.querySelectorAll('tr.sa-prod-detail');
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].getAttribute('data-sa-detail-for') === id) {
+        rows[i].style.display = next ? 'table-row' : 'none';
+      }
+    }
+  };
 
   function setStatus(msg, isError) {
     var st = document.getElementById('save-analysis-status');

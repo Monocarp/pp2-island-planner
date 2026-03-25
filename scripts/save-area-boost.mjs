@@ -1,5 +1,6 @@
 /**
  * Rickyard (save entity id contains "Silo") and Paddock area boosts for save analysis.
+ * Silo/Paddock are boost sources only — they are non-producers and never get a production row or ×2.
  * 5×5 footprint = Chebyshev distance ≤ 2 from boost source anchor. ×2, no stacking (max ×2 total).
  */
 
@@ -20,23 +21,10 @@ export function chebyshevDistance(xyA, xyB) {
   return Math.max(Math.abs(xyA[0] - xyB[0]), Math.abs(xyA[1] - xyB[1]));
 }
 
-/** Silo/Paddock and collectors each have their own anchor cell — never the same (x,y) as the boost source. */
-export function sameAnchorCell(xyA, xyB) {
-  return (
-    Array.isArray(xyA) &&
-    Array.isArray(xyB) &&
-    xyA.length >= 2 &&
-    xyB.length >= 2 &&
-    xyA[0] === xyB[0] &&
-    xyA[1] === xyB[1]
-  );
-}
-
 export function anchorInsideAnyBoostFootprint(xy, boostAnchors) {
   if (!Array.isArray(xy) || xy.length < 2 || !boostAnchors || !boostAnchors.length) return false;
   for (const a of boostAnchors) {
     if (!Array.isArray(a) || a.length < 2) continue;
-    if (sameAnchorCell(xy, a)) continue;
     if (chebyshevDistance(xy, a) <= BOOST_FOOTPRINT_CHEBYSHEV_RADIUS) return true;
   }
   return false;

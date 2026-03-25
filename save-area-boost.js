@@ -1,5 +1,6 @@
 // ===== SAVE ANALYSIS: RICKYARD (Silo) + PADDOCK AREA BOOST =====
-// 5×5 centered footprint (Chebyshev ≤ 2), ×2, no stacking. Keep in sync with scripts/save-area-boost.mjs.
+// Silo/Paddock = boost sources only (not production). 5×5 (Chebyshev ≤ 2), ×2, no stacking.
+// Keep in sync with scripts/save-area-boost.mjs.
 
 (function (g) {
   'use strict';
@@ -20,23 +21,11 @@
     return Math.max(Math.abs(xyA[0] - xyB[0]), Math.abs(xyA[1] - xyB[1]));
   }
 
-  function sameAnchorCell(xyA, xyB) {
-    return (
-      Array.isArray(xyA) &&
-      Array.isArray(xyB) &&
-      xyA.length >= 2 &&
-      xyB.length >= 2 &&
-      xyA[0] === xyB[0] &&
-      xyA[1] === xyB[1]
-    );
-  }
-
   function anchorInsideAnyBoostFootprint(xy, boostAnchors) {
     if (!Array.isArray(xy) || xy.length < 2 || !boostAnchors || !boostAnchors.length) return false;
     for (var i = 0; i < boostAnchors.length; i++) {
       var a = boostAnchors[i];
       if (!Array.isArray(a) || a.length < 2) continue;
-      if (sameAnchorCell(xy, a)) continue;
       if (chebyshevDistance(xy, a) <= BOOST_FOOTPRINT_CHEBYSHEV_RADIUS) return true;
     }
     return false;

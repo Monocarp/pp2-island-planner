@@ -40,40 +40,6 @@ test('minimal save: research id 4 present', () => {
   assert.strictEqual(r.researchCompleted[0].researchId, 4);
 });
 
-test('rickyard: pig on same cell as Silo anchor is not boosted (distinct anchors only)', () => {
-  const save = {
-    SaveFileVersion: 20,
-    GameTimeManager: { current_tick: 1 },
-    ResearchManager: { CompletedResearchTimes: [] },
-    PopulationManager: { MaxPopulationCount: [] },
-    RouteManager: { SimpleRoutes: [], ComplexRoutes: [] },
-    ShipManager: { Ships: [] },
-    ResourceManager: { GlobalResources: { Resources: [] } },
-    IslandManager: {
-      islands: [
-        {
-          UID: 'same-cell',
-          Name: 'Same cell',
-          MapSettings: { Region: 1, MapSize: [8, 8] },
-          Grid: [],
-          GameEntities: [
-            { id: 'Silo', xy: [3, 3] },
-            {
-              id: 'PigRanch',
-              xy: [3, 3],
-              components: { gatherer: { Timer: { Cooldown: 30 } } },
-            },
-          ],
-        },
-      ],
-    },
-  };
-  const r = parsePp2SaveJson(save, { skipTileUtilization: true });
-  const row = r.islands[0].productionBuildings[0];
-  assert.ok(!row.siloBoosted);
-  assert.ok(Math.abs(row.totalOutputPerMinute - 2) < 1e-5);
-});
-
 test('rickyard: pig anchor inside Silo 5×5 gets ×2; outside Chebyshev 2 does not', () => {
   const p = path.join(__dirname, 'fixtures', 'rickyard-boost-save.json');
   const save = JSON.parse(fs.readFileSync(p, 'utf8'));

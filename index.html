@@ -835,6 +835,10 @@ details.save-analysis-island[open] > summary::after {
         Load a PP2 <strong>.dat</strong> save (UTF-8 JSON). Stocks, production rates, ships, and routes are summarized below.
         For full resource names, open the site over HTTP (e.g. GitHub Pages) so data files can load; locally, names may fall back to IDs only.
       </p>
+      <label class="save-analysis-option" style="display:flex;align-items:center;gap:10px;font-size:0.82rem;color:#b0b8c8;margin:10px 0 4px;cursor:pointer;">
+        <input type="checkbox" id="sa-primary-output-only">
+        <span>Primary output only (hide extra outputs; uses planner <code>data.js</code> when possible)</span>
+      </label>
       <div id="save-analysis-status" class="save-analysis-status"></div>
       <div id="save-analysis-dashboard"></div>
     </div>

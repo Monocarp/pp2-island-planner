@@ -1,0 +1,1349 @@
+{
+  "version": 1,
+  "byBuildingId": {
+    "ArcheryRange": {
+      "iterationTime": 300,
+      "producePerIteration": 1,
+      "producePerMinute": 0.2,
+      "produces": "archers"
+    },
+    "AshHouse": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "potash"
+    },
+    "Bakery": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "bread"
+    },
+    "Barracks": {
+      "iterationTime": 600,
+      "producePerIteration": 1,
+      "producePerMinute": 0.1,
+      "produces": "footsoldiers"
+    },
+    "Beekeeper": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "honey"
+    },
+    "BerserkerHall": {
+      "iterationTime": 600,
+      "producePerIteration": 1,
+      "producePerMinute": 0.1,
+      "produces": "berserkers"
+    },
+    "Bowyer": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "bows"
+    },
+    "CopperArmory": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "copper_armor"
+    },
+    "CopperAxesmith": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "copper_axes"
+    },
+    "CopperMine": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "copper_ore"
+    },
+    "CopperSmelter": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "copper"
+    },
+    "FlourMill": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "flour"
+    },
+    "FlourWindmill": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "flour"
+    },
+    "HarborTavern": {
+      "iterationTime": 1,
+      "producePerIteration": 65,
+      "producePerMinute": 3900,
+      "produces": "community"
+    },
+    "LimeKiln": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "quicklite"
+    },
+    "LinseedFarm": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "linseed"
+    },
+    "MortarBatchWorks": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "mortar"
+    },
+    "RenderingWorks": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "tallow"
+    },
+    "Rickyard": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "straw"
+    },
+    "Ropery": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "ropes"
+    },
+    "School": {
+      "iterationTime": 1,
+      "producePerIteration": 24,
+      "producePerMinute": 1440,
+      "produces": "education"
+    },
+    "SheepFarm": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "wool"
+    },
+    "SoapMaker": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "soap"
+    },
+    "Stonecutter": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "stone"
+    },
+    "TextileFactory": {
+      "iterationTime": 240,
+      "producePerIteration": 3,
+      "producePerMinute": 0.75,
+      "produces": "cloth"
+    },
+    "Weaver": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "cloth"
+    },
+    "WheatFarm": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "wheat"
+    },
+    "Apothecary": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "medicine"
+    },
+    "BallMaker": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "balls"
+    },
+    "BeachFishermansHut": {
+      "iterationTime": 90,
+      "producePerIteration": 1,
+      "producePerMinute": 0.666667,
+      "produces": "fish"
+    },
+    "Brickyard": {
+      "iterationTime": 240,
+      "producePerIteration": 2,
+      "producePerMinute": 0.5,
+      "produces": "bricks"
+    },
+    "CigarManufacture": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "cigars"
+    },
+    "ClayPit": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "clay"
+    },
+    "CoalMineTropical": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "coal"
+    },
+    "CoffeeHouse": {
+      "iterationTime": 240,
+      "producePerIteration": 20,
+      "producePerMinute": 5,
+      "produces": "community"
+    },
+    "CoffeePlantation": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "coffee_beans"
+    },
+    "CopperMineTropical": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "copper_ore"
+    },
+    "CopperSmelterTropical": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "copper"
+    },
+    "CrocodileRanch": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "leather"
+    },
+    "Dairy": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "cheese"
+    },
+    "Drywell": {
+      "iterationTime": 1,
+      "producePerIteration": 4,
+      "producePerMinute": 240,
+      "produces": "water"
+    },
+    "FarmersShack": {
+      "iterationTime": 60,
+      "producePerIteration": 0,
+      "producePerMinute": 0,
+      "produces": "community"
+    },
+    "FiberMaker": {
+      "iterationTime": 30,
+      "producePerIteration": 1,
+      "producePerMinute": 2,
+      "produces": "fibers"
+    },
+    "FieldSurgeonHouse": {
+      "iterationTime": 900,
+      "producePerIteration": 1,
+      "producePerMinute": 0.066667,
+      "produces": "medical_care"
+    },
+    "GoatFarm": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "milk"
+    },
+    "PikemenBarracks": {
+      "iterationTime": 900,
+      "producePerIteration": 1,
+      "producePerMinute": 0.066667,
+      "produces": "pikemen"
+    },
+    "PoleturnersWorkshop": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "pikes"
+    },
+    "RoastHouse": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "coffee"
+    },
+    "RoperyTropical": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "ropes"
+    },
+    "RumDistillery": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "rum"
+    },
+    "SalternTropical": {
+      "iterationTime": 960,
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "produces": "salt"
+    },
+    "SportsGround": {
+      "iterationTime": 120,
+      "producePerIteration": 40,
+      "producePerMinute": 20,
+      "produces": "community"
+    },
+    "SugarCanePlantation": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "sugar_cane"
+    },
+    "SugarMill": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "sugar"
+    },
+    "SugarWindmill": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "sugar"
+    },
+    "TeaPlantation": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "tea_leaves"
+    },
+    "TobaccoFarm": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "tobacco"
+    },
+    "WaterBuffaloRanch": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "water_buffalos"
+    },
+    "WhimHouse": {
+      "iterationTime": 90,
+      "producePerIteration": 76,
+      "producePerMinute": 50.666667,
+      "produces": "tea"
+    },
+    "Apiary": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "beeswax"
+    },
+    "ArcherAcademy": {
+      "iterationTime": 1200,
+      "producePerIteration": 1,
+      "producePerMinute": 0.05,
+      "produces": "master_archers"
+    },
+    "Bathhouse": {
+      "iterationTime": 240,
+      "producePerIteration": 48,
+      "producePerMinute": 12,
+      "produces": "water"
+    },
+    "BrandyDistillery": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "brandy"
+    },
+    "Butchery": {
+      "iterationTime": 480,
+      "producePerIteration": 4,
+      "producePerMinute": 0.5,
+      "produces": "meat"
+    },
+    "ChickenFarm": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "eggs"
+    },
+    "CoiningPress": {
+      "iterationTime": 240,
+      "producePerIteration": 7,
+      "producePerMinute": 1.75,
+      "produces": "coins"
+    },
+    "CompositeBowyer": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "composite_bows"
+    },
+    "CrossbowMaker": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "crossbows"
+    },
+    "CrossbowShootingRange": {
+      "iterationTime": 1200,
+      "producePerIteration": 1,
+      "producePerMinute": 0.05,
+      "produces": "crossbowmen"
+    },
+    "CuringHouse": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "cured_meat"
+    },
+    "DeepCopperMine": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "copper_ore"
+    },
+    "EssenceDistillery": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "essence"
+    },
+    "FeltmakingMill": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "felt"
+    },
+    "ForestWardensCabin": {
+      "iterationTime": 30,
+      "producePerIteration": 1,
+      "producePerMinute": 2,
+      "produces": "wood"
+    },
+    "GoldSmelter": {
+      "iterationTime": 960,
+      "producePerIteration": 2,
+      "producePerMinute": 0.125,
+      "produces": "gold"
+    },
+    "Goldsmith": {
+      "iterationTime": 960,
+      "producePerIteration": 6,
+      "producePerMinute": 0.375,
+      "produces": "jewelry"
+    },
+    "HattersShop": {
+      "iterationTime": 960,
+      "producePerIteration": 4,
+      "producePerMinute": 0.25,
+      "produces": "hats"
+    },
+    "Hospital": {
+      "iterationTime": 60,
+      "producePerIteration": 120,
+      "producePerMinute": 120,
+      "produces": "medical_care"
+    },
+    "IronArmory": {
+      "iterationTime": 960,
+      "producePerIteration": 2,
+      "producePerMinute": 0.125,
+      "produces": "iron_armor"
+    },
+    "IronMine": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "iron_ore"
+    },
+    "IronSmelter": {
+      "iterationTime": 960,
+      "producePerIteration": 2,
+      "producePerMinute": 0.125,
+      "produces": "iron"
+    },
+    "KnightBarracks": {
+      "iterationTime": 1200,
+      "producePerIteration": 1,
+      "producePerMinute": 0.05,
+      "produces": "knights"
+    },
+    "MarbleQuarry": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "marble"
+    },
+    "PastryManufacture": {
+      "iterationTime": 240,
+      "producePerIteration": 4,
+      "producePerMinute": 1,
+      "produces": "pastries"
+    },
+    "Perfumery": {
+      "iterationTime": 480,
+      "producePerIteration": 10,
+      "producePerMinute": 1.25,
+      "produces": "perfume"
+    },
+    "PipemakersShop": {
+      "iterationTime": 240,
+      "producePerIteration": 4,
+      "producePerMinute": 1,
+      "produces": "pipes"
+    },
+    "RoseCultivation": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "roses"
+    },
+    "SugarBeetFarm": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "sugar_beets"
+    },
+    "Toolmaker": {
+      "iterationTime": 960,
+      "producePerIteration": 4,
+      "producePerMinute": 0.25,
+      "produces": "tools"
+    },
+    "Townhall": {
+      "iterationTime": 120,
+      "producePerIteration": 24,
+      "producePerMinute": 12,
+      "produces": "administration"
+    },
+    "AmbergrisProduction": {
+      "iterationTime": 1920,
+      "producePerIteration": 1,
+      "producePerMinute": 0.03125,
+      "produces": "ambergris"
+    },
+    "BrassSmelterNorth": {
+      "iterationTime": 360,
+      "producePerIteration": 5,
+      "producePerMinute": 0.833333,
+      "produces": "brass"
+    },
+    "CaviarFactory": {
+      "iterationTime": 480,
+      "producePerIteration": 2,
+      "producePerMinute": 0.25,
+      "produces": "caviar"
+    },
+    "CoalMineNorth": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "coal"
+    },
+    "ConiferLumberjack": {
+      "iterationTime": 30,
+      "producePerIteration": 1,
+      "producePerMinute": 2,
+      "produces": "wood"
+    },
+    "CopperMineNorth": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "copper_ore"
+    },
+    "CopperSmelterNorth": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "copper"
+    },
+    "FurTrapper": {
+      "iterationTime": 360,
+      "producePerIteration": 1,
+      "producePerMinute": 0.166667,
+      "produces": "furs"
+    },
+    "GoldMineNorth": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "gold_ore"
+    },
+    "GoldSmelterNorth": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "gold"
+    },
+    "HeatingPlant": {
+      "iterationTime": 120,
+      "producePerIteration": 8,
+      "producePerMinute": 4,
+      "produces": "heat"
+    },
+    "IronMineNorth": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "iron_ore"
+    },
+    "IronSmelterNorth": {
+      "iterationTime": 480,
+      "producePerIteration": 2,
+      "producePerMinute": 0.25,
+      "produces": "iron"
+    },
+    "LargeHeatingPlant": {
+      "iterationTime": 120,
+      "producePerIteration": 20,
+      "producePerMinute": 10,
+      "produces": "heat"
+    },
+    "LeadMine": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "lead_ore"
+    },
+    "LeadSmelter": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "lead"
+    },
+    "MarbleQuarryNorth": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "marble"
+    },
+    "RockSaltMineNorth": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "rock_salt"
+    },
+    "SalmonFishermansHut": {
+      "iterationTime": 45,
+      "producePerIteration": 1,
+      "producePerMinute": 1.333333,
+      "produces": "fish"
+    },
+    "SaltWorksNorth": {
+      "iterationTime": 720,
+      "producePerIteration": 2,
+      "producePerMinute": 0.166667,
+      "produces": "salt"
+    },
+    "SturgeonFarm": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "sturgeon"
+    },
+    "Whaler": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "whale_oil"
+    },
+    "ZincMine": {
+      "iterationTime": 180,
+      "producePerIteration": 1,
+      "producePerMinute": 0.333333,
+      "produces": "zinc_ore"
+    },
+    "ZincSmelter": {
+      "iterationTime": 360,
+      "producePerIteration": 1,
+      "producePerMinute": 0.166667,
+      "produces": "zinc"
+    },
+    "Armorsmith": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "steel_armor"
+    },
+    "Bookbinder": {
+      "iterationTime": 120,
+      "producePerIteration": 2,
+      "producePerMinute": 1,
+      "produces": "books"
+    },
+    "BrassSmelter": {
+      "iterationTime": 360,
+      "producePerIteration": 5,
+      "producePerMinute": 0.833333,
+      "produces": "brass"
+    },
+    "BrocadeSpinningFactory": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "brocade"
+    },
+    "CannonFoundry": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "cannons"
+    },
+    "CannoneersSchool": {
+      "iterationTime": 1800,
+      "producePerIteration": 1,
+      "producePerMinute": 0.033333,
+      "produces": "cannoneers"
+    },
+    "Chandler": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "candles"
+    },
+    "CobblersShop": {
+      "iterationTime": 480,
+      "producePerIteration": 8,
+      "producePerMinute": 1,
+      "produces": "shoes"
+    },
+    "Coiffeur": {
+      "iterationTime": 1,
+      "producePerIteration": 80,
+      "producePerMinute": 4800,
+      "produces": "coiffeur"
+    },
+    "Cokery": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "coke"
+    },
+    "Confectionery": {
+      "iterationTime": 240,
+      "producePerIteration": 4,
+      "producePerMinute": 1,
+      "produces": "confections"
+    },
+    "Cooper": {
+      "iterationTime": 480,
+      "producePerIteration": 2,
+      "producePerMinute": 0.25,
+      "produces": "barrels"
+    },
+    "CuirassierAcademy": {
+      "iterationTime": 1800,
+      "producePerIteration": 1,
+      "producePerMinute": 0.033333,
+      "produces": "cuirassiers"
+    },
+    "FireworksMaker": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "fireworks"
+    },
+    "GalziersWorkshop": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "windows"
+    },
+    "Glassworks": {
+      "iterationTime": 480,
+      "producePerIteration": 8,
+      "producePerMinute": 1,
+      "produces": "glass"
+    },
+    "HoneyDistillery": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "honey"
+    },
+    "LanceMaker": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "lances"
+    },
+    "LargeThermalBath": {
+      "iterationTime": 1,
+      "producePerIteration": 120,
+      "producePerMinute": 7200,
+      "produces": "water"
+    },
+    "LensGrinder": {
+      "iterationTime": 240,
+      "producePerIteration": 8,
+      "producePerMinute": 2,
+      "produces": "lenses"
+    },
+    "MusketMaker": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "muskets"
+    },
+    "MusketeerSchool": {
+      "iterationTime": 1800,
+      "producePerIteration": 1,
+      "producePerMinute": 0.033333,
+      "produces": "musketeers"
+    },
+    "OrnateTailor": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "ornate_clothes"
+    },
+    "PaperMill": {
+      "iterationTime": 120,
+      "producePerIteration": 2,
+      "producePerMinute": 1,
+      "produces": "paper"
+    },
+    "PlaningMill": {
+      "iterationTime": 240,
+      "producePerIteration": 2,
+      "producePerMinute": 0.5,
+      "produces": "fine_planks"
+    },
+    "PowderMill": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "gunpowder"
+    },
+    "QuartzQuarry": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "quartz"
+    },
+    "Saltern": {
+      "iterationTime": 960,
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "produces": "salt"
+    },
+    "Senate": {
+      "iterationTime": 1,
+      "producePerIteration": 120,
+      "producePerMinute": 7200,
+      "produces": "administration"
+    },
+    "SteelFurnace": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "steel"
+    },
+    "Theatre": {
+      "iterationTime": 1,
+      "producePerIteration": 80,
+      "producePerMinute": 4800,
+      "produces": "community"
+    },
+    "Tiltyard": {
+      "iterationTime": 120,
+      "producePerIteration": 80,
+      "producePerMinute": 40,
+      "produces": "knights_training"
+    },
+    "TreasureSeeker": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "treasure"
+    },
+    "TrumpetMaker": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "trumpets"
+    },
+    "University": {
+      "iterationTime": 60,
+      "producePerIteration": 80,
+      "producePerMinute": 80,
+      "produces": "higher_education"
+    },
+    "Winepress": {
+      "iterationTime": 360,
+      "producePerIteration": 3,
+      "producePerMinute": 0.5,
+      "produces": "wine"
+    },
+    "Winery": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "grapes"
+    },
+    "BootCamp": {
+      "iterationTime": 300,
+      "producePerIteration": 1,
+      "producePerMinute": 0.2,
+      "produces": "squires"
+    },
+    "CiderMaker": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "cider"
+    },
+    "Cistern": {
+      "iterationTime": 1,
+      "producePerIteration": 80,
+      "producePerMinute": 4800,
+      "produces": "water"
+    },
+    "FishermansHut": {
+      "iterationTime": 90,
+      "producePerIteration": 1,
+      "producePerMinute": 0.666667,
+      "produces": "fish"
+    },
+    "Lumberjack": {
+      "iterationTime": 30,
+      "producePerIteration": 1,
+      "producePerMinute": 2,
+      "produces": "wood"
+    },
+    "PigRanch": {
+      "iterationTime": 30,
+      "producePerIteration": 1,
+      "producePerMinute": 2,
+      "produces": "pigs"
+    },
+    "Piggery": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "pigs"
+    },
+    "PotatoFarm": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "potatoes"
+    },
+    "PioneersHut": {
+      "iterationTime": 60,
+      "producePerIteration": 0,
+      "producePerMinute": 0,
+      "produces": "community"
+    },
+    "SausageMaker": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "sausages"
+    },
+    "SawWorks": {
+      "iterationTime": 30,
+      "producePerIteration": 1,
+      "producePerMinute": 2,
+      "produces": "planks"
+    },
+    "Sawmill": {
+      "iterationTime": 30,
+      "producePerIteration": 3,
+      "producePerMinute": 6,
+      "produces": "planks"
+    },
+    "Tavern": {
+      "iterationTime": 1,
+      "producePerIteration": 36,
+      "producePerMinute": 2160,
+      "produces": "community"
+    },
+    "Well": {
+      "iterationTime": 1,
+      "producePerIteration": 20,
+      "producePerMinute": 1200,
+      "produces": "water"
+    },
+    "BoilerMaker": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "copper_kettles"
+    },
+    "BoilingHouse": {
+      "iterationTime": 240,
+      "producePerIteration": 2,
+      "producePerMinute": 0.5,
+      "produces": "soap"
+    },
+    "BoulderGatherer": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "stone"
+    },
+    "Brewery": {
+      "iterationTime": 240,
+      "producePerIteration": 2,
+      "producePerMinute": 0.5,
+      "produces": "beer"
+    },
+    "CattleRanch": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "cattle"
+    },
+    "ChalkMaker": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "chalk"
+    },
+    "CharcoalKiln": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "charcoal"
+    },
+    "CoalMine": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "coal"
+    },
+    "DrumMaker": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "drums"
+    },
+    "DrummersSchool": {
+      "iterationTime": 900,
+      "producePerIteration": 1,
+      "producePerMinute": 0.066667,
+      "produces": "drummers"
+    },
+    "Fair": {
+      "iterationTime": 1,
+      "producePerIteration": 80,
+      "producePerMinute": 4800,
+      "produces": "community"
+    },
+    "Furriery": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "fur_coats"
+    },
+    "HopFarm": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "hops"
+    },
+    "HorseBreeder": {
+      "iterationTime": 360,
+      "producePerIteration": 1,
+      "producePerMinute": 0.166667,
+      "produces": "horses"
+    },
+    "JamMaker": {
+      "iterationTime": 720,
+      "producePerIteration": 4,
+      "producePerMinute": 0.333333,
+      "produces": "jam"
+    },
+    "LongbowArcheryRange": {
+      "iterationTime": 900,
+      "producePerIteration": 1,
+      "producePerMinute": 0.066667,
+      "produces": "longbowmen"
+    },
+    "Longbowyer": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "longbows"
+    },
+    "Malthouse": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "malt"
+    },
+    "Medicus": {
+      "iterationTime": 60,
+      "producePerIteration": 24,
+      "producePerMinute": 24,
+      "produces": "medical_care"
+    },
+    "Paddock": {
+      "iterationTime": 360,
+      "producePerIteration": 24,
+      "producePerMinute": 4,
+      "produces": "trained_horses"
+    },
+    "RidingArena": {
+      "iterationTime": 900,
+      "producePerIteration": 1,
+      "producePerMinute": 0.066667,
+      "produces": "cavalry"
+    },
+    "RockSaltMine": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "rock_salt"
+    },
+    "Sailmaker": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "sails"
+    },
+    "SaltWorks": {
+      "iterationTime": 720,
+      "producePerIteration": 2,
+      "producePerMinute": 0.166667,
+      "produces": "salt"
+    },
+    "StrawberryFarm": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "strawberries"
+    },
+    "Tannery": {
+      "iterationTime": 1080,
+      "producePerIteration": 3,
+      "producePerMinute": 0.166667,
+      "produces": "leather"
+    },
+    "TownSchool": {
+      "iterationTime": 60,
+      "producePerIteration": 120,
+      "producePerMinute": 120,
+      "produces": "education"
+    },
+    "ArtisticBlacksmith": {
+      "iterationTime": 960,
+      "producePerIteration": 4,
+      "producePerMinute": 0.25,
+      "produces": "wrought_iron"
+    },
+    "BrassSmelterTropical": {
+      "iterationTime": 360,
+      "producePerIteration": 5,
+      "producePerMinute": 0.833333,
+      "produces": "brass"
+    },
+    "BuffaloButchery": {
+      "iterationTime": 480,
+      "producePerIteration": 6,
+      "producePerMinute": 0.75,
+      "produces": "buffalo_meat"
+    },
+    "BuffaloPasture": {
+      "iterationTime": 120,
+      "producePerIteration": 24,
+      "producePerMinute": 12,
+      "produces": "water_buffalos"
+    },
+    "CacaoPlantation": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "cacao"
+    },
+    "Cemetery": {
+      "iterationTime": 60,
+      "producePerIteration": 24,
+      "producePerMinute": 24,
+      "produces": "community"
+    },
+    "Chocolaterie": {
+      "iterationTime": 120,
+      "producePerIteration": 3,
+      "producePerMinute": 1.5,
+      "produces": "chocolate"
+    },
+    "CoconutPlantation": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "coconuts"
+    },
+    "Costumier": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "costumes"
+    },
+    "CottonPlantation": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "wool"
+    },
+    "DancingSchool": {
+      "iterationTime": 60,
+      "producePerIteration": 48,
+      "producePerMinute": 48,
+      "produces": "community"
+    },
+    "FineWoodLogger": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "fine_wood"
+    },
+    "FlowerHouse": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "flowers"
+    },
+    "GemstoneMine": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "gemstones"
+    },
+    "GlaiveSmith": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "glaives"
+    },
+    "GlaiveTemple": {
+      "iterationTime": 1200,
+      "producePerIteration": 1,
+      "producePerMinute": 0.05,
+      "produces": "glaive_masters"
+    },
+    "GoldMineTropical": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "gold_ore"
+    },
+    "GoldPanner": {
+      "iterationTime": 960,
+      "producePerIteration": 1,
+      "producePerMinute": 0.0625,
+      "produces": "gold_ore"
+    },
+    "GoldSmelterTropical": {
+      "iterationTime": 480,
+      "producePerIteration": 1,
+      "producePerMinute": 0.125,
+      "produces": "gold"
+    },
+    "HeraldicArmourer": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "heraldic_armor"
+    },
+    "IndigoPlantation": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "indigo"
+    },
+    "Luthier": {
+      "iterationTime": 120,
+      "producePerIteration": 8,
+      "producePerMinute": 4,
+      "produces": "lutes"
+    },
+    "MarketHall": {
+      "iterationTime": 1,
+      "producePerIteration": 48,
+      "producePerMinute": 2880,
+      "produces": "community"
+    },
+    "NitrateMaker": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "nitrate"
+    },
+    "NobleTailor": {
+      "iterationTime": 240,
+      "producePerIteration": 1,
+      "producePerMinute": 0.25,
+      "produces": "noble_clothes"
+    },
+    "RickyardTropical": {
+      "iterationTime": 60,
+      "producePerIteration": 24,
+      "producePerMinute": 24,
+      "produces": "straw"
+    },
+    "ShieldGuardianTemple": {
+      "iterationTime": 1200,
+      "producePerIteration": 1,
+      "producePerMinute": 0.05,
+      "produces": "shield_guardians"
+    },
+    "SilkPlantation": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "silk"
+    },
+    "SilkTwineMill": {
+      "iterationTime": 120,
+      "producePerIteration": 1,
+      "producePerMinute": 0.5,
+      "produces": "silk_twine"
+    },
+    "SoupKitchen": {
+      "iterationTime": 60,
+      "producePerIteration": 1,
+      "producePerMinute": 1,
+      "produces": "soups"
+    },
+    "SpinningMill": {
+      "iterationTime": 240,
+      "producePerIteration": 3,
+      "producePerMinute": 0.75,
+      "produces": "thread"
+    },
+    "Stadium": {
+      "iterationTime": 1,
+      "producePerIteration": 48,
+      "producePerMinute": 2880,
+      "produces": "community"
+    }
+  }
+}

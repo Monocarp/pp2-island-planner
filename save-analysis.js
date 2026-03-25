@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  /** Embedded fallback when fetch fails (e.g. file://). */
+  /** Embedded fallback when fetch fails (e.g. file://). Keep in sync with data/production_modifiers.json. */
   const DEFAULT_MODIFIERS = {
     siloProximityChebyshevDistance: 4,
     siloEntityIdContains: 'Silo',
@@ -14,14 +14,33 @@
       SheepFarm: 1.2,
       PigRanch: 1.2,
       CattleFarm: 1.2,
+      CattleRanch: 1.2,
       HorseFarm: 1.2,
+      HorseBreeder: 1.2,
       CrocodileRanch: 1.2,
       GoatFarm: 1.2,
     },
     defaultSiloBoostMultiplier: 1.0,
-    skipEntityIdSubstrings: ['Warehouse', 'Kontor', 'Portal', 'Silo', 'Forest', 'Field', 'Pasture'],
+    skipEntityIdSubstrings: [],
+    nonProducerIdPrefixes: ['Warehouse', 'Kontor', 'Portal', 'Garrison', 'House'],
+    gameEntityBuildingIdRemap: {
+      Fisherman: 'FishermansHut',
+      BeachFisherman: 'BeachFishermansHut',
+      SalmonFisherman: 'SalmonFishermansHut',
+    },
     productionComponentKeysPreferred: ['harvester', 'factory', 'gatherer', 'miner', 'smelter'],
+    nonProducerExactIds: [
+      'AppleTrees', 'CacaoField', 'ClayDeposit', 'CoalDeposit', 'CoconutPalm', 'CoffeeBeanField', 'CoffeeField',
+      'CopperDeposit', 'Forest', 'ForestNorth', 'ForestTropical', 'GemstoneDeposit', 'GoldDeposit', 'GrapeVine',
+      'GrapeVines', 'HoneyField', 'HopField', 'HopsField', 'IndigoField', 'IronDeposit', 'Kontor1', 'Kontor2',
+      'LeadDeposit', 'LinseedField', 'MahoganyTree', 'MahoganyTrees', 'MarbleDeposit', 'MulberryBush', 'MulberryTrees',
+      'NitrateField', 'PortalIn0', 'PortalOut0', 'PotatoField', 'RockSaltDeposit', 'RoseBush', 'RoseField', 'Silo',
+      'SpermWhale', 'StrawberryBush', 'StrawberryField', 'SugarCaneField', 'TeaField', 'TobaccoField', 'Vineyard',
+      'Weir', 'WheatField', 'ZincDeposit',
+    ],
   };
+
+  var EXCLUDE_COMPONENT_KEYS = { internalstorage: true, portal: true };
 
   let catalogsCache = null;
 
@@ -34,11 +53,13 @@
     if (!components || typeof components !== 'object') return null;
     for (var i = 0; i < preferredKeys.length; i++) {
       var k = preferredKeys[i];
+      if (EXCLUDE_COMPONENT_KEYS[k]) continue;
       var cd = components[k] && components[k].Timer && components[k].Timer.Cooldown;
       if (typeof cd === 'number' && cd > 0) return { componentKey: k, cooldown: cd };
     }
     for (var key in components) {
       if (!Object.prototype.hasOwnProperty.call(components, key)) continue;
+      if (EXCLUDE_COMPONENT_KEYS[key]) continue;
       var v = components[key];
       if (!v || typeof v !== 'object') continue;
       var c2 = v.Timer && v.Timer.Cooldown;
@@ -47,15 +68,70 @@
     return null;
   }
 
-  function shouldSkipEntityId(id, substrings) {
+  function shouldSkipProductionEntity(id, modifiers) {
     if (!id || typeof id !== 'string') return true;
-    for (var i = 0; i < substrings.length; i++) {
-      if (id.indexOf(substrings[i]) !== -1) return true;
+    var exact = modifiers.nonProducerExactIds;
+    if (Array.isArray(exact)) {
+      for (var e = 0; e < exact.length; e++) {
+        if (exact[e] === id) return true;
+      }
+    }
+    var prefs = modifiers.nonProducerIdPrefixes || [];
+    for (var p = 0; p < prefs.length; p++) {
+      var pr = prefs[p];
+      if (id === pr || id.indexOf(pr) === 0) return true;
+    }
+    var subs = modifiers.skipEntityIdSubstrings || [];
+    for (var s = 0; s < subs.length; s++) {
+      if (id.indexOf(subs[s]) !== -1) return true;
     }
     return false;
   }
 
-  function parseOutputRates(internalstorage, cooldown) {
+  function slugToResourceId(slug, resourceNames) {
+    if (!slug || !resourceNames) return null;
+    var words = slug.replace(/_/g, ' ').split(' ');
+    var title = words
+      .map(function (w) {
+        return w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : '';
+      })
+      .join(' ');
+    var lower = title.toLowerCase();
+    for (var id in resourceNames) {
+      if (!Object.prototype.hasOwnProperty.call(resourceNames, id)) continue;
+      var name = resourceNames[id];
+      if (!name || name === 'Unknown') continue;
+      var nl = String(name).toLowerCase();
+      if (nl === lower) return id;
+      if (nl === lower + 's' || nl + 's' === lower) return id;
+      var n2 = nl.replace(/s$/, '');
+      var l2 = lower.replace(/s$/, '');
+      if (n2 === l2) return id;
+    }
+    return null;
+  }
+
+  function ratesFromPlannerFallback(plannerBid, fallbackById, resourceNames) {
+    var fb = fallbackById && fallbackById[plannerBid];
+    if (!fb || fb.produces == null) return null;
+    var iter = fb.iterationTime;
+    var pi = fb.producePerIteration;
+    var pm = fb.producePerMinute;
+    var rate =
+      pm != null && typeof pm === 'number' && isFinite(pm)
+        ? pm
+        : typeof iter === 'number' && iter > 0 && typeof pi === 'number' && pi > 0 && isFinite(pi)
+          ? (pi * 60) / iter
+          : null;
+    if (rate == null || !isFinite(rate)) return null;
+    var rid = slugToResourceId(fb.produces, resourceNames);
+    var key = rid != null ? rid : '_produce:' + fb.produces;
+    var br = {};
+    br[key] = rate;
+    return { byResourceId: br, totalPerMinute: rate };
+  }
+
+  function parseOutputRatesFromInternal(internalstorage, cooldown) {
     var out = {};
     var resources = internalstorage && internalstorage.OutputResources && internalstorage.OutputResources.Resources;
     if (!Array.isArray(resources) || resources.length === 0) {
@@ -80,9 +156,88 @@
     var o = {};
     for (var k in byId) {
       if (!Object.prototype.hasOwnProperty.call(byId, k)) continue;
-      o[k] = { perMinute: byId[k], name: nameMap[k] || nameMap[String(k)] || null };
+      var nm = nameMap[k] || nameMap[String(k)] || null;
+      if (!nm && k.indexOf('_produce:') === 0) {
+        nm = k
+          .slice(10)
+          .replace(/_/g, ' ')
+          .replace(/\b\w/g, function (ch) {
+            return ch.toUpperCase();
+          });
+      }
+      o[k] = { perMinute: byId[k], name: nm };
     }
     return o;
+  }
+
+  function resolveEntityProduction(ent, options) {
+    var preferredKeys = options.preferredKeys;
+    var modifiers = options.modifiers;
+    var fallbackById = options.fallbackById || {};
+    var resourceNames = options.resourceNames || {};
+
+    var bid = ent.id;
+    if (shouldSkipProductionEntity(bid, modifiers)) return null;
+
+    var remap = modifiers.gameEntityBuildingIdRemap || {};
+    var plannerBid = remap[bid] || bid;
+    var comps = ent.components || {};
+    var internal = comps.internalstorage;
+    var outRes = internal && internal.OutputResources && internal.OutputResources.Resources;
+    var hasOutputs = Array.isArray(outRes) && outRes.length > 0;
+
+    var timerInfo = findProductionTimer(comps, preferredKeys);
+    var timerSynthetic = false;
+    var fb = fallbackById[plannerBid];
+
+    if (!timerInfo && hasOutputs && fb && typeof fb.iterationTime === 'number' && fb.iterationTime > 0) {
+      timerInfo = { componentKey: 'plannerData', cooldown: fb.iterationTime };
+      timerSynthetic = true;
+    }
+    if (!timerInfo) return null;
+
+    var cooldown = timerInfo.cooldown;
+    var rates;
+    var rateSource = 'save';
+
+    if (fb && !hasOutputs) {
+      var fr0 = ratesFromPlannerFallback(plannerBid, fallbackById, resourceNames);
+      if (fr0) {
+        rates = fr0;
+        rateSource = 'plannerFallback';
+      }
+    } else if (fb && timerSynthetic && hasOutputs) {
+      var fr1 = ratesFromPlannerFallback(plannerBid, fallbackById, resourceNames);
+      if (fr1) {
+        rates = fr1;
+        rateSource = 'plannerFallback';
+      }
+    }
+    if (!rates && hasOutputs) {
+      rates = parseOutputRatesFromInternal(internal, cooldown);
+      rateSource = 'saveOutputs';
+    }
+    if (!rates && fb) {
+      var fr2 = ratesFromPlannerFallback(plannerBid, fallbackById, resourceNames);
+      if (fr2) {
+        rates = fr2;
+        rateSource = 'plannerFallback';
+      }
+    }
+    if (!rates) {
+      rates = parseOutputRatesFromInternal(internal, cooldown);
+      rateSource = 'saveFallback';
+    }
+
+    return {
+      timerInfo: timerInfo,
+      timerSynthetic: timerSynthetic,
+      cooldownSeconds: cooldown,
+      plannerBuildingId: plannerBid,
+      byResourceId: rates.byResourceId,
+      totalPerMinute: rates.totalPerMinute,
+      rateSource: rateSource,
+    };
   }
 
   function loadJsonUrl(url) {
@@ -120,8 +275,9 @@
       loadJsonUrl('data/resource_names_extra.json'),
       loadJsonUrl('data/research.json'),
       loadJsonUrl('data/research_unlocks.json'),
+      loadJsonUrl('data/building_production_fallback.json'),
     ]).then(function (parts) {
-      var modifiers = parts[0] || DEFAULT_MODIFIERS;
+      var modifiers = Object.assign({}, DEFAULT_MODIFIERS, parts[0] || {});
       var shipsCatalog = parts[1] || { ships: [] };
       var rn = mergeResourceNameMaps(parts[2], parts[3]);
       var researchCatalog = parts[4] || { research: [] };
@@ -142,6 +298,9 @@
         shipByType[ship.type] = ship;
       }
 
+      var fbJson = parts[6] || {};
+      var buildingFallbackById = fbJson.byBuildingId || {};
+
       catalogsCache = {
         modifiers: modifiers,
         resourceNames: rn,
@@ -149,6 +308,7 @@
         shipByType: shipByType,
         researchById: researchById,
         researchUnlocks: researchUnlocks.researchIdToBuildingIds || {},
+        buildingFallbackById: buildingFallbackById,
         dataFilesOk: !!(parts[2] && parts[2].resource_names),
       };
       return catalogsCache;
@@ -156,9 +316,9 @@
   }
 
   function parsePp2SaveJson(save, catalogs) {
-    var modifiers = catalogs.modifiers || DEFAULT_MODIFIERS;
-    var skipSubs = modifiers.skipEntityIdSubstrings || DEFAULT_MODIFIERS.skipEntityIdSubstrings;
+    var modifiers = Object.assign({}, DEFAULT_MODIFIERS, catalogs.modifiers || {});
     var preferred = modifiers.productionComponentKeysPreferred || DEFAULT_MODIFIERS.productionComponentKeysPreferred;
+    var fallbackById = catalogs.buildingFallbackById || {};
     var boostTable = modifiers.siloBoostMultipliers || {};
     var defaultBoost = modifiers.defaultSiloBoostMultiplier != null ? modifiers.defaultSiloBoostMultiplier : 1;
     var siloDist = modifiers.siloProximityChebyshevDistance != null ? modifiers.siloProximityChebyshevDistance : 4;
@@ -251,14 +411,14 @@
       for (var ej = 0; ej < entities.length; ej++) {
         var ent = entities[ej];
         var bid = ent.id;
-        if (shouldSkipEntityId(bid, skipSubs)) continue;
+        var resolved = resolveEntityProduction(ent, {
+          preferredKeys: preferred,
+          modifiers: modifiers,
+          fallbackById: fallbackById,
+          resourceNames: resourceNames,
+        });
+        if (!resolved) continue;
 
-        var comps = ent.components;
-        var timerInfo = findProductionTimer(comps, preferred);
-        if (!timerInfo) continue;
-
-        var cooldown = timerInfo.cooldown;
-        var internal = comps.internalstorage;
         var boosted = false;
         var xy = ent.xy;
         if (Array.isArray(xy) && xy.length >= 2 && siloPositions.length > 0) {
@@ -271,8 +431,7 @@
         }
 
         var mult = boosted ? (boostTable[bid] != null ? boostTable[bid] : defaultBoost) : 1.0;
-        var rates = parseOutputRates(internal, cooldown);
-        var byResourceId = rates.byResourceId;
+        var byResourceId = resolved.byResourceId;
         var scaled = {};
         var scaledTotal = 0;
         for (var rk in byResourceId) {
@@ -285,13 +444,15 @@
 
         buildingSummaries.push({
           buildingId: bid,
+          plannerBuildingId: resolved.plannerBuildingId,
           xy: xy,
-          componentKey: timerInfo.componentKey,
-          cooldownSeconds: cooldown,
+          componentKey: resolved.timerInfo.componentKey,
+          cooldownSeconds: resolved.cooldownSeconds,
           siloBoosted: boosted,
           multiplier: mult,
+          rateSource: resolved.rateSource,
           outputPerMinuteByResourceId: enrichResourceNames(scaled, resourceNames),
-          totalOutputPerMinute: scaledTotal || rates.totalPerMinute * mult,
+          totalOutputPerMinute: scaledTotal || resolved.totalPerMinute * mult,
         });
       }
 
@@ -448,9 +609,33 @@
     return '';
   }
 
-  function formatBuildingOutputs(outputPerMinuteByResourceId, multiplier) {
-    var outs = [];
+  function formatBuildingOutputs(outputPerMinuteByResourceId, multiplier, buildingId, primaryOnly) {
     var o = outputPerMinuteByResourceId || {};
+    if (
+      primaryOnly &&
+      typeof PP2DATA !== 'undefined' &&
+      PP2DATA.getBuilding &&
+      buildingId
+    ) {
+      var pb = PP2DATA.getBuilding(buildingId);
+      if (pb && pb.produces) {
+        var map = typeof window !== 'undefined' && window.__saResourceNames ? window.__saResourceNames : {};
+        var wantId = slugToResourceId(pb.produces, map);
+        var nf = {};
+        if (wantId != null && o[wantId]) nf[wantId] = o[wantId];
+        else if (o['_produce:' + pb.produces]) nf['_produce:' + pb.produces] = o['_produce:' + pb.produces];
+        else {
+          for (var qk in o) {
+            if (!Object.prototype.hasOwnProperty.call(o, qk)) continue;
+            if (qk === '_fallback') continue;
+            nf[qk] = o[qk];
+            break;
+          }
+        }
+        if (Object.keys(nf).length) o = nf;
+      }
+    }
+    var outs = [];
     var mult = multiplier != null && isFinite(multiplier) ? multiplier : 1;
     for (var ok in o) {
       if (!Object.prototype.hasOwnProperty.call(o, ok)) continue;
@@ -500,6 +685,9 @@
   function renderAnalysis(result, fileLabel, catalogsLoaded) {
     var el = document.getElementById('save-analysis-dashboard');
     if (!el) return;
+
+    var primaryOnlyEl = document.getElementById('sa-primary-output-only');
+    var primaryOnly = !!(primaryOnlyEl && primaryOnlyEl.checked);
 
     var meta = result.meta || {};
     var pop = result.population || {};
@@ -735,7 +923,7 @@
           var groupId = 'p-' + isi + '-' + gi;
           var icount = instances.length;
           var showToggle = icount > 1;
-          var combinedOutStr = formatBuildingOutputs(combinedOutMap);
+          var combinedOutStr = formatBuildingOutputs(combinedOutMap, null, bid, primaryOnly);
           var cd0 = instances[0].cooldownSeconds;
           var sameCd = true;
           for (var icd = 1; icd < instances.length; icd++) {
@@ -772,7 +960,12 @@
           if (showToggle) {
             for (var ii3 = 0; ii3 < instances.length; ii3++) {
               var inst = instances[ii3];
-              var instOut = formatBuildingOutputs(inst.outputPerMinuteByResourceId, inst.multiplier);
+              var instOut = formatBuildingOutputs(
+                inst.outputPerMinuteByResourceId,
+                inst.multiplier,
+                inst.buildingId,
+                primaryOnly
+              );
               var n2 = [];
               if (inst.siloBoosted) n2.push('silo ×' + roundRate(inst.multiplier || 1));
               var xyStr =
@@ -852,8 +1045,18 @@
         ensureCatalogs().then(function (cats) {
           var catalogsLoaded = !!(cats && cats.dataFilesOk);
           try {
+            if (typeof window !== 'undefined') {
+              window.__saResourceNames = cats.resourceNames || {};
+            }
             var result = parsePp2SaveJson(json, cats);
             setStatus('Parsed successfully.', false);
+            if (typeof window !== 'undefined') {
+              window.__saLastAnalysis = {
+                result: result,
+                fileLabel: file.name,
+                catalogsLoaded: catalogsLoaded,
+              };
+            }
             renderAnalysis(result, file.name, catalogsLoaded);
           } catch (e2) {
             console.error(e2);
@@ -899,6 +1102,26 @@
     if (fileInput) {
       fileInput.addEventListener('change', function () {
         inputChange();
+      });
+    }
+
+    var primaryChk = document.getElementById('sa-primary-output-only');
+    if (primaryChk) {
+      try {
+        primaryChk.checked = localStorage.getItem('sa-primary-only') === '1';
+      } catch (eLs) {
+        /* ignore */
+      }
+      primaryChk.addEventListener('change', function () {
+        try {
+          localStorage.setItem('sa-primary-only', primaryChk.checked ? '1' : '0');
+        } catch (eLs2) {
+          /* ignore */
+        }
+        if (typeof window !== 'undefined' && window.__saLastAnalysis) {
+          var la = window.__saLastAnalysis;
+          renderAnalysis(la.result, la.fileLabel, la.catalogsLoaded);
+        }
       });
     }
 

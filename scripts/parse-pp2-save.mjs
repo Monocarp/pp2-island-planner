@@ -1,19 +1,17 @@
 #!/usr/bin/env node
 /**
  * PP2 comprehensive save parser (decoded JSON).
- * Merges logic from js/*.txt prototypes + production-rates.js.
  *
  * Usage:
- *   node scripts/parse-pp2-save.mjs path/to/save.json
- *   node scripts/parse-pp2-save.mjs path/to/save.json --human
+ *   node scripts/parse-pp2-save.mjs path/to/save.json [--human] [--debug-production]
  *
- * Loads data/production_modifiers.json, data/ships.json, data/resource_names.json,
- * data/research.json, data/research_unlocks.json relative to repo root.
+ * Loads data/production_modifiers.json, data/building_production_fallback.json, data/ships.json, etc.
  */
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
+import { resolveEntityProduction } from './save-production-core.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -29,62 +27,37 @@ function chebyshev(xyA, xyB) {
   return Math.max(Math.abs(xyA[0] - xyB[0]), Math.abs(xyA[1] - xyB[1]));
 }
 
-function findProductionTimer(components, preferredKeys) {
-  if (!components || typeof components !== 'object') return null;
-  for (const k of preferredKeys) {
-    const cd = components[k]?.Timer?.Cooldown;
-    if (typeof cd === 'number' && cd > 0) return { componentKey: k, cooldown: cd };
-  }
-  for (const [k, v] of Object.entries(components)) {
-    if (!v || typeof v !== 'object') continue;
-    const cd = v.Timer?.Cooldown;
-    if (typeof cd === 'number' && cd > 0) return { componentKey: k, cooldown: cd };
-  }
-  return null;
-}
-
-function shouldSkipEntityId(id, substrings) {
-  if (!id || typeof id !== 'string') return true;
-  return substrings.some(s => id.includes(s));
-}
-
-function parseOutputRates(internalstorage, cooldown) {
-  const out = {};
-  const resources = internalstorage?.OutputResources?.Resources;
-  if (!Array.isArray(resources) || resources.length === 0) {
-    const fallback = 60 / cooldown;
-    out._fallback = fallback;
-    return { byResourceId: out, totalPerMinute: fallback };
-  }
-  let total = 0;
-  for (const r of resources) {
-    const key = r.key;
-    const bal = r.value?.balance;
-    const batch = typeof bal === 'number' && bal > 0 ? bal : 1;
-    const perMin = (batch * 60) / cooldown;
-    const k = String(key);
-    out[k] = (out[k] || 0) + perMin;
-    total += perMin;
-  }
-  return { byResourceId: out, totalPerMinute: total };
-}
-
 function enrichResourceNames(byId, nameMap) {
   const o = {};
   for (const [k, v] of Object.entries(byId)) {
-    o[k] = { perMinute: v, name: nameMap[k] || null };
+    let name = nameMap[k] || null;
+    if (!name && k.startsWith('_produce:')) {
+      name = k
+        .slice(10)
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+    }
+    o[k] = { perMinute: v, name };
   }
   return o;
 }
 
 export function parsePp2SaveJson(save, options = {}) {
   const modifiers = options.modifiers || loadJsonOptional('data/production_modifiers.json', {});
-  const skipSubs = modifiers.skipEntityIdSubstrings || [];
-  const preferred = modifiers.productionComponentKeysPreferred || ['harvester', 'factory', 'gatherer', 'miner', 'smelter'];
+  const preferred = modifiers.productionComponentKeysPreferred || [
+    'harvester',
+    'factory',
+    'gatherer',
+    'miner',
+    'smelter',
+  ];
   const boostTable = modifiers.siloBoostMultipliers || {};
   const defaultBoost = modifiers.defaultSiloBoostMultiplier ?? 1;
   const siloDist = modifiers.siloProximityChebyshevDistance ?? 4;
   const siloNeedle = modifiers.siloEntityIdContains || 'Silo';
+
+  const fallbackJson = options.buildingProductionFallback || loadJsonOptional('data/building_production_fallback.json', {});
+  const fallbackById = fallbackJson.byBuildingId || {};
 
   let resourceNames;
   if (options.resourceNames && typeof options.resourceNames === 'object') {
@@ -99,12 +72,16 @@ export function parsePp2SaveJson(save, options = {}) {
   const researchUnlocks = options.researchUnlocks || loadJsonOptional('data/research_unlocks.json', {});
 
   const researchById = {};
-  for (const r of researchCatalog.research || []) researchById[r.id] = r;
+  for (const r of researchCatalog.research || []) {
+    researchById[r.id] = r;
+    researchById[String(r.id)] = r;
+  }
 
   const shipByType = {};
   for (const s of shipsCatalog.ships || []) shipByType[s.type] = s;
 
   const warnings = [];
+  const debugProduction = options.debugProduction ? [] : null;
 
   const version = save.SaveFileVersion ?? null;
   if (version !== null && version !== 20) {
@@ -131,7 +108,7 @@ export function parsePp2SaveJson(save, options = {}) {
   const researchCompleted = (save.ResearchManager?.CompletedResearchTimes || []).map(x => ({
     researchId: x.key,
     value: x.value,
-    name: researchById[x.key]?.name || null,
+    name: (researchById[x.key] || researchById[String(x.key)])?.name || null,
   }));
 
   const routes = {
@@ -173,16 +150,16 @@ export function parsePp2SaveJson(save, options = {}) {
 
     for (const ent of entities) {
       const bid = ent.id;
-      if (shouldSkipEntityId(bid, skipSubs)) continue;
+      const resolved = resolveEntityProduction(ent, {
+        preferredKeys: preferred,
+        modifiers,
+        fallbackById,
+        resourceNames,
+      });
+      if (!resolved) continue;
 
-      const comps = ent.components;
-      const timerInfo = findProductionTimer(comps, preferred);
-      if (!timerInfo) continue;
-
-      const cooldown = timerInfo.cooldown;
-      const internal = comps.internalstorage;
-      let boosted = false;
       const xy = ent.xy;
+      let boosted = false;
       if (Array.isArray(xy) && xy.length >= 2 && siloPositions.length > 0) {
         for (const sxy of siloPositions) {
           if (chebyshev(xy, sxy) <= siloDist) {
@@ -193,8 +170,7 @@ export function parsePp2SaveJson(save, options = {}) {
       }
 
       const mult = boosted ? (boostTable[bid] ?? defaultBoost) : 1.0;
-
-      const { byResourceId, totalPerMinute } = parseOutputRates(internal, cooldown);
+      const byResourceId = resolved.byResourceId;
       const scaled = {};
       let scaledTotal = 0;
       for (const [rk, rv] of Object.entries(byResourceId)) {
@@ -204,16 +180,33 @@ export function parsePp2SaveJson(save, options = {}) {
         globalProductionByResource[rk] = (globalProductionByResource[rk] || 0) + v;
       }
 
-      buildingSummaries.push({
+      const row = {
         buildingId: bid,
+        plannerBuildingId: resolved.plannerBuildingId,
         xy,
-        componentKey: timerInfo.componentKey,
-        cooldownSeconds: cooldown,
+        componentKey: resolved.timerInfo.componentKey,
+        cooldownSeconds: resolved.cooldownSeconds,
         siloBoosted: boosted,
         multiplier: mult,
+        rateSource: resolved.rateSource,
         outputPerMinuteByResourceId: enrichResourceNames(scaled, resourceNames),
-        totalOutputPerMinute: scaledTotal || (totalPerMinute * mult),
-      });
+        totalOutputPerMinute: scaledTotal || resolved.totalPerMinute * mult,
+      };
+      buildingSummaries.push(row);
+
+      if (debugProduction) {
+        debugProduction.push({
+          island: name || uid,
+          gameEntityId: bid,
+          plannerBuildingId: resolved.plannerBuildingId,
+          rateSource: resolved.rateSource,
+          componentKey: resolved.timerInfo.componentKey,
+          cooldown: resolved.cooldownSeconds,
+          siloBoosted: boosted,
+          multiplier: mult,
+          outputs: scaled,
+        });
+      }
     }
 
     islands.push({
@@ -225,7 +218,7 @@ export function parsePp2SaveJson(save, options = {}) {
     });
   }
 
-  return {
+  const out = {
     meta,
     warnings,
     stocks,
@@ -244,14 +237,18 @@ export function parsePp2SaveJson(save, options = {}) {
     islands,
     globalProductionByResourceId: enrichResourceNames(globalProductionByResource, resourceNames),
   };
+
+  if (debugProduction) out.debugProduction = debugProduction;
+  return out;
 }
 
 function main() {
-  const args = process.argv.slice(2).filter(a => a !== '--human');
+  const args = process.argv.slice(2).filter(a => a !== '--human' && a !== '--debug-production');
   const human = process.argv.includes('--human');
+  const debugProduction = process.argv.includes('--debug-production');
   const fileArg = args.find(a => !a.startsWith('-'));
   if (!fileArg) {
-    console.error('Usage: node scripts/parse-pp2-save.mjs <save.json> [--human]');
+    console.error('Usage: node scripts/parse-pp2-save.mjs <save.json> [--human] [--debug-production]');
     process.exit(1);
   }
 
@@ -262,7 +259,7 @@ function main() {
   }
 
   const save = JSON.parse(fs.readFileSync(abs, 'utf8'));
-  const result = parsePp2SaveJson(save, {});
+  const result = parsePp2SaveJson(save, { debugProduction });
 
   if (human) {
     console.log(JSON.stringify(result, null, 2));

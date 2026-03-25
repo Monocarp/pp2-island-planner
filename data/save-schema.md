@@ -44,11 +44,11 @@ Each simple route has: `UID`, `Name`, `Simple`, `Waypoints[]` with `IslandUID`, 
 
 ## Production entities (`GameEntities`)
 
-- Production timers live under **`components.<name>.Timer.Cooldown`** — not only `harvester` / `factory` / `gatherer`; e.g. nested `resourcefield.spots[].resource.Timer` for forests.
-- For standard producers, **`components.internalstorage.OutputResources.Resources[]`** gives `{ key: resourceId, value: { balance } }` per batch.
-- **Per-resource output rate (goods/min):**  
-  `sum over outputs: (balance || 0) * 60 / cooldown`  
-  If `balance` is missing, treat as **1** for a single-output producer (fallback).
+- Production timers live under **`components.<name>.Timer.Cooldown`** — not only `harvester` / `factory` / `gatherer`; e.g. nested `resourcefield.spots[].resource.Timer` for forests. **`internalstorage` and `portal` are ignored** when scanning for a timer (avoids picking silo transporter timers on unrelated entities).
+- For standard producers, **`components.internalstorage.OutputResources.Resources[]`** gives `{ key: resourceId, value: { balance } }`. **Save `balance` is often stock, not guaranteed batch-per-cycle** — when there is no top-level timer but outputs exist, the island planner parser uses **`data/building_production_fallback.json`** (from `data.js`) with **`producePerIteration × 60 / iterationTime`** or **`producePerMinute`** instead of mis-reading balances (e.g. Sawmill).
+- If **`OutputResources` is missing or empty** but `factory` / `harvester` / … has a timer, rates come from the same **fallback** file so buildings like **Jam Maker** (inputs-only on disk) still match planner math.
+- **Non-producers** (fields, forests, deposits, `Warehouse*`, `House*`, `Silo`, etc.) use **`nonProducerExactIds` / `nonProducerIdPrefixes`** in `production_modifiers.json`, not broad substring skips (so `StrawberryFarm` is not dropped because of `Field` in another id).
+- **Per-resource output rate (goods/min)** when using save outputs: `sum over outputs: (balance || 0) * 60 / cooldown` (with batch `1` if missing).
 
 ## Corrections to Notes.json
 

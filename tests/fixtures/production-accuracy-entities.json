@@ -1,0 +1,46 @@
+{
+  "SaveFileVersion": 20,
+  "GameTimeManager": { "current_tick": 1 },
+  "ResearchManager": { "CompletedResearchTimes": [] },
+  "PopulationManager": { "MaxPopulationCount": [] },
+  "RouteManager": { "SimpleRoutes": [], "ComplexRoutes": [] },
+  "ShipManager": { "Ships": [] },
+  "ResourceManager": { "GlobalResources": { "Resources": [] } },
+  "IslandManager": {
+    "islands": [
+      {
+        "UID": "acc",
+        "Name": "Accuracy",
+        "GameEntities": [
+          {
+            "id": "JamMaker",
+            "xy": [1, 2],
+            "components": {
+              "factory": {
+                "Timer": { "Cooldown": 720, "LastExecutionTick": 0, "IsWaitingForExecution": false }
+              },
+              "internalstorage": {
+                "InputResources": {
+                  "Resources": [
+                    { "key": 92, "value": { "balance": 17 } },
+                    { "key": 82, "value": { "balance": 5 } }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "Sawmill",
+            "xy": [2, 1],
+            "components": {
+              "internalstorage": {
+                "InputResources": { "Resources": [{ "key": 1, "value": { "balance": 10 } }] },
+                "OutputResources": { "Resources": [{ "key": 4, "value": { "balance": 13 } }] }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

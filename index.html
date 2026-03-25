@@ -367,9 +367,236 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
 .planner-summary-row {
   display: flex; justify-content: space-between; padding: 1px 4px; font-size: 0.7rem;
 }
-.planner-surplus { color: #2ecc71; }
-.planner-deficit { color: #e74c3c; }
-.planner-neutral { color: #a0a0a0; }
+  .planner-surplus { color: #2ecc71; }
+  .planner-deficit { color: #e74c3c; }
+  .planner-neutral { color: #a0a0a0; }
+
+/* ===== SAVE ANALYSIS (full-width tab) ===== */
+#save-analysis-panel {
+  display: none;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  min-height: 0;
+  overflow: auto;
+  background: linear-gradient(180deg, #15182a 0%, #1a1a2e 32%);
+  border-top: 2px solid #0f3460;
+}
+#app.save-analysis-mode {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+}
+#app.save-analysis-mode header {
+  grid-column: 1;
+}
+#app.save-analysis-mode #save-analysis-panel {
+  display: flex;
+  flex-direction: column;
+  grid-column: 1;
+  grid-row: 2;
+}
+#app.save-analysis-mode #left-panel,
+#app.save-analysis-mode #canvas-area,
+#app.save-analysis-mode #right-panel,
+#app.save-analysis-mode .mobile-toggle,
+#app.save-analysis-mode #drawer-backdrop {
+  display: none !important;
+}
+.save-analysis-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 24px 48px;
+  width: 100%;
+  flex: 1;
+}
+.save-analysis-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-bottom: 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(15, 52, 96, 0.65);
+}
+.save-analysis-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #e94560;
+  letter-spacing: 0.02em;
+  flex: 1;
+  min-width: 140px;
+}
+.save-analysis-file-btn {
+  padding: 8px 16px;
+  border: 1px solid #e94560;
+  border-radius: 6px;
+  background: rgba(233, 69, 96, 0.12);
+  color: #ff8098;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.save-analysis-file-btn:hover {
+  background: #e94560;
+  color: #fff;
+}
+.save-analysis-hint {
+  font-size: 0.8rem;
+  color: #889;
+  margin-bottom: 16px;
+  line-height: 1.45;
+}
+.save-analysis-status {
+  font-size: 0.82rem;
+  min-height: 1.25em;
+  margin-bottom: 12px;
+}
+.save-analysis-status.error-text { color: #e74c3c; }
+.save-analysis-status.ok-text { color: #2ecc71; }
+
+.save-analysis-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.save-analysis-card {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+.save-analysis-card-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8ab4f8;
+  margin-bottom: 6px;
+}
+.save-analysis-card-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #f0f0f0;
+  line-height: 1.2;
+}
+.save-analysis-card-sub {
+  font-size: 0.72rem;
+  color: #888;
+  margin-top: 4px;
+}
+
+.save-analysis-section {
+  margin-bottom: 28px;
+}
+.save-analysis-section > h3 {
+  font-size: 0.95rem;
+  color: #e94560;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(15, 52, 96, 0.5);
+}
+
+.save-analysis-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  background: #16213e;
+}
+.save-analysis-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.save-analysis-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: #0f3460;
+  color: #c8d4e8;
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.save-analysis-table td {
+  padding: 8px 12px;
+  border-top: 1px solid rgba(15, 52, 96, 0.6);
+  color: #ddd;
+}
+.save-analysis-table tr:hover td {
+  background: rgba(26, 26, 46, 0.45);
+}
+.save-analysis-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #7dcea0;
+}
+.save-analysis-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(46, 204, 113, 0.2);
+  color: #58d68d;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+details.save-analysis-island {
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background: #16213e;
+  overflow: hidden;
+}
+details.save-analysis-island > summary {
+  cursor: pointer;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: #e0e0e0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(15, 52, 96, 0.35);
+  user-select: none;
+}
+details.save-analysis-island > summary::-webkit-details-marker { display: none; }
+details.save-analysis-island > summary::after {
+  content: '▾';
+  color: #e94560;
+  font-size: 0.85rem;
+}
+details.save-analysis-island[open] > summary::after {
+  transform: rotate(180deg);
+}
+.save-analysis-island-body {
+  padding: 0 12px 12px;
+}
+
+.save-analysis-warnings {
+  background: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  font-size: 0.82rem;
+  color: #f5b7b1;
+}
+.save-analysis-warnings strong { color: #e74c3c; }
+
+.save-analysis-empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #666;
+  font-size: 0.9rem;
+  border: 1px dashed #0f3460;
+  border-radius: 8px;
+  margin-top: 8px;
+}
 
 /* ===== MOBILE DRAWER TOGGLES ===== */
 .mobile-toggle {
@@ -446,6 +673,13 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
 
   /* Zoom slider wider on mobile */
   #zoom-slider { width: 80px !important; }
+
+  .save-analysis-inner {
+    padding: 14px 12px 36px;
+  }
+  .save-analysis-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 500px) {
@@ -469,6 +703,7 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
       <button class="header-btn" id="btn-import-save" style="display:none" title="Import island layouts from a PP2 game save file (.dat)">Import save</button>
       <button class="header-btn" id="btn-save">Save</button>
       <button class="header-btn" id="btn-load">Load</button>
+      <button class="header-btn" id="btn-save-analysis" type="button" title="Open save file analyzer (.dat JSON)">Save Analysis</button>
       <span style="color:#666">|</span>
       <label>Zoom:</label>
       <input type="range" id="zoom-slider" min="10" max="60" value="30" style="width:100px">
@@ -585,6 +820,25 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
       <div class="planner-results" id="planner-results" style="color:#666;font-size:0.75rem;">Set house counts above and click Calculate</div>
     </div>
   </div>
+
+  <div id="save-analysis-panel" class="save-analysis-panel" aria-hidden="true">
+    <div class="save-analysis-inner">
+      <div class="save-analysis-toolbar">
+        <button type="button" class="header-btn" id="btn-save-analysis-back" title="Return to island planner">← Planner</button>
+        <h2 class="save-analysis-title">Save analysis</h2>
+        <label class="save-analysis-file-label" style="cursor:pointer;margin:0;">
+          <input type="file" id="save-analysis-file" accept=".dat,.json,application/json" hidden>
+          <span class="save-analysis-file-btn" tabindex="0" role="button">Load save file…</span>
+        </label>
+      </div>
+      <p class="save-analysis-hint">
+        Load a PP2 <strong>.dat</strong> save (UTF-8 JSON). Stocks, production rates, ships, and routes are summarized below.
+        For full resource names, open the site over HTTP (e.g. GitHub Pages) so data files can load; locally, names may fall back to IDs only.
+      </p>
+      <div id="save-analysis-status" class="save-analysis-status"></div>
+      <div id="save-analysis-dashboard"></div>
+    </div>
+  </div>
 </div>
 
 <div class="tooltip" id="tooltip"></div>
@@ -603,6 +857,7 @@ header h1 { font-size: 1.2rem; color: #e94560; white-space: nowrap; }
 <script src="planner.js"></script>
 <script src="multi-planner.js"></script>
 <script src="save-import.js"></script>
+<script src="save-analysis.js"></script>
 <script src="saveload.js"></script>
 </body>
 </html>

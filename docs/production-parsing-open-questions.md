@@ -71,7 +71,13 @@ Does the answer **differ** for **horse vs pig vs cattle vs sheep** or for **non-
 
 4. **Save / schema:** Cell occupancy for specific resources should be readable from save-derived grid (`deposit` / terrain + entities) once the mapping is understood.
 
-**Edge case (open until confirmed):** Two **Wheat** farms overlapping on a cell that is **wheat field** — is that **1/n** between them like grass, or **exclusive** to one building? *Not stated in this round; confirm if UI differs.*
+**Same-type harvest overlap (e.g. two Wheat farms on one wheat field cell):**
+
+**Status:** Answered
+
+**Conclusion:** **Exclusive** — that cell counts toward **at most one** of the overlapping farms for production purposes, **not** 1/n and not double 8/8. UI may show 8/8 on both; actual harvest is a **single worker trip** per ripen cycle, so only one building “gets” that tile for the purpose of sustained output. Parser will need a **deterministic tie-break** among claimants (e.g. stable ordering by anchor) unless exact game priority is reverse-engineered; document the chosen rule in code comments.
+
+**Rationale (user):** Ripe fields are not auto-collected; a character harvests; overlap implies the tile cannot simultaneously serve two harvesters for that cycle.
 
 **Notes:** User walkthrough 2025 — Q1 completion pass.
 
@@ -79,7 +85,7 @@ Does the answer **differ** for **horse vs pig vs cattle vs sheep** or for **non-
 
 ## Q1 section completion
 
-**Status:** **Satisfactory for proceeding** on overlap/sharing **subject to** resolving the wheat×wheat edge case if needed during implementation. Subsections **1a–1d** capture the agreed model; **1b** remains “linear unless counterexample.”
+**Status:** **Satisfactory for proceeding** on overlap/sharing. Subsections **1a–1d** + wheat same-type rule; **1b** remains “linear unless counterexample.”
 
 ---
 

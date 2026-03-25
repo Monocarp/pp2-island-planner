@@ -1,0 +1,51 @@
+{
+  "SaveFileVersion": 20,
+  "GameTimeManager": { "current_tick": 1000 },
+  "ResearchManager": { "CompletedResearchTimes": [{ "key": 4, "value": 1 }] },
+  "PopulationManager": {
+    "MaxPopulationCount": [{ "key": 0, "value": 100 }]
+  },
+  "RouteManager": { "SimpleRoutes": [], "ComplexRoutes": [] },
+  "ShipManager": {
+    "Ships": [
+      {
+        "Type": 2,
+        "Name": "Test Ship",
+        "Slots": [
+          { "Resource": 2, "Unit": 0, "Balance": 40 }
+        ]
+      }
+    ]
+  },
+  "ResourceManager": {
+    "GlobalResources": {
+      "Resources": [
+        { "key": 2, "value": { "balance": 999 } }
+      ]
+    }
+  },
+  "IslandManager": {
+    "islands": [
+      {
+        "UID": "test-island-1",
+        "Name": "Test Isle",
+        "GameEntities": [
+          {
+            "id": "Fisherman",
+            "xy": [1, 1],
+            "components": {
+              "gatherer": {
+                "Timer": { "Cooldown": 90, "LastExecutionTick": 0, "IsWaitingForExecution": false }
+              },
+              "internalstorage": {
+                "OutputResources": {
+                  "Resources": [{ "key": 2, "value": { "balance": 5 } }]
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

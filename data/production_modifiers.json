@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "description": "Silo proximity and farm boosts (from js/Production Parser.txt). Tune without code changes.",
+  "siloProximityChebyshevDistance": 4,
+  "siloEntityIdContains": "Silo",
+  "siloBoostMultipliers": {
+    "StrawberryFarm": 2.5,
+    "SheepFarm": 1.2,
+    "PigRanch": 1.2,
+    "CattleFarm": 1.2,
+    "HorseFarm": 1.2,
+    "CrocodileRanch": 1.2,
+    "GoatFarm": 1.2
+  },
+  "defaultSiloBoostMultiplier": 1.0,
+  "skipEntityIdSubstrings": [
+    "Warehouse",
+    "Kontor",
+    "Portal",
+    "Silo",
+    "Forest",
+    "Field",
+    "Pasture"
+  ],
+  "productionComponentKeysPreferred": ["harvester", "factory", "gatherer", "miner", "smelter"]
+}

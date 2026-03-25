@@ -3,8 +3,8 @@
 //
 // Save structure investigated:
 //   IslandManager.islands[]  → per-island terrain, entities, and map settings
-//   PopulationManager.MaxPopulationCount[] → optional pop-count hints (not used for layout)
-//   ShipManager.Ships[]      → ship fleet (type int → planner string ID, best-effort)
+//   ShipManager.Ships[]      → regional fleet (Type 2/3/4 → caravel/hulk/pinnace)
+//   House* entities          → per-island counts → planner population inputs (pre-fill)
 //
 // Grid tile types:
 //   Type 2            = water / ocean border
@@ -41,6 +41,16 @@ const SAVE_REGION_TO_TYPE = {
   2: 'tropical',
   3: 'northern',
   4: 'tropical',   // portal/magical island (closest planner type)
+};
+
+/**
+ * ShipManager.Ships[].Type integer → planner ship id (ships.js).
+ * Unmapped types (e.g. portal Phoenix) are skipped with a warning.
+ */
+const SAVE_SHIP_TYPE_INT = {
+  2: 'caravel',
+  3: 'hulk',
+  4: 'pinnace',
 };
 
 // ─── Entity → terrain ─────────────────────────────────────────────────────────
@@ -130,6 +140,20 @@ const SAVE_BUILDING_ID_REMAP = {
   Garrison:         null,   // plain Garrison = watchtower, not in planner
 };
 
+/**
+ * Game house entity id → planner population input id (planner.js POP_BUILDINGS).
+ * Used to count houses per island for "Plan islands" pre-fill (independent of grid placement).
+ */
+const SAVE_HOUSE_TO_POP_ID = {
+  House0Pioneers:  'PopulationPioneersHut',
+  House1Colonists: 'PopulationColonistsHouse',
+  House2Townsmen:  'PopulationTownsmenHouse',
+  House3Farmers:   'PopulationFarmersShack',
+  House4Merchants: 'PopulationMerchantsMansion',
+  House5Workers:   'PopulationWorkersHouse',
+  House6Paragons:  'PopulationParagonsResidence',
+};
+
 /** Entity IDs to skip even if they would otherwise match getBuildingData. */
 const SAVE_SKIP_ENTITY_IDS = new Set([
   'Kontor1', 'Kontor2',
@@ -143,13 +167,12 @@ const SAVE_SKIP_ENTITY_IDS = new Set([
 
 /**
  * Parse a PP2 save file (JSON string or already-parsed object).
- * Returns { islands: ImportedIsland[], warnings: string[], version: number }.
+ * Returns { islands, shipCounts, warnings, version }.
  *
  * ImportedIsland: {
- *   name: string, type: 'temperate'|'tropical'|'northern',
- *   island: { width, height, cells, buildings },
- *   activeFertilities: string[],
- *   summary: { placed, skipped, unknownIds: string[] }
+ *   name, type, island, activeFertilities,
+ *   summary: { placed, skippedInfra, unknownIds },
+ *   popCounts: Record<plannerPopBuildingId, number>
  * }
  */
 function parsePP2SaveFile(input) {
@@ -157,7 +180,7 @@ function parsePP2SaveFile(input) {
   try {
     data = typeof input === 'string' ? JSON.parse(input) : input;
   } catch (e) {
-    return { islands: [], warnings: [`JSON parse error: ${e.message}`], version: null };
+    return { islands: [], shipCounts: {}, warnings: [`JSON parse error: ${e.message}`], version: null };
   }
 
   const warnings = [];
@@ -165,7 +188,7 @@ function parsePP2SaveFile(input) {
   const mgr = data.IslandManager;
   if (!mgr || !Array.isArray(mgr.islands)) {
     warnings.push('No IslandManager.islands found in save file.');
-    return { islands: [], warnings, version };
+    return { islands: [], shipCounts: {}, warnings, version };
   }
 
   const imported = [];
@@ -184,7 +207,25 @@ function parsePP2SaveFile(input) {
     return rank(a.type) - rank(b.type);
   });
 
-  return { islands: imported, warnings, version };
+  const shipCounts = {};
+  const unknownShipTypes = new Map(); // type int → count
+  const shipMgr = data.ShipManager;
+  if (shipMgr && Array.isArray(shipMgr.Ships)) {
+    for (const ship of shipMgr.Ships) {
+      const t = ship.Type;
+      const id = SAVE_SHIP_TYPE_INT[t];
+      if (id) {
+        shipCounts[id] = (shipCounts[id] || 0) + 1;
+      } else {
+        unknownShipTypes.set(t, (unknownShipTypes.get(t) || 0) + 1);
+      }
+    }
+  }
+  for (const [typeInt, n] of unknownShipTypes) {
+    warnings.push(`Unknown ship Type ${typeInt} — ${n} ship(s) skipped (no planner mapping)`);
+  }
+
+  return { islands: imported, shipCounts, warnings, version };
 }
 
 function _convertSaveIsland(si, warnings) {
@@ -228,11 +269,17 @@ function _convertSaveIsland(si, warnings) {
   const entities = Array.isArray(si.GameEntities) ? si.GameEntities : [];
   const summary = { placed: 0, skippedInfra: 0, unknownIds: [] };
   const seenUnknown = new Set();
+  const popCounts = {};
 
   for (const entity of entities) {
     const id = entity.id;
     if (!id) continue;
     const [ex, ey] = Array.isArray(entity.xy) ? entity.xy : [-1, -1];
+
+    if (Object.prototype.hasOwnProperty.call(SAVE_HOUSE_TO_POP_ID, id)) {
+      const popId = SAVE_HOUSE_TO_POP_ID[id];
+      popCounts[popId] = (popCounts[popId] || 0) + 1;
+    }
 
     // ── Terrain entity ──
     if (Object.prototype.hasOwnProperty.call(SAVE_ENTITY_TO_TERRAIN, id)) {
@@ -288,7 +335,7 @@ function _convertSaveIsland(si, warnings) {
   // ── Infer active fertilities from placed deposits ──
   const activeFertilities = _inferFertilitiesFromIsland(island, type);
 
-  return { name, type, island, activeFertilities, summary };
+  return { name, type, island, activeFertilities, summary, popCounts };
 }
 
 /**
@@ -316,6 +363,34 @@ function _inferFertilitiesFromIsland(island, islandType) {
   return ids;
 }
 
+/**
+ * Fill main planner population inputs from a slot's imported house counts (after import / slot switch context).
+ */
+function prefillPlannerInputsFromSlot(slotIndex) {
+  if (!state.projectSlots || !state.projectSlots[slotIndex]) return;
+  const raw = state.projectSlots[slotIndex].importedPopCounts;
+  if (!raw || typeof raw !== 'object') return;
+
+  function setOne(id, n) {
+    const el = document.getElementById('planner-' + id);
+    if (!el) return;
+    const v = Math.max(0, Math.min(9999, Math.floor(Number(n) || 0)));
+    el.value = String(v);
+  }
+
+  if (typeof getVisiblePopBuildings === 'function') {
+    getVisiblePopBuildings().forEach(pb => {
+      const v = raw[pb.id];
+      setOne(pb.id, Number.isFinite(v) ? v : 0);
+    });
+  } else if (typeof POP_BUILDINGS !== 'undefined' && Array.isArray(POP_BUILDINGS)) {
+    POP_BUILDINGS.forEach(pb => {
+      const v = raw[pb.id];
+      setOne(pb.id, Number.isFinite(v) ? v : 0);
+    });
+  }
+}
+
 // ─── Apply import to project ──────────────────────────────────────────────────
 
 /**
@@ -336,20 +411,30 @@ function applyPP2SaveImport(parsedData) {
       name: i.name,
       island: i.island,
       activeFertilities: i.activeFertilities,
+      importedPopCounts: i.popCounts && typeof i.popCounts === 'object'
+        ? { ...i.popCounts }
+        : {},
     })),
     ...tropical.map(i => ({
       type: 'tropical',
       name: i.name,
       island: i.island,
       activeFertilities: i.activeFertilities,
+      importedPopCounts: i.popCounts && typeof i.popCounts === 'object'
+        ? { ...i.popCounts }
+        : {},
     })),
   ];
+
+  if (parsedData.shipCounts && typeof applyProjectShipCountsFromPayload === 'function') {
+    applyProjectShipCountsFromPayload(parsedData.shipCounts);
+  }
 
   state.activeSlotIndex = 0;
 
   // Load first slot into the canvas
   if (typeof setActiveSlot === 'function') {
-    setActiveSlot(0, true);
+    setActiveSlot(0, { skipCommit: true });
   } else {
     const first = state.projectSlots[0];
     state.islandType = first.type;
@@ -363,15 +448,42 @@ function applyPP2SaveImport(parsedData) {
   if (typeof syncMultiIslandUI === 'function') syncMultiIslandUI();
   if (typeof renderIsland === 'function') renderIsland();
   if (typeof updateStats === 'function') updateStats();
+
+  prefillPlannerInputsFromSlot(0);
 }
 
 // ─── UI ───────────────────────────────────────────────────────────────────────
+
+function _escSaveImportHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** HTML snippet: house counts from save entities (for modal). */
+function _formatImportedPopCountsLine(popCounts) {
+  if (!popCounts || typeof popCounts !== 'object') return '';
+  const entries = Object.entries(popCounts).filter(([, n]) => (Number(n) || 0) > 0);
+  if (entries.length === 0) {
+    return '<span style="color:#666;">no houses counted</span>';
+  }
+  const labelFor = id => {
+    if (typeof POP_BUILDINGS !== 'undefined' && Array.isArray(POP_BUILDINGS)) {
+      const pb = POP_BUILDINGS.find(p => p.id === id);
+      if (pb) return pb.label;
+    }
+    return id;
+  };
+  return entries.map(([id, n]) => `${_escSaveImportHtml(labelFor(id))}: ${n}`).join(' · ');
+}
 
 function showSaveImportModal(parsedData) {
   const existing = document.getElementById('pp2-save-import-modal');
   if (existing) existing.remove();
 
-  const { islands, warnings, version } = parsedData;
+  const { islands, warnings, version, shipCounts } = parsedData;
   const tempCount = islands.filter(i => i.type === 'temperate' || i.type === 'northern').length;
   const tropCount = islands.filter(i => i.type === 'tropical').length;
 
@@ -382,18 +494,28 @@ function showSaveImportModal(parsedData) {
     display:flex;align-items:center;justify-content:center;padding:16px;
   `;
 
+  const sc = shipCounts || {};
+  const shipEntries = Object.entries(sc).filter(([, n]) => (Number(n) || 0) > 0);
+  const shipFleetHtml = shipEntries.length
+    ? `<div style="font-size:0.78rem;color:#a0c4e8;margin:0 0 10px 0;line-height:1.35;">
+        <strong style="color:#7ec8e3;">Fleet</strong> (mapped ship types): ${shipEntries.map(([id, n]) => `${_escSaveImportHtml(id)}: ${n}`).join(', ')}
+      </div>`
+    : `<div style="font-size:0.78rem;color:#888;margin:0 0 10px 0;">No mapped fleet ships (Type 2/3/4 only; others appear in warnings).</div>`;
+
   const islandRows = islands.map(isl => {
     const { placed, skippedInfra, unknownIds } = isl.summary;
     const unknown = unknownIds.length > 0
       ? `<span style="color:#f39c12;font-size:0.72rem;">${unknownIds.length} unknown entity IDs</span>`
       : '';
     const typeTag = `<span style="color:${isl.type === 'tropical' ? '#27ae60' : '#3498db'};font-size:0.72rem;">${isl.type}</span>`;
+    const popLine = _formatImportedPopCountsLine(isl.popCounts);
     return `<div style="padding:4px 0;border-bottom:1px solid #1e3a5f;font-size:0.8rem;color:#ccc;">
-      <strong style="color:#e0e0e0;">${isl.name || '(unnamed)'}</strong>
+      <strong style="color:#e0e0e0;">${_escSaveImportHtml(isl.name || '(unnamed)')}</strong>
       &nbsp;${typeTag}
       &nbsp;<span style="color:#888;">${isl.island.width}×${isl.island.height}</span>
       &nbsp;·&nbsp;${placed} entities placed, ${skippedInfra} skipped
       ${unknown ? '&nbsp;· ' + unknown : ''}
+      <div style="font-size:0.72rem;color:#9aa;margin-top:4px;">Houses: ${popLine}</div>
     </div>`;
   }).join('');
 
@@ -419,11 +541,12 @@ function showSaveImportModal(parsedData) {
         found
         (${tempCount} temperate, ${tropCount} tropical)
       </p>
+      ${shipFleetHtml}
       <div style="max-height:260px;overflow-y:auto;margin-bottom:8px;">${islandRows}</div>
       ${warnHtml}
       ${currentProject}
       <p style="color:#888;font-size:0.73rem;margin:8px 0 14px;">
-        Terrain, deposits, and buildings are imported.
+        Terrain, deposits, and buildings are imported; fleet (Type 2/3/4 → caravel/hulk/pinnace) and house counts fill planner inputs for the first island.
         Rivers and coastal tiles are not stored in the save — paint them manually if needed.
         Fertilities are inferred from field tiles present on each island.
       </p>

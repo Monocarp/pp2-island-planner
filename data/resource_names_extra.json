@@ -1,0 +1,4 @@
+{
+  "description": "Optional overrides / extensions merged on top of resource_names.json (same shape: key string -> display name). Commit or gitignore per workflow.",
+  "resource_names": {}
+}

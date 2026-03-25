@@ -32,6 +32,11 @@ A browser-based island planning tool for the game **Paragon Pioneers 2** (PP2). 
 | `saveload.js` | LocalStorage persistence, **multi-island project** (`pp2_island_layout_v1`), setup/size modals, named saves, initialization |
 | `data/production-reference.json` (and `.csv` / `production-reference.md`) | **Reference only:** production/consumption rates extracted from [ElQDuck/paragon-pioneers-2-calculator](https://github.com/ElQDuck/paragon-pioneers-2-calculator) `production-chain` TSX; regenerate with `node scripts/generate-production-reference.mjs` (see `scripts/README-production-reference.md`) |
 | `scripts/generate-production-reference.mjs` | Node script that parses the vendored calculator repo and rewrites the `production-reference*` files |
+| `scripts/parse-pp2-save.mjs` | Node CLI / `parsePp2SaveJson()`: decoded game save JSON → stocks, per-island production (batch × 60 / cooldown), ships + `ships.json`, routes, research; see `scripts/README-parse-pp2-save.md` |
+| `data/save-schema.md` | Verified SaveFileVersion 20 paths (`ResourceManager`, `PopulationManager`, `RouteManager.SimpleRoutes`, etc.) |
+| `data/production_modifiers.json` | Silo Chebyshev distance, farm boost multipliers, entity id skip list for the save parser |
+| `data/research_unlocks.json` | Optional future map: research id → building ids (empty until curated) |
+| `tests/parse-pp2-save.test.mjs` | Regression tests on `tests/fixtures/minimal-save.json` (`node --test tests/parse-pp2-save.test.mjs`) |
 
 ### Script Load Order (matters — globals are shared)
 

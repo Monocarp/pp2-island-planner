@@ -3,14 +3,16 @@ PP2 Save File Structure Reference
 
 This is the consolidated knowledge from your work. Do not re-discover — use this as the single source of truth.
 
+**For SaveFileVersion 20 paths verified against a real save, see `data/save-schema.md`.**
+
 ## 1. Overall Save Format
 - Plain JSON (SaveFileVersion: 20)
 - Top-level keys of interest:
   - `IslandManager.islands[]`
   - `ResourceManager.GlobalResources.Resources[]` → current stocks
   - `ResearchManager.CompletedResearchTimes[]` → `{key: ID, value: level}`
-  - `PopulationManager.PopulationTiers[]` → consumption
-  - `RouteManager.routes[]` → trade routes
+  - `PopulationManager` → `MaxPopulationCount[]` and/or `PopulationTiers[]` (see save-schema.md)
+  - `RouteManager.SimpleRoutes[]` / `ComplexRoutes[]` → trade routes
   - `GameEntities[]` inside each island
 
 ## 2. Production / Consumption Data (the core you already solved)
@@ -22,9 +24,11 @@ Inside `internalstorage`:
 - `OutputResources.Resources[]` → production (key = resource ID, value.balance = raw amount per cycle)
 - `InputResources.Resources[]` → consumption (same format)
 
-The **actual rate** is calculated as:
-```python
-base_rate_per_minute = 60 / Timer.Cooldown
+The **actual rate** per output resource (when batch balance is set) is:
+```
+per_resource_per_minute = balance * 60 / Timer.Cooldown
+```
+If balance is absent, some buildings still use cooldown-only scaling; see `scripts/parse-pp2-save.mjs`.
 
 ## 3. Boosts & Multipliers (your BOOST_TABLE + silo logic)
 
@@ -34,6 +38,8 @@ base_rate_per_minute = 60 / Timer.Cooldown
     - `SheepFarm` / `PigRanch` / `CattleFarm` / `HorseFarm` / `CrocodileRanch` / `GoatFarm`: 1.2
     - Others default to 1.0
 
+**External config:** `data/production_modifiers.json`
+
 ## 4. Buildings to Skip / Special Cases
 
 Your script correctly skips:
@@ -41,14 +47,17 @@ Your script correctly skips:
 
 ## 5. Population Consumption
 
-`PopulationManager.PopulationTiers[]` contains:
+`PopulationManager` may include `PopulationTiers[]` with:
 - `BasicNeeds.ConsumedResources`
 - `LuxuryNeeds.ConsumedResources`
 - `ProductionAmountRemainder`
 
+Or `MaxPopulationCount[]` for tier caps — see save-schema.md.
+
 ## 6. Research
 
 - `ResearchManager.CompletedResearchTimes[]` → `key` = research ID (matches `data/research.json`)
+- Optional unlock map: `data/research_unlocks.json`
 
 ## 7. Ships & Transport
 
@@ -57,7 +66,7 @@ Your script correctly skips:
 ## 8. Portals & Trade Routes
 
 - **Portals:** `GameEntities` with id `"PortalIn0"` or `"PortalOut0"`
-- **Trade routes:** `RouteManager.routes[]`
+- **Trade routes:** `RouteManager.SimpleRoutes` / `ComplexRoutes`
 
 ## 9. Key Takeaways from Your Parsers
 

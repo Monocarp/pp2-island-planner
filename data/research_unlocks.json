@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "description": "Optional hand-maintained map: research id -> building ids unlocked. Empty until curated from game data.",
+  "researchIdToBuildingIds": {}
+}

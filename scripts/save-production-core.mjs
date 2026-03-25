@@ -127,52 +127,30 @@ export function resolveEntityProduction(ent, options) {
   const hasOutputs = Array.isArray(outRes) && outRes.length > 0;
 
   let timerInfo = findProductionTimer(comps, preferredKeys);
-  let timerSynthetic = false;
-
   const fb = fallbackById?.[plannerBid];
-  if (!timerInfo && hasOutputs && fb && typeof fb.iterationTime === 'number' && fb.iterationTime > 0) {
+  if (!timerInfo && fb && typeof fb.iterationTime === 'number' && fb.iterationTime > 0) {
     timerInfo = { componentKey: 'plannerData', cooldown: fb.iterationTime };
-    timerSynthetic = true;
   }
   if (!timerInfo) return null;
 
   const cooldown = timerInfo.cooldown;
   let rates;
-  let rateSource = 'save';
+  let rateSource;
 
-  if (fb && !hasOutputs) {
-    const fr = ratesFromPlannerFallback(plannerBid, fallbackById, resourceNames);
-    if (fr) {
-      rates = { byResourceId: fr.byResourceId, totalPerMinute: fr.totalPerMinute };
-      rateSource = 'plannerFallback';
-    }
-  } else if (fb && timerSynthetic && hasOutputs) {
-    const fr = ratesFromPlannerFallback(plannerBid, fallbackById, resourceNames);
-    if (fr) {
-      rates = { byResourceId: fr.byResourceId, totalPerMinute: fr.totalPerMinute };
-      rateSource = 'plannerFallback';
-    }
-  }
-
-  if (!rates && hasOutputs) {
+  const fr = fb ? ratesFromPlannerFallback(plannerBid, fallbackById, resourceNames) : null;
+  if (fr) {
+    rates = { byResourceId: fr.byResourceId, totalPerMinute: fr.totalPerMinute };
+    rateSource = 'plannerFallback';
+  } else if (hasOutputs) {
     rates = parseOutputRatesFromInternal(internal, cooldown);
     rateSource = 'saveOutputs';
-  }
-  if (!rates && fb) {
-    const fr = ratesFromPlannerFallback(plannerBid, fallbackById, resourceNames);
-    if (fr) {
-      rates = { byResourceId: fr.byResourceId, totalPerMinute: fr.totalPerMinute };
-      rateSource = 'plannerFallback';
-    }
-  }
-  if (!rates) {
-    rates = parseOutputRatesFromInternal(internal, cooldown);
+  } else {
+    rates = { byResourceId: {}, totalPerMinute: 60 / cooldown };
     rateSource = 'saveFallback';
   }
 
   return {
     timerInfo,
-    timerSynthetic,
     cooldownSeconds: cooldown,
     plannerBuildingId: plannerBid,
     ...rates,

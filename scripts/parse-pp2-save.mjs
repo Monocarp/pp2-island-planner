@@ -53,8 +53,11 @@ export function parsePp2SaveJson(save, options = {}) {
   ];
   const boostTable = modifiers.siloBoostMultipliers || {};
   const defaultBoost = modifiers.defaultSiloBoostMultiplier ?? 1;
-  const siloDist = modifiers.siloProximityChebyshevDistance ?? 4;
+  const siloDist = modifiers.siloProximityChebyshevDistance ?? 2;
   const siloNeedle = modifiers.siloEntityIdContains || 'Silo';
+  const paddockTable = modifiers.paddockBoostMultipliers || {};
+  const paddockDist = modifiers.paddockProximityChebyshevDistance ?? 2;
+  const paddockNeedle = modifiers.paddockEntityIdContains || 'Paddock';
 
   const fallbackJson = options.buildingProductionFallback || loadJsonOptional('data/building_production_fallback.json', {});
   const fallbackById = fallbackJson.byBuildingId || {};
@@ -146,6 +149,11 @@ export function parsePp2SaveJson(save, options = {}) {
       .map(e => e.xy)
       .filter(xy => Array.isArray(xy) && xy.length >= 2);
 
+    const paddockPositions = entities
+      .filter(e => e.id && String(e.id).includes(paddockNeedle))
+      .map(e => e.xy)
+      .filter(xy => Array.isArray(xy) && xy.length >= 2);
+
     const buildingSummaries = [];
 
     for (const ent of entities) {
@@ -159,11 +167,21 @@ export function parsePp2SaveJson(save, options = {}) {
       if (!resolved) continue;
 
       const xy = ent.xy;
-      let boosted = false;
+      let siloBoosted = false;
       if (Array.isArray(xy) && xy.length >= 2 && siloPositions.length > 0) {
         for (const sxy of siloPositions) {
           if (chebyshev(xy, sxy) <= siloDist) {
-            boosted = true;
+            siloBoosted = true;
+            break;
+          }
+        }
+      }
+
+      let paddockBoosted = false;
+      if (Array.isArray(xy) && xy.length >= 2 && paddockPositions.length > 0) {
+        for (const pxy of paddockPositions) {
+          if (chebyshev(xy, pxy) <= paddockDist) {
+            paddockBoosted = true;
             break;
           }
         }
@@ -171,7 +189,9 @@ export function parsePp2SaveJson(save, options = {}) {
 
       const liveTimerRate =
         resolved.rateSource === 'saveOutputs' || resolved.rateSource === 'saveFallback';
-      const mult = !liveTimerRate && boosted ? (boostTable[bid] ?? defaultBoost) : 1.0;
+      const siloMult = !liveTimerRate && siloBoosted ? (boostTable[bid] ?? defaultBoost) : 1.0;
+      const paddockMult = !liveTimerRate && paddockBoosted ? (paddockTable[bid] ?? 1.0) : 1.0;
+      const mult = siloMult * paddockMult;
       const byResourceId = resolved.byResourceId;
       const scaled = {};
       let scaledTotal = 0;
@@ -188,7 +208,10 @@ export function parsePp2SaveJson(save, options = {}) {
         xy,
         componentKey: resolved.timerInfo.componentKey,
         cooldownSeconds: resolved.cooldownSeconds,
-        siloBoosted: boosted,
+        siloBoosted,
+        siloMultiplier: siloMult,
+        paddockBoosted,
+        paddockMultiplier: paddockMult,
         multiplier: mult,
         rateSource: resolved.rateSource,
         outputPerMinuteByResourceId: enrichResourceNames(scaled, resourceNames),
@@ -204,8 +227,11 @@ export function parsePp2SaveJson(save, options = {}) {
           rateSource: resolved.rateSource,
           componentKey: resolved.timerInfo.componentKey,
           cooldown: resolved.cooldownSeconds,
-          siloBoosted: boosted,
+          siloBoosted,
+          paddockBoosted,
           liveTimerRate,
+          siloMultiplier: siloMult,
+          paddockMultiplier: paddockMult,
           multiplier: mult,
           outputs: scaled,
         });
@@ -217,6 +243,7 @@ export function parsePp2SaveJson(save, options = {}) {
       name,
       entityCount: entities.length,
       siloCount: siloPositions.length,
+      paddockCount: paddockPositions.length,
       productionBuildings: buildingSummaries,
     });
   }

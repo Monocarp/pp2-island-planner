@@ -1,10 +1,9 @@
 {
   "version": 1,
-  "description": "Silo proximity and farm boosts (from js/Production Parser.txt). Tune without code changes.",
-  "siloProximityChebyshevDistance": 4,
+  "description": "Silo: 5×5 (Chebyshev 2) boosts livestock only. Paddock: same area boosts plowable crop harvesters ×2. OutputResources.balance is stock, not batch — base rates from building_production_fallback.",
+  "siloProximityChebyshevDistance": 2,
   "siloEntityIdContains": "Silo",
   "siloBoostMultipliers": {
-    "StrawberryFarm": 2.5,
     "SheepFarm": 1.2,
     "PigRanch": 1.2,
     "CattleFarm": 1.2,
@@ -15,6 +14,19 @@
     "GoatFarm": 1.2
   },
   "defaultSiloBoostMultiplier": 1,
+  "paddockProximityChebyshevDistance": 2,
+  "paddockEntityIdContains": "Paddock",
+  "paddockBoostMultipliers": {
+    "WheatFarm": 2.0,
+    "StrawberryFarm": 2.0,
+    "HopsFarm": 2.0,
+    "LinseedFarm": 2.0,
+    "TobaccoFarm": 2.0,
+    "SugarCanePlantation": 2.0,
+    "TeaPlantation": 2.0,
+    "CoffeePlantation": 2.0,
+    "SchnappsFarm": 2.0
+  },
   "skipEntityIdSubstrings": [],
   "productionComponentKeysPreferred": [
     "harvester",

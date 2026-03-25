@@ -9,10 +9,10 @@ def calculate_clean_empire_production(file_path):
 
     islands = data.get("IslandManager", {}).get("islands", [])
     
-    # Tiered multipliers matching your observed rates
+    # Silo proximity: livestock only (not crop farms e.g. StrawberryFarm).
     BOOST_TABLE = {
-        "StrawberryFarm": 2.5, "SheepFarm": 1.2, "PigRanch": 1.2,
-        "CattleFarm": 1.2, "HorseFarm": 1.2, "CrocodileRanch": 1.2, "GoatFarm": 1.2
+        "SheepFarm": 1.2, "PigRanch": 1.2, "CattleFarm": 1.2, "HorseFarm": 1.2,
+        "CrocodileRanch": 1.2, "GoatFarm": 1.2
     }
 
     print(f"{'Island':<18} | {'Building':<20} | {'Qty':<5} | {'Rate/Min'}")

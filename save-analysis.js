@@ -7,10 +7,9 @@
 
   /** Embedded fallback when fetch fails (e.g. file://). Keep in sync with data/production_modifiers.json. */
   const DEFAULT_MODIFIERS = {
-    siloProximityChebyshevDistance: 4,
+    siloProximityChebyshevDistance: 2,
     siloEntityIdContains: 'Silo',
     siloBoostMultipliers: {
-      StrawberryFarm: 2.5,
       SheepFarm: 1.2,
       PigRanch: 1.2,
       CattleFarm: 1.2,
@@ -21,6 +20,19 @@
       GoatFarm: 1.2,
     },
     defaultSiloBoostMultiplier: 1.0,
+    paddockProximityChebyshevDistance: 2,
+    paddockEntityIdContains: 'Paddock',
+    paddockBoostMultipliers: {
+      WheatFarm: 2.0,
+      StrawberryFarm: 2.0,
+      HopsFarm: 2.0,
+      LinseedFarm: 2.0,
+      TobaccoFarm: 2.0,
+      SugarCanePlantation: 2.0,
+      TeaPlantation: 2.0,
+      CoffeePlantation: 2.0,
+      SchnappsFarm: 2.0,
+    },
     skipEntityIdSubstrings: [],
     nonProducerIdPrefixes: ['Warehouse', 'Kontor', 'Portal', 'Garrison', 'House'],
     gameEntityBuildingIdRemap: {
@@ -187,51 +199,31 @@
     var hasOutputs = Array.isArray(outRes) && outRes.length > 0;
 
     var timerInfo = findProductionTimer(comps, preferredKeys);
-    var timerSynthetic = false;
     var fb = fallbackById[plannerBid];
 
-    if (!timerInfo && hasOutputs && fb && typeof fb.iterationTime === 'number' && fb.iterationTime > 0) {
+    if (!timerInfo && fb && typeof fb.iterationTime === 'number' && fb.iterationTime > 0) {
       timerInfo = { componentKey: 'plannerData', cooldown: fb.iterationTime };
-      timerSynthetic = true;
     }
     if (!timerInfo) return null;
 
     var cooldown = timerInfo.cooldown;
     var rates;
-    var rateSource = 'save';
+    var rateSource;
 
-    if (fb && !hasOutputs) {
-      var fr0 = ratesFromPlannerFallback(plannerBid, fallbackById, resourceNames);
-      if (fr0) {
-        rates = fr0;
-        rateSource = 'plannerFallback';
-      }
-    } else if (fb && timerSynthetic && hasOutputs) {
-      var fr1 = ratesFromPlannerFallback(plannerBid, fallbackById, resourceNames);
-      if (fr1) {
-        rates = fr1;
-        rateSource = 'plannerFallback';
-      }
-    }
-    if (!rates && hasOutputs) {
+    var fr = fb ? ratesFromPlannerFallback(plannerBid, fallbackById, resourceNames) : null;
+    if (fr) {
+      rates = fr;
+      rateSource = 'plannerFallback';
+    } else if (hasOutputs) {
       rates = parseOutputRatesFromInternal(internal, cooldown);
       rateSource = 'saveOutputs';
-    }
-    if (!rates && fb) {
-      var fr2 = ratesFromPlannerFallback(plannerBid, fallbackById, resourceNames);
-      if (fr2) {
-        rates = fr2;
-        rateSource = 'plannerFallback';
-      }
-    }
-    if (!rates) {
-      rates = parseOutputRatesFromInternal(internal, cooldown);
+    } else {
+      rates = { byResourceId: {}, totalPerMinute: 60 / cooldown };
       rateSource = 'saveFallback';
     }
 
     return {
       timerInfo: timerInfo,
-      timerSynthetic: timerSynthetic,
       cooldownSeconds: cooldown,
       plannerBuildingId: plannerBid,
       byResourceId: rates.byResourceId,
@@ -321,8 +313,11 @@
     var fallbackById = catalogs.buildingFallbackById || {};
     var boostTable = modifiers.siloBoostMultipliers || {};
     var defaultBoost = modifiers.defaultSiloBoostMultiplier != null ? modifiers.defaultSiloBoostMultiplier : 1;
-    var siloDist = modifiers.siloProximityChebyshevDistance != null ? modifiers.siloProximityChebyshevDistance : 4;
+    var siloDist = modifiers.siloProximityChebyshevDistance != null ? modifiers.siloProximityChebyshevDistance : 2;
     var siloNeedle = modifiers.siloEntityIdContains || 'Silo';
+    var paddockTable = modifiers.paddockBoostMultipliers || {};
+    var paddockDist = modifiers.paddockProximityChebyshevDistance != null ? modifiers.paddockProximityChebyshevDistance : 2;
+    var paddockNeedle = modifiers.paddockEntityIdContains || 'Paddock';
     var resourceNames = catalogs.resourceNames || {};
     var shipByType = catalogs.shipByType || {};
     var researchById = catalogs.researchById || {};
@@ -407,6 +402,14 @@
         }
       }
 
+      var paddockPositions = [];
+      for (var ep = 0; ep < entities.length; ep++) {
+        var eP = entities[ep];
+        if (eP.id && String(eP.id).indexOf(paddockNeedle) !== -1 && Array.isArray(eP.xy) && eP.xy.length >= 2) {
+          paddockPositions.push(eP.xy);
+        }
+      }
+
       var buildingSummaries = [];
       for (var ej = 0; ej < entities.length; ej++) {
         var ent = entities[ej];
@@ -419,12 +422,22 @@
         });
         if (!resolved) continue;
 
-        var boosted = false;
+        var siloBoosted = false;
         var xy = ent.xy;
         if (Array.isArray(xy) && xy.length >= 2 && siloPositions.length > 0) {
           for (var sp = 0; sp < siloPositions.length; sp++) {
             if (chebyshev(xy, siloPositions[sp]) <= siloDist) {
-              boosted = true;
+              siloBoosted = true;
+              break;
+            }
+          }
+        }
+
+        var paddockBoosted = false;
+        if (Array.isArray(xy) && xy.length >= 2 && paddockPositions.length > 0) {
+          for (var pp = 0; pp < paddockPositions.length; pp++) {
+            if (chebyshev(xy, paddockPositions[pp]) <= paddockDist) {
+              paddockBoosted = true;
               break;
             }
           }
@@ -432,7 +445,9 @@
 
         var liveTimerRate =
           resolved.rateSource === 'saveOutputs' || resolved.rateSource === 'saveFallback';
-        var mult = !liveTimerRate && boosted ? (boostTable[bid] != null ? boostTable[bid] : defaultBoost) : 1.0;
+        var siloMult = !liveTimerRate && siloBoosted ? (boostTable[bid] != null ? boostTable[bid] : defaultBoost) : 1.0;
+        var paddockMult = !liveTimerRate && paddockBoosted ? (paddockTable[bid] != null ? paddockTable[bid] : 1.0) : 1.0;
+        var mult = siloMult * paddockMult;
         var byResourceId = resolved.byResourceId;
         var scaled = {};
         var scaledTotal = 0;
@@ -450,7 +465,10 @@
           xy: xy,
           componentKey: resolved.timerInfo.componentKey,
           cooldownSeconds: resolved.cooldownSeconds,
-          siloBoosted: boosted,
+          siloBoosted: siloBoosted,
+          siloMultiplier: siloMult,
+          paddockBoosted: paddockBoosted,
+          paddockMultiplier: paddockMult,
           multiplier: mult,
           rateSource: resolved.rateSource,
           outputPerMinuteByResourceId: enrichResourceNames(scaled, resourceNames),
@@ -463,6 +481,7 @@
         name: name,
         entityCount: entities.length,
         siloCount: siloPositions.length,
+        paddockCount: paddockPositions.length,
         productionBuildings: buildingSummaries,
       });
     }
@@ -901,7 +920,9 @@
         isl.entityCount +
         ' entities · ' +
         isl.siloCount +
-        ' silos</span></summary>';
+        ' silos · ' +
+        (isl.paddockCount != null ? isl.paddockCount : 0) +
+        ' paddocks</span></summary>';
       html += '<div class="save-analysis-island-body"><div class="save-analysis-table-wrap"><table class="save-analysis-table"><thead><tr>';
       html +=
         '<th style="width:40px;"></th><th>Building</th><th>Outputs (/min)</th><th>Cooldown</th><th>Notes</th></tr></thead><tbody>';
@@ -951,12 +972,16 @@
           html += '<td>' + escapeHtml(combinedOutStr) + '</td>';
           html += '<td class="num">' + escapeHtml(cdDisplay) + '</td>';
           var boostedN = 0;
+          var paddockBoostedN = 0;
           for (var ib = 0; ib < instances.length; ib++) {
             if (instances[ib].siloBoosted) boostedN++;
+            if (instances[ib].paddockBoosted) paddockBoostedN++;
           }
           var sumNotes = [];
           if (boostedN === icount && icount > 0) sumNotes.push('all silo boosted');
           else if (boostedN > 0) sumNotes.push(boostedN + '/' + icount + ' silo boosted');
+          if (paddockBoostedN === icount && icount > 0) sumNotes.push('all paddock boosted');
+          else if (paddockBoostedN > 0) sumNotes.push(paddockBoostedN + '/' + icount + ' paddock boosted');
           html += '<td>' + escapeHtml(sumNotes.join(' · ') || '—') + '</td>';
           html += '</tr>';
           if (showToggle) {
@@ -969,7 +994,8 @@
                 primaryOnly
               );
               var n2 = [];
-              if (inst.siloBoosted) n2.push('silo ×' + roundRate(inst.multiplier || 1));
+              if (inst.siloBoosted) n2.push('silo ×' + roundRate(inst.siloMultiplier || 1));
+              if (inst.paddockBoosted) n2.push('paddock ×' + roundRate(inst.paddockMultiplier || 1));
               var xyStr =
                 Array.isArray(inst.xy) && inst.xy.length >= 2 ? '(' + inst.xy[0] + ', ' + inst.xy[1] + ')' : '—';
               html +=

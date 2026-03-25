@@ -49,10 +49,10 @@ test('rickyard: ×2 only when tile utilization is full (partial grass in silo ar
     computeAreaBoost(ent, resolved, siloAnchors, [], { tileUtilizationFactor: 1 }).multiplier,
     2
   );
-  assert.strictEqual(
-    computeAreaBoost(ent, resolved, siloAnchors, [], { tileUtilizationFactor: 0.75 }).multiplier,
-    1
-  );
+  const partial = computeAreaBoost(ent, resolved, siloAnchors, [], { tileUtilizationFactor: 0.75 });
+  assert.strictEqual(partial.multiplier, 1);
+  assert.strictEqual(partial.insideSiloFootprint, true);
+  assert.strictEqual(partial.siloBoosted, false);
 });
 
 test('rickyard: pig anchor inside Silo 5×5 gets ×2; outside Chebyshev 2 does not', () => {
@@ -67,6 +67,20 @@ test('rickyard: pig anchor inside Silo 5×5 gets ×2; outside Chebyshev 2 does n
   assert.ok(Math.abs(boosted.totalOutputPerMinute - 4) < 1e-5);
   assert.ok(!away.siloBoosted);
   assert.ok(Math.abs(away.totalOutputPerMinute - 2) < 1e-5);
+});
+
+test('new_bursting_cay: cattle at (17,14) is inside silo 5×5 at (15,13) but not siloBoosted when tile util partial', () => {
+  const p = path.join(__dirname, '..', 'data', 'new_bursting_cay.json');
+  const island = JSON.parse(fs.readFileSync(p, 'utf8'));
+  const save = { SaveFileVersion: 20, IslandManager: { islands: [island] } };
+  const r = parsePp2SaveJson(save, {});
+  const row = r.islands[0].productionBuildings.find(
+    b => b.buildingId === 'CattleFarm' && b.xy[0] === 17 && b.xy[1] === 14
+  );
+  assert.ok(row);
+  assert.strictEqual(row.insideSiloFootprint, true);
+  assert.strictEqual(row.siloBoosted, false);
+  assert.ok(Math.abs(row.tileUtilizationFactor - 0.75) < 1e-5);
 });
 
 test('tile overlap: adjacent 3×3 ranches split shared grass 50/50 (6 effective / 8 needed → 0.75)', () => {

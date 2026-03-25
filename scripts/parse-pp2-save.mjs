@@ -198,6 +198,7 @@ export function parsePp2SaveJson(save, options = {}) {
       });
       const siloBoosted = areaBoost.siloBoosted;
       const paddockBoosted = areaBoost.paddockBoosted;
+      const insideSiloFootprint = !!areaBoost.insideSiloFootprint;
       const areaMult = Number.isFinite(areaBoost.multiplier) ? areaBoost.multiplier : 1;
       const siloMult = siloBoosted ? 2 : 1;
       const paddockMult = paddockBoosted ? 2 : 1;
@@ -220,6 +221,7 @@ export function parsePp2SaveJson(save, options = {}) {
         componentKey: resolved.timerInfo.componentKey,
         cooldownSeconds: resolved.cooldownSeconds,
         siloBoosted,
+        insideSiloFootprint,
         siloMultiplier: siloMult,
         paddockBoosted,
         paddockMultiplier: paddockMult,
@@ -241,6 +243,7 @@ export function parsePp2SaveJson(save, options = {}) {
           componentKey: resolved.timerInfo.componentKey,
           cooldown: resolved.cooldownSeconds,
           siloBoosted,
+          insideSiloFootprint,
           paddockBoosted,
           areaMultiplier: areaMult,
           siloMultiplier: siloMult,

@@ -40,6 +40,20 @@ test('minimal save: research id 4 present', () => {
   assert.strictEqual(r.researchCompleted[0].researchId, 4);
 });
 
+test('rickyard: pig anchor inside Silo 5×5 gets ×2; outside Chebyshev 2 does not', () => {
+  const p = path.join(__dirname, 'fixtures', 'rickyard-boost-save.json');
+  const save = JSON.parse(fs.readFileSync(p, 'utf8'));
+  const r = parsePp2SaveJson(save, { skipTileUtilization: true });
+  const rows = r.islands[0].productionBuildings;
+  assert.strictEqual(rows.length, 2);
+  const atSilo = rows.find(x => x.xy[0] === 5);
+  const away = rows.find(x => x.xy[0] === 8);
+  assert.ok(atSilo.siloBoosted);
+  assert.ok(Math.abs(atSilo.totalOutputPerMinute - 4) < 1e-5);
+  assert.ok(!away.siloBoosted);
+  assert.ok(Math.abs(away.totalOutputPerMinute - 2) < 1e-5);
+});
+
 test('tile overlap: adjacent 3×3 ranches split shared grass 50/50 (6 effective / 8 needed → 0.75)', () => {
   const p = path.join(__dirname, 'fixtures', 'tile-overlap-save.json');
   const save = JSON.parse(fs.readFileSync(p, 'utf8'));

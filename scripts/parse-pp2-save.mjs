@@ -13,6 +13,7 @@ import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { createRequire } from 'module';
 import { resolveEntityProduction } from './save-production-core.mjs';
+import { computeAreaBoost } from './save-area-boost.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -30,11 +31,6 @@ function loadJsonOptional(relPath, fallback = null) {
   const p = path.join(REPO_ROOT, relPath);
   if (!fs.existsSync(p)) return fallback;
   return JSON.parse(fs.readFileSync(p, 'utf8'));
-}
-
-function chebyshev(xyA, xyB) {
-  if (!Array.isArray(xyA) || !Array.isArray(xyB) || xyA.length < 2 || xyB.length < 2) return Infinity;
-  return Math.max(Math.abs(xyA[0] - xyB[0]), Math.abs(xyA[1] - xyB[1]));
 }
 
 function enrichResourceNames(byId, nameMap) {
@@ -61,12 +57,7 @@ export function parsePp2SaveJson(save, options = {}) {
     'miner',
     'smelter',
   ];
-  const boostTable = modifiers.siloBoostMultipliers || {};
-  const defaultBoost = modifiers.defaultSiloBoostMultiplier ?? 1;
-  const siloDist = modifiers.siloProximityChebyshevDistance ?? 2;
   const siloNeedle = modifiers.siloEntityIdContains || 'Silo';
-  const paddockTable = modifiers.paddockBoostMultipliers || {};
-  const paddockDist = modifiers.paddockProximityChebyshevDistance ?? 2;
   const paddockNeedle = modifiers.paddockEntityIdContains || 'Paddock';
 
   const fallbackJson = options.buildingProductionFallback || loadJsonOptional('data/building_production_fallback.json', {});
@@ -188,30 +179,12 @@ export function parsePp2SaveJson(save, options = {}) {
       if (!resolved) continue;
 
       const xy = ent.xy;
-      let siloBoosted = false;
-      if (Array.isArray(xy) && xy.length >= 2 && siloPositions.length > 0) {
-        for (const sxy of siloPositions) {
-          if (chebyshev(xy, sxy) <= siloDist) {
-            siloBoosted = true;
-            break;
-          }
-        }
-      }
-
-      let paddockBoosted = false;
-      if (Array.isArray(xy) && xy.length >= 2 && paddockPositions.length > 0) {
-        for (const pxy of paddockPositions) {
-          if (chebyshev(xy, pxy) <= paddockDist) {
-            paddockBoosted = true;
-            break;
-          }
-        }
-      }
-
-      const liveTimerRate =
-        resolved.rateSource === 'saveOutputs' || resolved.rateSource === 'saveFallback';
-      const siloMult = !liveTimerRate && siloBoosted ? (boostTable[bid] ?? defaultBoost) : 1.0;
-      const paddockMult = !liveTimerRate && paddockBoosted ? (paddockTable[bid] ?? 1.0) : 1.0;
+      const areaBoost = computeAreaBoost(ent, resolved, siloPositions, paddockPositions);
+      const siloBoosted = areaBoost.siloBoosted;
+      const paddockBoosted = areaBoost.paddockBoosted;
+      const areaMult = Number.isFinite(areaBoost.multiplier) ? areaBoost.multiplier : 1;
+      const siloMult = siloBoosted ? 2 : 1;
+      const paddockMult = paddockBoosted ? 2 : 1;
       let tileUtil = 1;
       let spatialBreakdown = null;
       if (reconstructed && tileClaimantsMap) {
@@ -226,7 +199,7 @@ export function parsePp2SaveJson(save, options = {}) {
           spatialBreakdown = tu.spatialBreakdown;
         }
       }
-      const mult = siloMult * paddockMult * tileUtil;
+      const mult = areaMult * tileUtil;
       const byResourceId = resolved.byResourceId;
       const scaled = {};
       let scaledTotal = 0;
@@ -267,7 +240,7 @@ export function parsePp2SaveJson(save, options = {}) {
           cooldown: resolved.cooldownSeconds,
           siloBoosted,
           paddockBoosted,
-          liveTimerRate,
+          areaMultiplier: areaMult,
           siloMultiplier: siloMult,
           paddockMultiplier: paddockMult,
           tileUtilizationFactor: tileUtil,

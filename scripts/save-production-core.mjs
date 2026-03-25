@@ -1,7 +1,7 @@
 /**
  * Shared save production parsing (Node). Used by parse-pp2-save.mjs.
  * Browser copy lives in save-analysis.js (keep in sync).
- * Tile-input scaling (overlap split, blocked anchors) is applied in parse-pp2-save.mjs / save-analysis.js, not here.
+ * Tile-input scaling and rickyard/paddock area ×2 are applied in parse-pp2-save.mjs / save-analysis.js, not here.
  */
 
 const EXCLUDE_COMPONENT_KEYS = new Set(['internalstorage', 'portal']);

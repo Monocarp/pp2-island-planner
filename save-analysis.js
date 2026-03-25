@@ -7,32 +7,8 @@
 
   /** Embedded fallback when fetch fails (e.g. file://). Keep in sync with data/production_modifiers.json. */
   const DEFAULT_MODIFIERS = {
-    siloProximityChebyshevDistance: 2,
     siloEntityIdContains: 'Silo',
-    siloBoostMultipliers: {
-      SheepFarm: 1.2,
-      PigRanch: 1.2,
-      CattleFarm: 1.2,
-      CattleRanch: 1.2,
-      HorseFarm: 1.2,
-      HorseBreeder: 1.2,
-      CrocodileRanch: 1.2,
-      GoatFarm: 1.2,
-    },
-    defaultSiloBoostMultiplier: 1.0,
-    paddockProximityChebyshevDistance: 2,
     paddockEntityIdContains: 'Paddock',
-    paddockBoostMultipliers: {
-      WheatFarm: 2.0,
-      StrawberryFarm: 2.0,
-      HopsFarm: 2.0,
-      LinseedFarm: 2.0,
-      TobaccoFarm: 2.0,
-      SugarCanePlantation: 2.0,
-      TeaPlantation: 2.0,
-      CoffeePlantation: 2.0,
-      SchnappsFarm: 2.0,
-    },
     skipEntityIdSubstrings: [],
     nonProducerIdPrefixes: ['Warehouse', 'Kontor', 'Portal', 'Garrison', 'House'],
     gameEntityBuildingIdRemap: {
@@ -57,11 +33,6 @@
   var EXCLUDE_COMPONENT_KEYS = { internalstorage: true, portal: true };
 
   let catalogsCache = null;
-
-  function chebyshev(xyA, xyB) {
-    if (!Array.isArray(xyA) || !Array.isArray(xyB) || xyA.length < 2 || xyB.length < 2) return Infinity;
-    return Math.max(Math.abs(xyA[0] - xyB[0]), Math.abs(xyA[1] - xyB[1]));
-  }
 
   function findProductionTimer(components, preferredKeys) {
     if (!components || typeof components !== 'object') return null;
@@ -313,12 +284,7 @@
     var modifiers = Object.assign({}, DEFAULT_MODIFIERS, catalogs.modifiers || {});
     var preferred = modifiers.productionComponentKeysPreferred || DEFAULT_MODIFIERS.productionComponentKeysPreferred;
     var fallbackById = catalogs.buildingFallbackById || {};
-    var boostTable = modifiers.siloBoostMultipliers || {};
-    var defaultBoost = modifiers.defaultSiloBoostMultiplier != null ? modifiers.defaultSiloBoostMultiplier : 1;
-    var siloDist = modifiers.siloProximityChebyshevDistance != null ? modifiers.siloProximityChebyshevDistance : 2;
     var siloNeedle = modifiers.siloEntityIdContains || 'Silo';
-    var paddockTable = modifiers.paddockBoostMultipliers || {};
-    var paddockDist = modifiers.paddockProximityChebyshevDistance != null ? modifiers.paddockProximityChebyshevDistance : 2;
     var paddockNeedle = modifiers.paddockEntityIdContains || 'Paddock';
     var resourceNames = catalogs.resourceNames || {};
     var shipByType = catalogs.shipByType || {};
@@ -440,31 +406,16 @@
         });
         if (!resolved) continue;
 
-        var siloBoosted = false;
         var xy = ent.xy;
-        if (Array.isArray(xy) && xy.length >= 2 && siloPositions.length > 0) {
-          for (var sp = 0; sp < siloPositions.length; sp++) {
-            if (chebyshev(xy, siloPositions[sp]) <= siloDist) {
-              siloBoosted = true;
-              break;
-            }
-          }
-        }
-
-        var paddockBoosted = false;
-        if (Array.isArray(xy) && xy.length >= 2 && paddockPositions.length > 0) {
-          for (var pp = 0; pp < paddockPositions.length; pp++) {
-            if (chebyshev(xy, paddockPositions[pp]) <= paddockDist) {
-              paddockBoosted = true;
-              break;
-            }
-          }
-        }
-
-        var liveTimerRate =
-          resolved.rateSource === 'saveOutputs' || resolved.rateSource === 'saveFallback';
-        var siloMult = !liveTimerRate && siloBoosted ? (boostTable[bid] != null ? boostTable[bid] : defaultBoost) : 1.0;
-        var paddockMult = !liveTimerRate && paddockBoosted ? (paddockTable[bid] != null ? paddockTable[bid] : 1.0) : 1.0;
+        var areaBoost =
+          typeof computeSaveAreaBoost === 'function'
+            ? computeSaveAreaBoost(ent, resolved, siloPositions, paddockPositions)
+            : { multiplier: 1, siloBoosted: false, paddockBoosted: false };
+        var siloBoosted = areaBoost.siloBoosted;
+        var paddockBoosted = areaBoost.paddockBoosted;
+        var areaMult = areaBoost.multiplier != null && isFinite(areaBoost.multiplier) ? areaBoost.multiplier : 1;
+        var siloMult = siloBoosted ? 2 : 1;
+        var paddockMult = paddockBoosted ? 2 : 1;
         var tileUtil = 1;
         var spatialBreakdown = null;
         if (reconstructed && reconstructed.island && tileClaimantsMap) {
@@ -480,7 +431,7 @@
             spatialBreakdown = tu.spatialBreakdown;
           }
         }
-        var mult = siloMult * paddockMult * tileUtil;
+        var mult = areaMult * tileUtil;
         var byResourceId = resolved.byResourceId;
         var scaled = {};
         var scaledTotal = 0;

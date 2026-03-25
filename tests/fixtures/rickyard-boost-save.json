@@ -1,0 +1,36 @@
+{
+  "SaveFileVersion": 20,
+  "GameTimeManager": { "current_tick": 1 },
+  "ResearchManager": { "CompletedResearchTimes": [] },
+  "PopulationManager": { "MaxPopulationCount": [] },
+  "RouteManager": { "SimpleRoutes": [], "ComplexRoutes": [] },
+  "ShipManager": { "Ships": [] },
+  "ResourceManager": { "GlobalResources": { "Resources": [] } },
+  "IslandManager": {
+    "islands": [
+      {
+        "UID": "boost-test",
+        "Name": "Boost Test",
+        "MapSettings": { "Region": 1, "MapSize": [12, 12] },
+        "Grid": [],
+        "GameEntities": [
+          { "id": "Silo", "xy": [5, 5] },
+          {
+            "id": "PigRanch",
+            "xy": [5, 5],
+            "components": {
+              "gatherer": { "Timer": { "Cooldown": 30 } }
+            }
+          },
+          {
+            "id": "PigRanch",
+            "xy": [8, 5],
+            "components": {
+              "gatherer": { "Timer": { "Cooldown": 30 } }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
